@@ -18,6 +18,10 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   
   const [characters, setCharacters] = useState([]);
+  const [historyLogs, setHistoryLogs] = useState([]);
+  
+  const [activeTab, setActiveTab] = useState('roster');
+  const [historyFilterChar, setHistoryFilterChar] = useState('');
   
   const [server, setServer] = useState('cain');
   const [charName, setCharName] = useState('');
@@ -78,6 +82,11 @@ export default function Home() {
           ...parsed
         });
       } catch(e) {}
+    }
+
+    const savedHistory = localStorage.getItem('DNF_HISTORY');
+    if (savedHistory) {
+      try { setHistoryLogs(JSON.parse(savedHistory)); } catch(e) {}
     }
 
     // 초기 마운트 시 자동 갱신 시행 (1회 한정)
@@ -145,15 +154,65 @@ export default function Home() {
     setCharName('');
   };
 
-  const handleRefreshAll = async () => {
-    if (characters.length === 0) return;
+  const handleRefreshAll = async (charsToRefresh = characters, overrideKey = null) => {
+    const targetChars = Array.isArray(charsToRefresh) ? charsToRefresh : characters;
+    const keyToUse = overrideKey || apiKey;
+    if (targetChars.length === 0 || !keyToUse) return;
+    
     setIsRefreshing(true);
+    let newLogs = [];
+
     const updatedList = await Promise.all(
-      characters.map(c => fetchCharacterData(c.base.server, c.base.charName))
+      targetChars.map(async (c) => {
+        const res = await fetchCharacterData(c.base.server, c.base.charName, keyToUse);
+        if (res.success) {
+           let changed = false;
+           let logEntry = {
+              id: Date.now() + Math.random().toString(36).substr(2, 9),
+              timestamp: Date.now(),
+              charId: c.id,
+              charName: c.base.charName,
+              job: c.base.jobGrowName,
+              server: c.base.server,
+              fameChange: null,
+              equipChange: null,
+              oathChange: null
+           };
+
+           if (c.base.fame !== res.base.fame) {
+              logEntry.fameChange = { old: c.base.fame, new: res.base.fame };
+              changed = true;
+           }
+           if (c.equipment.points !== res.equipment.points) {
+              logEntry.equipChange = { old: c.equipment.points, new: res.equipment.points };
+              changed = true;
+           }
+           if (c.oath.points !== res.oath.points) {
+              logEntry.oathChange = { old: c.oath.points, new: res.oath.points };
+              changed = true;
+           }
+
+           if (changed) {
+              newLogs.push(logEntry);
+           }
+           
+           return { ...res, manual: c.manual };
+        }
+        return c;
+      })
     );
-    const finalList = updatedList.map((res, i) => res.success ? { ...res, manual: characters[i].manual } : characters[i]);
-    setCharacters(finalList);
-    localStorage.setItem('DNF_CHARACTERS', JSON.stringify(finalList));
+    
+    setCharacters(updatedList);
+    localStorage.setItem('DNF_CHARACTERS', JSON.stringify(updatedList));
+
+    if (newLogs.length > 0) {
+       setHistoryLogs(prev => {
+          const merged = [...newLogs, ...prev].slice(0, 1000); // 최대 1000개 기록 제한
+          localStorage.setItem('DNF_HISTORY', JSON.stringify(merged));
+          return merged;
+       });
+    }
+
     setIsRefreshing(false);
   };
 
@@ -201,14 +260,6 @@ export default function Home() {
     setShowOptionsModal(false);
   };
 
-  const formatNumber = (num) => {
-    if(typeof num === 'number') {
-      if(num >= 100000000) return (num / 100000000).toFixed(2) + "억";
-      if(num >= 10000) return (num / 10000).toFixed(0) + "만";
-    }
-    return num;
-  };
-
   const getTierClass = (rarity) => {
     if(rarity === '태초') return 'tier-태초';
     if(rarity === '에픽') return 'tier-에픽';
@@ -228,7 +279,14 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="glass-panel" style={{ marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+         <button className={`tab-btn ${activeTab === 'roster' ? 'active' : ''}`} onClick={() => setActiveTab('roster')}>👥 캐릭터 로스터</button>
+         <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>📜 성장 일지 기록</button>
+      </div>
+
+      {activeTab === 'roster' && (
+      <>
+        <section className="glass-panel" style={{ marginBottom: '2rem' }}>
         <form className="add-form" onSubmit={handleAdd}>
           <select value={server} onChange={e => setServer(e.target.value)}>
             {SERVER_LIST.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -244,7 +302,7 @@ export default function Home() {
           </button>
           
           <div style={{ marginLeft: 'auto' }}>
-             <button type="button" onClick={handleRefreshAll} disabled={isRefreshing || characters.length === 0} style={{ background: '#475569' }}>
+             <button type="button" onClick={() => handleRefreshAll()} disabled={isRefreshing || characters.length === 0} style={{ background: '#475569' }}>
                {isRefreshing ? <div className="loader"/> : "🔄 전체 갱신"}
              </button>
           </div>
@@ -329,6 +387,59 @@ export default function Home() {
           </table>
         )}
       </section>
+      </>
+      )}
+
+      {activeTab === 'history' && (
+        <section className="glass-panel" style={{ minHeight: '60vh' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap:'wrap', gap:'1rem' }}>
+            <h2 style={{ margin: 0 }}>성장 일지</h2>
+            <select value={historyFilterChar} onChange={e => setHistoryFilterChar(e.target.value)} style={{ padding: '0.5rem', minWidth: '200px' }}>
+              <option value="">전체 캐릭터 보기</option>
+              {characters.map(c => <option key={c.id} value={c.id}>{c.base.charName} ({c.base.jobGrowName})</option>)}
+            </select>
+          </div>
+          
+          {historyLogs.filter(L => historyFilterChar === '' || L.charId === historyFilterChar).length === 0 ? (
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem' }}>
+              아직 변동 기록이 없습니다.<br/>서버에서 새로운 스펙업 정보가 감지되면 자동으로 이곳에 누적 기록됩니다!
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {historyLogs.filter(L => historyFilterChar === '' || L.charId === historyFilterChar).map(log => {
+                 const dt = new Date(log.timestamp);
+                 const timeStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+                 
+                 return (
+                   <div key={log.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
+                       <strong style={{ fontSize: '1.15rem', color: '#60a5fa' }}>{log.charName} <span style={{fontSize:'0.85rem', color:'var(--text-muted)'}}>{log.job}</span></strong>
+                       <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>🕒 {timeStr}</span>
+                     </div>
+                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                       {log.fameChange && (
+                          <div className="log-pill" style={{ borderColor: log.fameChange.new > log.fameChange.old ? 'rgba(74, 222, 128, 0.4)' : 'rgba(248, 113, 113, 0.4)' }}>
+                             <strong>명성:</strong> {log.fameChange.old.toLocaleString()} ➡️ <span style={{color: log.fameChange.new > log.fameChange.old ? '#4ade80' : '#f87171', fontWeight:'bold'}}>{log.fameChange.new.toLocaleString()} ({log.fameChange.new > log.fameChange.old ? '+' : ''}{(log.fameChange.new - log.fameChange.old).toLocaleString()})</span>
+                          </div>
+                       )}
+                       {log.equipChange && (
+                          <div className="log-pill" style={{ borderColor: log.equipChange.new > log.equipChange.old ? 'rgba(74, 222, 128, 0.4)' : 'rgba(248, 113, 113, 0.4)' }}>
+                             <strong>장비점수:</strong> {log.equipChange.old} ➡️ <span style={{color: log.equipChange.new > log.equipChange.old ? '#4ade80' : '#f87171', fontWeight:'bold'}}>{log.equipChange.new} ({log.equipChange.new > log.equipChange.old ? '+' : ''}{(log.equipChange.new - log.equipChange.old)})</span>
+                          </div>
+                       )}
+                       {log.oathChange && (
+                          <div className="log-pill" style={{ borderColor: log.oathChange.new > log.oathChange.old ? 'rgba(74, 222, 128, 0.4)' : 'rgba(248, 113, 113, 0.4)' }}>
+                             <strong>서약점수:</strong> {log.oathChange.old} ➡️ <span style={{color: log.oathChange.new > log.oathChange.old ? '#4ade80' : '#f87171', fontWeight:'bold'}}>{log.oathChange.new} ({log.oathChange.new > log.oathChange.old ? '+' : ''}{(log.oathChange.new - log.oathChange.old)})</span>
+                          </div>
+                       )}
+                     </div>
+                   </div>
+                 );
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
       {showSettings && (
         <div className="modal-overlay">

@@ -225,3 +225,34 @@ tbody tr:hover {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+.tab-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  font-size: 1.1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  transition: all 0.2s;
+  box-shadow: none;
+}
+.tab-btn:hover:not(:disabled) {
+  color: #fff;
+  transform: none;
+  box-shadow: none;
+  background: transparent;
+}
+.tab-btn.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+  font-weight: bold;
+}
+.log-pill {
+  background: rgba(0,0,0,0.3);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.9rem;
+}
