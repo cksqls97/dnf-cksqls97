@@ -209,6 +209,7 @@ export default function Home() {
     }
 
     let loadedOpts = customOptions;
+    let loadedLogs = [];
 
     const savedHistory = localStorage.getItem('DNF_HISTORY');
     if (savedHistory) {
