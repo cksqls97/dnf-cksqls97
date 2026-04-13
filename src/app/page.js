@@ -39,16 +39,20 @@ export default function Home() {
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [optionsFormText, setOptionsFormText] = useState({});
 
+  const autoRefreshDone = React.useRef(false);
+
   useEffect(() => {
     const key = localStorage.getItem("DNF_API_KEY") || "";
     setApiKeyState(key);
     if (!key) setShowSettings(true);
     setApiKeyInput(key);
 
+    let loadedChars = [];
     const saved = localStorage.getItem('DNF_CHARACTERS');
     if (saved) {
       try {
-        setCharacters(JSON.parse(saved));
+        loadedChars = JSON.parse(saved);
+        setCharacters(loadedChars);
       } catch(e) {}
     }
 
@@ -66,6 +70,25 @@ export default function Home() {
           ...parsed
         });
       } catch(e) {}
+    }
+
+    // 초기 마운트 시 자동 갱신 시행 (1회 한정)
+    if (loadedChars.length > 0 && key && !autoRefreshDone.current) {
+      autoRefreshDone.current = true;
+      // 백그라운드 갱신 함수 (초기값으로 바로 실행)
+      setIsRefreshing(true);
+      Promise.all(loadedChars.map(async (c) => {
+         const res = await fetch('/api/character', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ server: c.base.server, charName: c.base.charName, apiKey: key })
+         }).then(r => r.json());
+         return res.success ? { ...res, manual: c.manual } : c;
+      })).then((updatedList) => {
+         setCharacters(updatedList);
+         localStorage.setItem('DNF_CHARACTERS', JSON.stringify(updatedList));
+         setIsRefreshing(false);
+      });
     }
   }, []);
 
