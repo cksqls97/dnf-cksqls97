@@ -176,7 +176,9 @@ export default function Home() {
               server: c.base.server,
               fameChange: null,
               equipChange: null,
-              oathChange: null
+              oathChange: null,
+              beforeSnapshot: JSON.parse(JSON.stringify(c)),
+              afterSnapshot: JSON.parse(JSON.stringify(res))
            };
 
            if (c.base.fame !== res.base.fame) {
