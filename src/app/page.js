@@ -33,7 +33,11 @@ export default function Home() {
   const [characters, setCharacters] = useState([]);
   const [historyLogs, setHistoryLogs] = useState([]);
   
-  const [activeTab, setActiveTab] = useState('roster');
+  const [activeTab, setActiveTabState] = useState('roster');
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    localStorage.setItem('DNF_ACTIVE_TAB', tab);
+  };
   const [historyFilterChar, setHistoryFilterChar] = useState('');
 
   const [editingLogId, setEditingLogId] = useState(null);
@@ -103,6 +107,11 @@ export default function Home() {
     const savedHistory = localStorage.getItem('DNF_HISTORY');
     if (savedHistory) {
       try { setHistoryLogs(JSON.parse(savedHistory)); } catch(e) {}
+    }
+
+    const savedTab = localStorage.getItem('DNF_ACTIVE_TAB');
+    if (savedTab) {
+      setActiveTabState(savedTab);
     }
 
     // 초기 마운트 시 자동 갱신 시행 (1회 한정)
