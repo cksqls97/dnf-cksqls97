@@ -26,6 +26,26 @@ const getGradeTier = (pts) => {
   return { rarity: "등급 없음", tier: "" };
 };
 
+const getTierClass = (rarity) => {
+  if(rarity === '태초') return 'tier-태초';
+  if(rarity === '에픽') return 'tier-에픽';
+  if(rarity === '레전더리') return 'tier-레전더리';
+  if(rarity === '유니크') return 'tier-유니크';
+  if(rarity === '레어') return 'tier-레어';
+  return '';
+};
+
+const GradeBadge = ({ points }) => {
+  if (!points) return null;
+  const grade = getGradeTier(points);
+  if (!grade || grade.rarity === '등급 없음') return null;
+  return (
+    <span className={getTierClass(grade.rarity)} style={{ fontSize: '0.85rem', marginLeft: '0.2rem' }}>
+      ({grade.rarity}{grade.tier ? ` ${grade.tier}` : ''})
+    </span>
+  );
+};
+
 const ADVANCED_DUNGEONS = [
   { name: '배교자의 성', fame: 101853 },
   { name: '별거북 대서고', fame: 91582 },
@@ -154,6 +174,7 @@ export default function Home() {
       handleRefreshAll(characters, apiKey);
     }, 60000);
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiKey, characters]);
 
   useEffect(() => {
@@ -231,7 +252,7 @@ export default function Home() {
          }
       });
     }
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSaveSettings = () => {
@@ -283,7 +304,7 @@ export default function Home() {
     if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions);
   };
 
-  const handleRefreshAll = async (charsToRefresh = characters, overrideKey = null) => {
+  async function handleRefreshAll(charsToRefresh = characters, overrideKey = null) {
     const targetChars = Array.isArray(charsToRefresh) ? charsToRefresh : characters;
     const keyToUse = overrideKey || apiKey;
     if (targetChars.length === 0 || !keyToUse) return;
@@ -427,26 +448,6 @@ export default function Home() {
     });
     setEditingLogId(null);
     setEditLogForm(null);
-  };
-
-  const getTierClass = (rarity) => {
-    if(rarity === '태초') return 'tier-태초';
-    if(rarity === '에픽') return 'tier-에픽';
-    if(rarity === '레전더리') return 'tier-레전더리';
-    if(rarity === '유니크') return 'tier-유니크';
-    if(rarity === '레어') return 'tier-레어';
-    return '';
-  };
-
-  const GradeBadge = ({ points }) => {
-    if (!points) return null;
-    const grade = getGradeTier(points);
-    if (!grade || grade.rarity === '등급 없음') return null;
-    return (
-      <span className={getTierClass(grade.rarity)} style={{ fontSize: '0.85rem', marginLeft: '0.2rem' }}>
-        ({grade.rarity}{grade.tier ? ` ${grade.tier}` : ''})
-      </span>
-    );
   };
 
   return (
