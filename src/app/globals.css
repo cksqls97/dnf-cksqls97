@@ -28,9 +28,9 @@ body {
 }
 
 #root {
-  max-width: 1400px;
+  max-width: 98%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .glass-panel {
