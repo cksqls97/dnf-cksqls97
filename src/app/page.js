@@ -54,7 +54,18 @@ export default function Home() {
 
     const savedOpts = localStorage.getItem('DNF_OPTIONS');
     if (savedOpts) {
-      try { setCustomOptions(JSON.parse(savedOpts)); } catch(e) {}
+      try {
+        const parsed = JSON.parse(savedOpts);
+        setCustomOptions({
+          enchant: ['기본', '가성비', '준종결', '종결'],
+          title: ['기본', '가성비', '준종결', '종결'],
+          aura: ['기본', '가성비', '준종결', '종결'],
+          creature: ['기본', '가성비', '준종결', '종결'],
+          avatar: ['기본', '이벤압', '레압', '클레압', '찬작', '엔드'],
+          emblem: ['기본', '화려', '찬란', '다발', '종결플티'],
+          ...parsed
+        });
+      } catch(e) {}
     }
   }, []);
 
@@ -136,8 +147,9 @@ export default function Home() {
 
   const openOptionsModal = () => {
     const textFormat = {};
-    for(const key of Object.keys(customOptions)) {
-      textFormat[key] = customOptions[key].join(', ');
+    const ALL_KEYS = ['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'];
+    for(const key of ALL_KEYS) {
+      textFormat[key] = (customOptions[key] || []).join(', ');
     }
     setOptionsFormText(textFormat);
     setShowOptionsModal(true);
@@ -145,7 +157,8 @@ export default function Home() {
 
   const handleSaveOptions = () => {
     const newOpts = {};
-    for(const key of Object.keys(customOptions)) {
+    const ALL_KEYS = ['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'];
+    for(const key of ALL_KEYS) {
       if(!optionsFormText[key]) {
          newOpts[key] = [];
       } else {
