@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const BASE_URL = "https://api.neople.co.kr/df";
 
 const OATH_NAME_MAP = {
@@ -37,8 +39,14 @@ export async function POST(request) {
     }
 
     const dnfFetch = async (path) => {
-      const url = `${BASE_URL}${path}${path.includes('?') ? '&' : '?'}apikey=${apiKey}`;
-      const res = await fetch(url, { cache: 'no-store' });
+      const url = `${BASE_URL}${path}${path.includes('?') ? '&' : '?'}t=${Date.now()}&apikey=${apiKey}`;
+      const res = await fetch(url, { 
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
       if (!res.ok) throw new Error("네오플 API 연동 오류");
       return res.json();
     };
