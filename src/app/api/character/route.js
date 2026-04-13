@@ -38,7 +38,7 @@ export async function POST(request) {
 
     const dnfFetch = async (path) => {
       const url = `${BASE_URL}${path}${path.includes('?') ? '&' : '?'}apikey=${apiKey}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error("네오플 API 연동 오류");
       return res.json();
     };
