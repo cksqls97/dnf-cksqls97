@@ -235,12 +235,12 @@ export default function Home() {
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
                     {c.manual && (
                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem' }}>
-                         {c.manual.enchant && <span className="m-pill">🔮{c.manual.enchant}</span>}
-                         {c.manual.title && <span className="m-pill">✨{c.manual.title}</span>}
-                         {c.manual.aura && <span className="m-pill">🌟{c.manual.aura}</span>}
-                         {c.manual.creature && <span className="m-pill">🐾{c.manual.creature}</span>}
-                         {c.manual.avatar && <span className="m-pill">👗{c.manual.avatar}</span>}
-                         {c.manual.emblem && <span className="m-pill">💎{c.manual.emblem}</span>}
+                         {c.manual.enchant && <span className="m-pill">마부: {c.manual.enchant}</span>}
+                         {c.manual.title && <span className="m-pill">칭호: {c.manual.title}</span>}
+                         {c.manual.aura && <span className="m-pill">오라: {c.manual.aura}</span>}
+                         {c.manual.creature && <span className="m-pill">크리쳐: {c.manual.creature}</span>}
+                         {c.manual.avatar && <span className="m-pill">아바타: {c.manual.avatar}</span>}
+                         {c.manual.emblem && <span className="m-pill">엠블렘: {c.manual.emblem}</span>}
                        </div>
                     )}
                   </td>
