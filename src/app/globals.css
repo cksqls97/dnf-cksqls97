@@ -130,11 +130,17 @@ tbody tr:hover {
   background-color: rgba(255,255,255,0.03);
 }
 
-.tier-태초 { color: var(--tier-taecho); text-shadow: 0 0 8px rgba(255,0,127,0.5); font-weight: bold; }
-.tier-에픽 { color: var(--tier-epic); font-weight: bold; }
-.tier-레전더리 { color: var(--tier-legendary); font-weight: bold; }
-.tier-유니크 { color: var(--tier-unique); }
-.tier-레어 { color: var(--tier-rare); }
+.tier-태초 {
+  background: linear-gradient(180deg, #55ff88 0%, #00bfff 100%);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 200, 0.6));
+}
+.tier-에픽 { color: #ffe600; text-shadow: 0 0 5px #ffb800; font-weight: 800; }
+.tier-레전더리 { color: #ff9900; text-shadow: 0 0 5px #e65c00; font-weight: 800; }
+.tier-유니크 { color: #ff00ff; text-shadow: 0 0 5px #cc00cc; font-weight: 800; }
+.tier-레어 { color: #d480ff; text-shadow: 0 0 5px #9933ff; font-weight: 800; }
 
 .app-header {
   display: flex;
