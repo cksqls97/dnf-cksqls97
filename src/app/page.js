@@ -26,14 +26,18 @@ export default function Home() {
   const [apiKey, setApiKeyState] = useState('');
 
   const [manualModalChar, setManualModalChar] = useState(null);
-  const [manualForm, setManualForm] = useState({ enchant: '', title: '', aura: '', creature: '', avatar: '' });
+  const [manualForm, setManualForm] = useState({ enchant: '', title: '', aura: '', creature: '', avatar: '', emblem: '' });
   const [customOptions, setCustomOptions] = useState({
     enchant: ['기본', '가성비', '준종결', '종결'],
     title: ['기본', '가성비', '준종결', '종결'],
     aura: ['기본', '가성비', '준종결', '종결'],
     creature: ['기본', '가성비', '준종결', '종결'],
-    avatar: ['기본', '이벤압', '레압', '클레압', '찬작', '엔드']
+    avatar: ['기본', '이벤압', '레압', '클레압', '찬작', '엔드'],
+    emblem: ['기본', '화려', '찬란', '다발', '종결플티']
   });
+
+  const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [optionsFormText, setOptionsFormText] = useState({});
 
   useEffect(() => {
     const key = localStorage.getItem("DNF_API_KEY") || "";
@@ -118,32 +122,39 @@ export default function Home() {
   };
 
   const openManualModal = (char) => {
-    setManualForm(char.manual || { enchant: '', title: '', aura: '', creature: '', avatar: '' });
+    setManualForm(char.manual || { enchant: '', title: '', aura: '', creature: '', avatar: '', emblem: '' });
     setManualModalChar(char);
   };
 
   const handleSaveManual = () => {
     if(!manualModalChar) return;
-    
     const newList = characters.map(c => c.id === manualModalChar.id ? { ...c, manual: manualForm } : c);
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
-    
-    const newOpts = { ...customOptions };
-    let optsChanged = false;
-    ['enchant', 'title', 'aura', 'creature', 'avatar'].forEach(key => {
-      const val = manualForm[key].trim();
-      if (val && !newOpts[key].includes(val)) {
-        newOpts[key] = [...newOpts[key], val];
-        optsChanged = true;
-      }
-    });
-    if (optsChanged) {
-      setCustomOptions(newOpts);
-      localStorage.setItem('DNF_OPTIONS', JSON.stringify(newOpts));
-    }
-    
     setManualModalChar(null);
+  };
+
+  const openOptionsModal = () => {
+    const textFormat = {};
+    for(const key of Object.keys(customOptions)) {
+      textFormat[key] = customOptions[key].join(', ');
+    }
+    setOptionsFormText(textFormat);
+    setShowOptionsModal(true);
+  };
+
+  const handleSaveOptions = () => {
+    const newOpts = {};
+    for(const key of Object.keys(customOptions)) {
+      if(!optionsFormText[key]) {
+         newOpts[key] = [];
+      } else {
+         newOpts[key] = optionsFormText[key].split(',').map(s => s.trim()).filter(s => s);
+      }
+    }
+    setCustomOptions(newOpts);
+    localStorage.setItem('DNF_OPTIONS', JSON.stringify(newOpts));
+    setShowOptionsModal(false);
   };
 
   const formatNumber = (num) => {
@@ -167,7 +178,10 @@ export default function Home() {
     <div>
       <header className="app-header">
         <h1 className="title">DNF Info Manager</h1>
-        <button onClick={() => setShowSettings(true)}>⚙️ API 설정</button>
+        <div style={{display:'flex', gap:'0.5rem'}}>
+          <button onClick={openOptionsModal}>🛠️ 옵션 편집</button>
+          <button onClick={() => setShowSettings(true)}>⚙️ API 설정</button>
+        </div>
       </header>
 
       <section className="glass-panel" style={{ marginBottom: '2rem' }}>
@@ -226,6 +240,7 @@ export default function Home() {
                          {c.manual.aura && <span className="m-pill">🌟{c.manual.aura}</span>}
                          {c.manual.creature && <span className="m-pill">🐾{c.manual.creature}</span>}
                          {c.manual.avatar && <span className="m-pill">👗{c.manual.avatar}</span>}
+                         {c.manual.emblem && <span className="m-pill">💎{c.manual.emblem}</span>}
                        </div>
                     )}
                   </td>
@@ -301,23 +316,21 @@ export default function Home() {
         <div className="modal-overlay">
           <div className="glass-panel modal-content" style={{ maxWidth: '360px' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>[{manualModalChar.base.charName}] 수동 제원 설정</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>목록에서 선택하거나 새로운 옵션을 직접 입력하세요.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>상단 🛠️ 탭에서 구성한 목록에서만 선택 가능합니다.</p>
             <div className="manual-form">
-              {['enchant', 'title', 'aura', 'creature', 'avatar'].map(k => {
-                const labels = { enchant: '마부 상태', title: '칭호', aura: '오라', creature: '크리쳐', avatar: '아바타' };
+              {['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'].map(k => {
+                const labels = { enchant: '마부 상태', title: '칭호', aura: '오라', creature: '크리쳐', avatar: '아바타', emblem: '엠블렘' };
                 return (
                   <div key={k} style={{ marginBottom: '1rem' }}>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#94a3b8' }}>{labels[k]}</label>
-                    <input 
-                      list={`list-${k}`}
-                      style={{ width: '100%', boxSizing: 'border-box' }}
-                      value={manualForm[k]}
-                      placeholder="텍스트 입력/선택"
+                    <select 
+                      style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.5rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px' }}
+                      value={manualForm[k] || ''}
                       onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
-                    />
-                    <datalist id={`list-${k}`}>
-                      {customOptions[k].map(opt => <option key={opt} value={opt} />)}
-                    </datalist>
+                    >
+                      <option value="">- 선택 안 함 -</option>
+                      {customOptions[k]?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
                   </div>
                 )
               })}
@@ -325,6 +338,38 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
               <button type="button" onClick={() => setManualModalChar(null)} style={{ background: 'transparent', border: '1px solid var(--border-color)' }}>취소</button>
               <button type="button" onClick={handleSaveManual}>저장</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showOptionsModal && (
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content" style={{ maxWidth: '450px' }}>
+            <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>🛠️ 드롭다운 전체 항목 편집</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+              각 카테고리별로 콤마(,)를 사용해 선택지를 자유롭게 입력하세요. 
+            </p>
+            <div className="options-form" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '10px' }}>
+              {['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'].map(k => {
+                const labels = { enchant: '마부 옵션', title: '칭호 옵션', aura: '오라 옵션', creature: '크리쳐 옵션', avatar: '아바타 옵션', emblem: '엠블렘 옵션' };
+                return (
+                  <div key={k} style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#94a3b8' }}>{labels[k]}</label>
+                    <textarea 
+                      rows={2}
+                      style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.5rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical' }}
+                      value={optionsFormText[k] || ''}
+                      placeholder="종결, 짭종결, 가성비, 기본"
+                      onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+              <button type="button" onClick={() => setShowOptionsModal(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)' }}>취소</button>
+              <button type="button" onClick={handleSaveOptions}>저장</button>
             </div>
           </div>
         </div>
