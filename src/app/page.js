@@ -92,6 +92,17 @@ export default function Home() {
     } catch(e) { console.error(e) }
   };
 
+  const handleManualCloudSync = async () => {
+    if (!apiKey) {
+       alert("API 키를 먼저 설정해야 합니다.");
+       return;
+    }
+    setIsCloudSyncing(true);
+    await syncUpCloudData(apiKey, characters, historyLogs, customOptions);
+    setIsCloudSyncing(false);
+    alert("현재 기기의 최신 데이터가 클라우드 서버에 수동으로 백업되었습니다!");
+  };
+
   const syncDownCloudData = async (targetKey, localChars, localLogs, localOpts) => {
     if(!targetKey) return;
     setIsCloudSyncing(true);
@@ -340,9 +351,6 @@ export default function Home() {
           
           return merged;
        });
-    } else {
-       // Only stats update (no log triggered), also push characters to cloud to remain perfectly in sync
-       if (keyToUse) syncUpCloudData(keyToUse, updatedList, historyLogs, customOptions);
     }
 
     setIsRefreshing(false);
@@ -446,6 +454,9 @@ export default function Home() {
       <header className="app-header">
         <h1 className="title">DNF Info Manager</h1>
         <div style={{display:'flex', gap:'0.5rem'}}>
+          <button onClick={handleManualCloudSync} disabled={isCloudSyncing} style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8' }}>
+            {isCloudSyncing ? '☁️ 동기화 중...' : '☁️ 수동 클라우드 백업'}
+          </button>
           <button onClick={openOptionsModal}>🛠️ 옵션 편집</button>
           <button onClick={() => setShowSettings(true)}>⚙️ API 설정</button>
         </div>
