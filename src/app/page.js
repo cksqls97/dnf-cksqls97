@@ -516,12 +516,12 @@ export default function Home() {
             <tbody>
               {characters.map(c => (
                 <tr key={c.id}>
-                  <td>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
-                  <td>{c.base.jobGrowName}</td>
-                  <td>
+                  <td data-label="서버">{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
+                  <td data-label="직업">{c.base.jobGrowName}</td>
+                  <td data-label="제원">
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
                     {c.manual && (
-                       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
+                       <div className="manual-options-container" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
                          {c.manual.enchant && <span className="m-pill">마부: {c.manual.enchant}</span>}
                          {c.manual.title && <span className="m-pill">칭호: {c.manual.title}</span>}
                          {c.manual.aura && <span className="m-pill">오라: {c.manual.aura}</span>}
@@ -531,7 +531,7 @@ export default function Home() {
                        </div>
                     )}
                   </td>
-                  <td>
+                  <td data-label="명성">
                     <div style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textAlign: 'center' }}>
                        {c.base.fame.toLocaleString()}
                     </div>
@@ -543,19 +543,19 @@ export default function Home() {
                        ))}
                     </div>
                   </td>
-                  <td>
+                  <td data-label="장비">
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.equipment.setName}</div>
                     <div className={getTierClass(c.equipment.rarity)}>
                       {c.equipment.gradeDesc} ({c.equipment.points})
                     </div>
                   </td>
-                  <td>
+                  <td data-label="서약">
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.oath.setName}</div>
                     <div className={getTierClass(c.oath.rarity)}>
                       {c.oath.gradeDesc} ({c.oath.points})
                     </div>
                   </td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td data-label="던담" style={{ textAlign: 'center' }}>
                     {c.charId ? (
                       <a 
                         href={`https://dundam.xyz/character?server=${c.base.server}&key=${c.charId}`} 
@@ -569,7 +569,7 @@ export default function Home() {
                       <span style={{ color: 'var(--text-muted)' }}>-</span>
                     )}
                   </td>
-                  <td style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                  <td data-label="관리" style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                     <button type="button" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', background: '#3b82f6' }} onClick={() => openManualModal(c)}>
                       ⚙️
                     </button>

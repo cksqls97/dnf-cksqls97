@@ -256,3 +256,79 @@ tbody tr:hover {
   border: 1px solid rgba(255,255,255,0.05);
   font-size: 0.9rem;
 }
+
+/* 모바일 전용 반응형 레이아웃 */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  /* Roster Table to Mobile Cards */
+  .table-wrapper table, 
+  .table-wrapper thead, 
+  .table-wrapper tbody, 
+  .table-wrapper th, 
+  .table-wrapper td, 
+  .table-wrapper tr {
+    display: block;
+  }
+  .table-wrapper thead {
+    display: none;
+  }
+  .table-wrapper tr {
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    background: rgba(0,0,0,0.2);
+    padding: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  }
+  .table-wrapper td {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 0.8rem 0.5rem;
+    text-align: right;
+  }
+  .table-wrapper td:last-child {
+    border-bottom: none;
+  }
+  .table-wrapper td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-right: 1rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+  
+  /* 내부 데이터 요소들을 오른쪽으로 정렬 유도 */
+  .table-wrapper td > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end !important;
+    text-align: right !important;
+  }
+  
+  .manual-options-container {
+    justify-content: flex-end !important;
+  }
+  
+  /* 입력 폼 세로 정렬 가속화 */
+  .add-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .add-form > * {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+  .add-form button {
+    width: 100%;
+  }
+}
