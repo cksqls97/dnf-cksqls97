@@ -56,6 +56,7 @@ export default function Home() {
   const [charName, setCharName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
   const [apiKey, setApiKeyState] = useState('');
 
   const [manualModalChar, setManualModalChar] = useState(null);
@@ -73,6 +74,68 @@ export default function Home() {
   const [optionsFormText, setOptionsFormText] = useState({});
 
   const autoRefreshDone = React.useRef(false);
+
+  // --- 클라우드 동기화 엔진 ---
+  const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts) => {
+    if(!key) return;
+    try {
+      await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: key,
+          characters: updatedCharacters,
+          historyLogs: updatedLogs,
+          customOptions: updatedOpts
+        })
+      });
+    } catch(e) { console.error(e) }
+  };
+
+  const syncDownCloudData = async (targetKey, localChars, localLogs, localOpts) => {
+    if(!targetKey) return;
+    setIsCloudSyncing(true);
+    try {
+      const res = await fetch(`/api/sync?apiKey=${targetKey}`).then(r => r.json());
+      if (res.success && res.data) {
+         const cData = res.data;
+         let modified = false;
+         
+         if (cData.characters && cData.characters.length > 0) {
+            setCharacters(cData.characters);
+            localStorage.setItem('DNF_CHARACTERS', JSON.stringify(cData.characters));
+            modified = true;
+         }
+         if (cData.historyLogs && cData.historyLogs.length > 0) {
+            setHistoryLogs(cData.historyLogs);
+            localStorage.setItem('DNF_HISTORY', JSON.stringify(cData.historyLogs));
+            modified = true;
+         }
+         if (cData.customOptions) {
+            setCustomOptions(cData.customOptions);
+            localStorage.setItem('DNF_OPTIONS', JSON.stringify(cData.customOptions));
+            modified = true;
+         }
+         
+         // 클라우드가 텅 비어있고, 로컬에는 기존 데이터가 가득하다면 (첫 이주, Migration)
+         if (!modified && (localChars?.length > 0 || localLogs?.length > 0)) {
+            await syncUpCloudData(targetKey, localChars, localLogs, localOpts);
+         }
+         
+         if (modified) {
+             // Return true so we know we hydrated successfully
+             return true;
+         }
+      } else if (res.success && (!res.data)) {
+         // 클라우드가 아예 null (키가 처음 생성된 상태)
+         if (localChars?.length > 0 || localLogs?.length > 0) {
+            await syncUpCloudData(targetKey, localChars, localLogs, localOpts);
+         }
+      }
+    } catch(e) { console.error("Cloud Sync Failed:", e) }
+    setIsCloudSyncing(false);
+    return false;
+  };
 
   useEffect(() => {
     if (!apiKey || characters.length === 0) return;
@@ -113,40 +176,58 @@ export default function Home() {
       } catch(e) {}
     }
 
+    let loadedOpts = customOptions;
+
     const savedHistory = localStorage.getItem('DNF_HISTORY');
     if (savedHistory) {
-      try { setHistoryLogs(JSON.parse(savedHistory)); } catch(e) {}
+      try { 
+        loadedLogs = JSON.parse(savedHistory);
+        setHistoryLogs(loadedLogs); 
+      } catch(e) {}
     }
 
     const savedTab = localStorage.getItem('DNF_ACTIVE_TAB');
     if (savedTab) {
       setActiveTabState(savedTab);
     }
+    
+    const triggerLocalMountRefresh = () => {
+      if (loadedChars.length > 0 && key && !autoRefreshDone.current) {
+        autoRefreshDone.current = true;
+        setIsRefreshing(true);
+        Promise.all(loadedChars.map(async (c) => {
+           const res = await fetch('/api/character', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ server: c.base.server, charName: c.base.charName, apiKey: key })
+           }).then(r => r.json());
+           return res.success ? { ...res, manual: c.manual } : c;
+        })).then((updatedList) => {
+           setCharacters(updatedList);
+           localStorage.setItem('DNF_CHARACTERS', JSON.stringify(updatedList));
+           setIsRefreshing(false);
+        });
+      }
+    };
 
-    // 초기 마운트 시 자동 갱신 시행 (1회 한정)
-    if (loadedChars.length > 0 && key && !autoRefreshDone.current) {
-      autoRefreshDone.current = true;
-      // 백그라운드 갱신 함수 (초기값으로 바로 실행)
-      setIsRefreshing(true);
-      Promise.all(loadedChars.map(async (c) => {
-         const res = await fetch('/api/character', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ server: c.base.server, charName: c.base.charName, apiKey: key })
-         }).then(r => r.json());
-         return res.success ? { ...res, manual: c.manual } : c;
-      })).then((updatedList) => {
-         setCharacters(updatedList);
-         localStorage.setItem('DNF_CHARACTERS', JSON.stringify(updatedList));
-         setIsRefreshing(false);
+    // 마운트 시 클라우드 동기화 수행
+    if (key) {
+      syncDownCloudData(key, loadedChars, loadedLogs, loadedOpts).then((cloudHydrated) => {
+         // 동기화가 끝난 후, 이미 클라우드 데이터를 받았어도 자동갱신 로직은 수행을 권장 (다만 클라우드가 더 최신이므로 충돌 가능성 있음)
+         // 현재 최적화 방식으론, 클라우드 데이터를 다운받은 후 그냥 polling 큐에 맡기는 것이 안전함.
+         if (!cloudHydrated) {
+             triggerLocalMountRefresh();
+         }
       });
     }
+
   }, []);
 
   const handleSaveSettings = () => {
     localStorage.setItem("DNF_API_KEY", apiKeyInput);
     setApiKeyState(apiKeyInput);
     setShowSettings(false);
+    syncDownCloudData(apiKeyInput, characters, historyLogs, customOptions);
   };
 
   const fetchCharacterData = async (srv, name) => {
@@ -186,6 +267,9 @@ export default function Home() {
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
     setCharName('');
+    
+    // Cloud Sync
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions);
   };
 
   const handleRefreshAll = async (charsToRefresh = characters, overrideKey = null) => {
@@ -251,8 +335,14 @@ export default function Home() {
        setHistoryLogs(prev => {
           const merged = [...newLogs, ...prev].slice(0, 1000); // 최대 1000개 기록 제한
           localStorage.setItem('DNF_HISTORY', JSON.stringify(merged));
+          
+          if (keyToUse) syncUpCloudData(keyToUse, updatedList, merged, customOptions);
+          
           return merged;
        });
+    } else {
+       // Only stats update (no log triggered), also push characters to cloud to remain perfectly in sync
+       if (keyToUse) syncUpCloudData(keyToUse, updatedList, historyLogs, customOptions);
     }
 
     setIsRefreshing(false);
@@ -262,6 +352,7 @@ export default function Home() {
     const newList = characters.filter(c => c.id !== id);
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions);
   };
 
   const openManualModal = (char) => {
@@ -275,6 +366,7 @@ export default function Home() {
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
     setManualModalChar(null);
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions);
   };
 
   const openOptionsModal = () => {
@@ -300,6 +392,7 @@ export default function Home() {
     setCustomOptions(newOpts);
     localStorage.setItem('DNF_OPTIONS', JSON.stringify(newOpts));
     setShowOptionsModal(false);
+    if (apiKey) syncUpCloudData(apiKey, characters, historyLogs, newOpts);
   };
 
   const deleteLog = (id) => {
@@ -307,6 +400,7 @@ export default function Home() {
     setHistoryLogs(prev => {
       const updated = prev.filter(L => L.id !== id);
       localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
+      if (apiKey) syncUpCloudData(apiKey, characters, updated, customOptions);
       return updated;
     });
   };
@@ -320,6 +414,7 @@ export default function Home() {
     setHistoryLogs(prev => {
       const updated = prev.map(L => L.id === editingLogId ? editLogForm : L);
       localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
+      if (apiKey) syncUpCloudData(apiKey, characters, updated, customOptions);
       return updated;
     });
     setEditingLogId(null);
