@@ -183,12 +183,18 @@ export default function Home() {
               logEntry.fameChange = { old: c.base.fame, new: res.base.fame };
               changed = true;
            }
-           if (c.equipment.points !== res.equipment.points) {
-              logEntry.equipChange = { old: c.equipment.points, new: res.equipment.points };
+           if (c.equipment.points !== res.equipment.points || c.equipment.setName !== res.equipment.setName) {
+              logEntry.equipChange = { 
+                  old: c.equipment.points, new: res.equipment.points,
+                  oldSet: c.equipment.setName, newSet: res.equipment.setName
+              };
               changed = true;
            }
-           if (c.oath.points !== res.oath.points) {
-              logEntry.oathChange = { old: c.oath.points, new: res.oath.points };
+           if (c.oath.points !== res.oath.points || c.oath.setName !== res.oath.setName) {
+              logEntry.oathChange = { 
+                  old: c.oath.points, new: res.oath.points,
+                  oldSet: c.oath.setName, newSet: res.oath.setName
+              };
               changed = true;
            }
 
@@ -423,13 +429,13 @@ export default function Home() {
                           </div>
                        )}
                        {log.equipChange && (
-                          <div className="log-pill" style={{ borderColor: log.equipChange.new > log.equipChange.old ? 'rgba(74, 222, 128, 0.4)' : 'rgba(248, 113, 113, 0.4)' }}>
-                             <strong>장비점수:</strong> {log.equipChange.old} ➡️ <span style={{color: log.equipChange.new > log.equipChange.old ? '#4ade80' : '#f87171', fontWeight:'bold'}}>{log.equipChange.new} ({log.equipChange.new > log.equipChange.old ? '+' : ''}{(log.equipChange.new - log.equipChange.old)})</span>
+                          <div className="log-pill" style={{ borderColor: log.equipChange.new > log.equipChange.old ? 'rgba(74, 222, 128, 0.4)' : (log.equipChange.new < log.equipChange.old ? 'rgba(248, 113, 113, 0.4)' : 'rgba(255,255,255,0.2)') }}>
+                             <strong>장비:</strong> {log.equipChange.oldSet ? `[${log.equipChange.oldSet}] ` : ''}{log.equipChange.old} ➡️ {log.equipChange.newSet ? `[${log.equipChange.newSet}] ` : ''}<span style={{color: log.equipChange.new > log.equipChange.old ? '#4ade80' : (log.equipChange.new < log.equipChange.old ? '#f87171' : '#fff'), fontWeight:'bold'}}>{log.equipChange.new} ({log.equipChange.new > log.equipChange.old ? '+' : ''}{(log.equipChange.new - log.equipChange.old)})</span>
                           </div>
                        )}
                        {log.oathChange && (
-                          <div className="log-pill" style={{ borderColor: log.oathChange.new > log.oathChange.old ? 'rgba(74, 222, 128, 0.4)' : 'rgba(248, 113, 113, 0.4)' }}>
-                             <strong>서약점수:</strong> {log.oathChange.old} ➡️ <span style={{color: log.oathChange.new > log.oathChange.old ? '#4ade80' : '#f87171', fontWeight:'bold'}}>{log.oathChange.new} ({log.oathChange.new > log.oathChange.old ? '+' : ''}{(log.oathChange.new - log.oathChange.old)})</span>
+                          <div className="log-pill" style={{ borderColor: log.oathChange.new > log.oathChange.old ? 'rgba(74, 222, 128, 0.4)' : (log.oathChange.new < log.oathChange.old ? 'rgba(248, 113, 113, 0.4)' : 'rgba(255,255,255,0.2)') }}>
+                             <strong>서약:</strong> {log.oathChange.oldSet ? `[${log.oathChange.oldSet}] ` : ''}{log.oathChange.old} ➡️ {log.oathChange.newSet ? `[${log.oathChange.newSet}] ` : ''}<span style={{color: log.oathChange.new > log.oathChange.old ? '#4ade80' : (log.oathChange.new < log.oathChange.old ? '#f87171' : '#fff'), fontWeight:'bold'}}>{log.oathChange.new} ({log.oathChange.new > log.oathChange.old ? '+' : ''}{(log.oathChange.new - log.oathChange.old)})</span>
                           </div>
                        )}
                      </div>
