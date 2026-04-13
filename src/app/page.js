@@ -42,6 +42,14 @@ export default function Home() {
   const autoRefreshDone = React.useRef(false);
 
   useEffect(() => {
+    if (!apiKey || characters.length === 0) return;
+    const timer = setInterval(() => {
+      handleRefreshAll(characters, apiKey);
+    }, 60000);
+    return () => clearInterval(timer);
+  }, [apiKey, characters]);
+
+  useEffect(() => {
     const key = localStorage.getItem("DNF_API_KEY") || "";
     setApiKeyState(key);
     if (!key) setShowSettings(true);
