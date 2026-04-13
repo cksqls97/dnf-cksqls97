@@ -22,6 +22,9 @@ export default function Home() {
   
   const [activeTab, setActiveTab] = useState('roster');
   const [historyFilterChar, setHistoryFilterChar] = useState('');
+
+  const [editingLogId, setEditingLogId] = useState(null);
+  const [editLogForm, setEditLogForm] = useState(null);
   
   const [server, setServer] = useState('cain');
   const [charName, setCharName] = useState('');
@@ -268,6 +271,30 @@ export default function Home() {
     setShowOptionsModal(false);
   };
 
+  const deleteLog = (id) => {
+    if (!window.confirm("이 성장 기록을 정말 삭제하시겠습니까?")) return;
+    setHistoryLogs(prev => {
+      const updated = prev.filter(L => L.id !== id);
+      localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const openEditLog = (log) => {
+    setEditingLogId(log.id);
+    setEditLogForm(JSON.parse(JSON.stringify(log)));
+  };
+
+  const saveEditLog = () => {
+    setHistoryLogs(prev => {
+      const updated = prev.map(L => L.id === editingLogId ? editLogForm : L);
+      localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
+      return updated;
+    });
+    setEditingLogId(null);
+    setEditLogForm(null);
+  };
+
   const getTierClass = (rarity) => {
     if(rarity === '태초') return 'tier-태초';
     if(rarity === '에픽') return 'tier-에픽';
@@ -420,9 +447,15 @@ export default function Home() {
                  
                  return (
                    <div key={log.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
-                       <strong style={{ fontSize: '1.15rem', color: '#60a5fa' }}>{log.charName} <span style={{fontSize:'0.85rem', color:'var(--text-muted)'}}>{log.job}</span></strong>
-                       <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>🕒 {timeStr}</span>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.8rem', alignItems: 'center' }}>
+                       <div>
+                         <strong style={{ fontSize: '1.15rem', color: '#60a5fa' }}>{log.charName} <span style={{fontSize:'0.85rem', color:'var(--text-muted)'}}>{log.job}</span></strong>
+                         <span style={{ fontSize: '0.85rem', color: '#94a3b8', marginLeft: '0.5rem' }}>🕒 {timeStr}</span>
+                       </div>
+                       <div style={{ display: 'flex', gap: '0.4rem' }}>
+                         <button type="button" onClick={() => openEditLog(log)} style={{ padding: '0.3rem 0.6rem', background: 'rgba(255,255,255,0.1)', fontSize: '0.8rem' }}>✏️ 수정</button>
+                         <button type="button" onClick={() => deleteLog(log.id)} className="danger" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>❌ 삭제</button>
+                       </div>
                      </div>
                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
                        {log.fameChange && (
