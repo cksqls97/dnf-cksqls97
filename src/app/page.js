@@ -26,6 +26,15 @@ const getGradeTier = (pts) => {
   return { rarity: "등급 없음", tier: "" };
 };
 
+const ADVANCED_DUNGEONS = [
+  { name: '배교자의 성', fame: 101853 },
+  { name: '별거북 대서고', fame: 91582 },
+  { name: '해방된 흉몽', fame: 71179 },
+  { name: '죽음의 여신전', fame: 55950 },
+  { name: '애쥬어 메인', fame: 44929 },
+  { name: '달이 잠긴 호수', fame: 34749 }
+];
+
 export default function Home() {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -414,7 +423,18 @@ export default function Home() {
                        </div>
                     )}
                   </td>
-                  <td style={{ color: '#fbbf24', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</td>
+                  <td>
+                    <div style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textAlign: 'center' }}>
+                       {c.base.fame.toLocaleString()}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', alignItems: 'center' }}>
+                       {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2).map((dungeon, idx) => (
+                          <span key={dungeon.name} style={{ background: idx === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)', color: idx === 0 ? '#38bdf8' : 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: idx === 0 ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
+                             {dungeon.name}
+                          </span>
+                       ))}
+                    </div>
+                  </td>
                   <td>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.equipment.setName}</div>
                     <div className={getTierClass(c.equipment.rarity)}>
