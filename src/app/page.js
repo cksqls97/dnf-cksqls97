@@ -109,7 +109,7 @@ export default function Home() {
     const updatedList = await Promise.all(
       characters.map(c => fetchCharacterData(c.base.server, c.base.charName))
     );
-    const finalList = updatedList.map((res, i) => res.success ? res : characters[i]);
+    const finalList = updatedList.map((res, i) => res.success ? { ...res, manual: characters[i].manual } : characters[i]);
     setCharacters(finalList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(finalList));
     setIsRefreshing(false);
