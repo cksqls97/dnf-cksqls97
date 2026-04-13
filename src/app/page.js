@@ -482,6 +482,62 @@ export default function Home() {
         </section>
       )}
 
+      {editingLogId && editLogForm && (
+        <div className="modal-overlay">
+          <div className="modal-content glass-panel" style={{ maxWidth: '450px' }}>
+            <h2 style={{marginTop: 0}}>성장 일지 수동 교정</h2>
+            
+            {editLogForm.fameChange && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>명성치 수정</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input type="number" style={{ width: '100%' }} value={editLogForm.fameChange.old} onChange={e => setEditLogForm({...editLogForm, fameChange: {...editLogForm.fameChange, old: Number(e.target.value)}})} />
+                  <span>➡️</span>
+                  <input type="number" style={{ width: '100%' }} value={editLogForm.fameChange.new} onChange={e => setEditLogForm({...editLogForm, fameChange: {...editLogForm.fameChange, new: Number(e.target.value)}})} />
+                </div>
+              </div>
+            )}
+
+            {editLogForm.equipChange && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>장비점수 및 세트 수정</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom:'0.5rem' }}>
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.equipChange.oldSet || ''} placeholder="이전세트" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, oldSet: e.target.value}})} />
+                  <span>➡️</span>
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.equipChange.newSet || ''} placeholder="신규세트" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, newSet: e.target.value}})} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.equipChange.old} placeholder="이전점수" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, old: Number(e.target.value)}})} />
+                  <span>➡️</span>
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.equipChange.new} placeholder="신규점수" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, new: Number(e.target.value)}})} />
+                </div>
+              </div>
+            )}
+
+            {editLogForm.oathChange && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>서약점수 및 세트 수정</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom:'0.5rem' }}>
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.oathChange.oldSet || ''} placeholder="이전서약" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, oldSet: e.target.value}})} />
+                  <span>➡️</span>
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.oathChange.newSet || ''} placeholder="신규서약" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, newSet: e.target.value}})} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.oathChange.old} placeholder="이전점수" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, old: Number(e.target.value)}})} />
+                  <span>➡️</span>
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.oathChange.new} placeholder="신규점수" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, new: Number(e.target.value)}})} />
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button type="button" onClick={() => setEditingLogId(null)} className="danger">취소</button>
+              <button type="button" onClick={saveEditLog}>저장</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showSettings && (
         <div className="modal-overlay">
           <div className="glass-panel modal-content">
