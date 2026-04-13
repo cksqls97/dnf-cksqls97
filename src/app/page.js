@@ -25,6 +25,16 @@ export default function Home() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [apiKey, setApiKeyState] = useState('');
 
+  const [manualModalChar, setManualModalChar] = useState(null);
+  const [manualForm, setManualForm] = useState({ enchant: '', title: '', aura: '', creature: '', avatar: '' });
+  const [customOptions, setCustomOptions] = useState({
+    enchant: ['기본', '가성비', '준종결', '종결'],
+    title: ['기본', '가성비', '준종결', '종결'],
+    aura: ['기본', '가성비', '준종결', '종결'],
+    creature: ['기본', '가성비', '준종결', '종결'],
+    avatar: ['기본', '이벤압', '레압', '클레압', '찬작', '엔드']
+  });
+
   useEffect(() => {
     const key = localStorage.getItem("DNF_API_KEY") || "";
     setApiKeyState(key);
@@ -36,6 +46,11 @@ export default function Home() {
       try {
         setCharacters(JSON.parse(saved));
       } catch(e) {}
+    }
+
+    const savedOpts = localStorage.getItem('DNF_OPTIONS');
+    if (savedOpts) {
+      try { setCustomOptions(JSON.parse(savedOpts)); } catch(e) {}
     }
   }, []);
 
@@ -102,6 +117,35 @@ export default function Home() {
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
   };
 
+  const openManualModal = (char) => {
+    setManualForm(char.manual || { enchant: '', title: '', aura: '', creature: '', avatar: '' });
+    setManualModalChar(char);
+  };
+
+  const handleSaveManual = () => {
+    if(!manualModalChar) return;
+    
+    const newList = characters.map(c => c.id === manualModalChar.id ? { ...c, manual: manualForm } : c);
+    setCharacters(newList);
+    localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
+    
+    const newOpts = { ...customOptions };
+    let optsChanged = false;
+    ['enchant', 'title', 'aura', 'creature', 'avatar'].forEach(key => {
+      const val = manualForm[key].trim();
+      if (val && !newOpts[key].includes(val)) {
+        newOpts[key] = [...newOpts[key], val];
+        optsChanged = true;
+      }
+    });
+    if (optsChanged) {
+      setCustomOptions(newOpts);
+      localStorage.setItem('DNF_OPTIONS', JSON.stringify(newOpts));
+    }
+    
+    setManualModalChar(null);
+  };
+
   const formatNumber = (num) => {
     if(typeof num === 'number') {
       if(num >= 100000000) return (num / 100000000).toFixed(2) + "억";
@@ -160,8 +204,7 @@ export default function Home() {
               <tr>
                 <th>서버</th>
                 <th>직업</th>
-                <th>캐릭터명</th>
-                <th>모험단</th>
+                <th>캐릭터명 (제원)</th>
                 <th>명성</th>
                 <th>장비 (점수)</th>
                 <th>서약 (점수)</th>
@@ -174,8 +217,18 @@ export default function Home() {
                 <tr key={c.id}>
                   <td>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
                   <td>{c.base.jobGrowName}</td>
-                  <td style={{ fontWeight: 'bold' }}>{c.base.charName}</td>
-                  <td>{c.base.adventureName}</td>
+                  <td>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
+                    {c.manual && (
+                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem' }}>
+                         {c.manual.enchant && <span className="m-pill">🔮{c.manual.enchant}</span>}
+                         {c.manual.title && <span className="m-pill">✨{c.manual.title}</span>}
+                         {c.manual.aura && <span className="m-pill">🌟{c.manual.aura}</span>}
+                         {c.manual.creature && <span className="m-pill">🐾{c.manual.creature}</span>}
+                         {c.manual.avatar && <span className="m-pill">👗{c.manual.avatar}</span>}
+                       </div>
+                    )}
+                  </td>
                   <td style={{ color: '#fbbf24', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</td>
                   <td>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.equipment.setName}</div>
@@ -203,9 +256,12 @@ export default function Home() {
                       <span style={{ color: 'var(--text-muted)' }}>-</span>
                     )}
                   </td>
-                  <td>
-                    <button type="button" className="danger" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => handleDelete(c.id)}>
-                      삭제
+                  <td style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                    <button type="button" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', background: '#3b82f6' }} onClick={() => openManualModal(c)}>
+                      ⚙️
+                    </button>
+                    <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleDelete(c.id)}>
+                      🗑️
                     </button>
                   </td>
                 </tr>
@@ -236,6 +292,39 @@ export default function Home() {
                 </button>
               )}
               <button type="button" onClick={handleSaveSettings}>저장</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {manualModalChar && (
+        <div className="modal-overlay">
+          <div className="glass-panel modal-content" style={{ maxWidth: '360px' }}>
+            <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>[{manualModalChar.base.charName}] 수동 제원 설정</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>목록에서 선택하거나 새로운 옵션을 직접 입력하세요.</p>
+            <div className="manual-form">
+              {['enchant', 'title', 'aura', 'creature', 'avatar'].map(k => {
+                const labels = { enchant: '마부 상태', title: '칭호', aura: '오라', creature: '크리쳐', avatar: '아바타' };
+                return (
+                  <div key={k} style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#94a3b8' }}>{labels[k]}</label>
+                    <input 
+                      list={`list-${k}`}
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                      value={manualForm[k]}
+                      placeholder="텍스트 입력/선택"
+                      onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
+                    />
+                    <datalist id={`list-${k}`}>
+                      {customOptions[k].map(opt => <option key={opt} value={opt} />)}
+                    </datalist>
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+              <button type="button" onClick={() => setManualModalChar(null)} style={{ background: 'transparent', border: '1px solid var(--border-color)' }}>취소</button>
+              <button type="button" onClick={handleSaveManual}>저장</button>
             </div>
           </div>
         </div>

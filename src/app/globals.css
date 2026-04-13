@@ -170,6 +170,24 @@ tbody tr:hover {
   animation: spin 1s ease-in-out infinite;
 }
 
+.m-pill {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.m-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
