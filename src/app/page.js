@@ -234,7 +234,7 @@ export default function Home() {
                   <td>
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
                     {c.manual && (
-                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.25rem' }}>
+                       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
                          {c.manual.enchant && <span className="m-pill">마부: {c.manual.enchant}</span>}
                          {c.manual.title && <span className="m-pill">칭호: {c.manual.title}</span>}
                          {c.manual.aura && <span className="m-pill">오라: {c.manual.aura}</span>}
