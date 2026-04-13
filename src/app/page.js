@@ -154,7 +154,7 @@ export default function Home() {
          }
          
          if (modified) {
-             // Return true so we know we hydrated successfully
+             setIsCloudSyncing(false);
              return true;
          }
       } else if (res.success && (!res.data)) {
