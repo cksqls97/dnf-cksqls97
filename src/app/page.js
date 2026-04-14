@@ -632,8 +632,8 @@ export default function Home() {
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#fb923c', padding: '0.3rem', width: '12%', fontWeight: '500' }}>스위칭</td>
                               <td colSpan={2} style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '43%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                  {c.manual.buffLevel && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>버프 {String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`}</div>}
-                                  {c.manual.buffAbyss && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.buffLevel ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>편린 {c.manual.buffAbyss}개</div>}
+                                  {c.manual.buffLevel && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>버프: {String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`}</div>}
+                                  {c.manual.buffAbyss && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.buffLevel ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>편린: {String(c.manual.buffAbyss).includes('개') ? c.manual.buffAbyss : `${c.manual.buffAbyss}개`}</div>}
                                   {(!c.manual.buffLevel && !c.manual.buffAbyss) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
                                 </div>
                               </td>
