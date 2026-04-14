@@ -579,50 +579,36 @@ export default function Home() {
                   <td data-label="제원">
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
                     {c.manual && (
-                       <div className="manual-options-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', marginTop: '0.4rem', width: '100%' }}>
+                       <div className="manual-options-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', marginTop: '0.6rem', width: '100%', background: 'rgba(0,0,0,0.15)', padding: '0.5rem', borderRadius: '6px' }}>
                         
-                        {/* 핵심 장비 라인 (칭호, 마부, 크리쳐) - 약간 강조 */}
+                        {/* 1. 핵심 장비 (칭호, 마부, 크리쳐) - 핵심 키워드에만 컬러 하이라이트 */}
                         {(c.manual.title || c.manual.enchant || c.manual.creature || c.manual.creatureArtifact) && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.3rem' }}>
-                            {c.manual.title && <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem', border: '1px solid rgba(56, 189, 248, 0.3)', whiteSpace: 'nowrap' }}>{c.manual.title}칭호</span>}
-                            {c.manual.enchant && <span style={{ background: 'rgba(167, 139, 250, 0.15)', color: '#a78bfa', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem', border: '1px solid rgba(167, 139, 250, 0.3)', whiteSpace: 'nowrap' }}>{c.manual.enchant}마부</span>}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#e2e8f0', fontWeight: '500' }}>
+                            {c.manual.title && <span><span style={{color: '#38bdf8'}}>칭호</span> {c.manual.title}</span>}
+                            {c.manual.enchant && <span><span style={{color: '#a78bfa'}}>마부</span> {c.manual.enchant}</span>}
                             {(c.manual.creature || c.manual.creatureArtifact) && (
-                              <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem', border: '1px solid rgba(16, 185, 129, 0.3)', whiteSpace: 'nowrap' }}>
-                                {c.manual.creature || '기본'}크리쳐 {c.manual.creatureArtifact && `(${c.manual.creatureArtifact})`}
-                              </span>
+                              <span><span style={{color: '#10b981'}}>크리쳐</span> {c.manual.creature || '기본'} {c.manual.creatureArtifact && `(${c.manual.creatureArtifact})`}</span>
                             )}
                           </div>
                         )}
 
-                        {/* 보조 라인 (스위칭, 아바타, 피부, 오라, 무기압) - 얇고 회색조로 정돈 */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.25rem' }}>
-                          {(c.manual.buffLevel || c.manual.buffAbyss) && (
-                             <span style={{ background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>
-                               [스위칭] 버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'}
-                               {c.manual.buffAbyss && ` (편린 ${c.manual.buffAbyss})`}
-                             </span>
-                          )}
-                          {c.manual.avatar && (
-                             <span style={{ background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>
-                               [아바타] {c.manual.avatar} {(c.manual.emblem || c.manual.platEmblem) && `(${[c.manual.emblem, c.manual.platEmblem].filter(Boolean).join(', ')})`}
-                             </span>
-                          )}
-                          {c.manual.skinAvatar && (
-                             <span style={{ background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>
-                               [피부] {c.manual.skinAvatar} {c.manual.skinEmblem && `(${c.manual.skinEmblem})`}
-                             </span>
-                          )}
-                          {c.manual.weaponAvatar && (
-                             <span style={{ background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>
-                               [무기압] {c.manual.weaponAvatar} {c.manual.weaponEmblem && `(${c.manual.weaponEmblem})`}
-                             </span>
-                          )}
-                          {c.manual.aura && (
-                             <span style={{ background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' }}>
-                               [오라] {c.manual.aura} {c.manual.auraEmblem && `(${c.manual.auraEmblem})`}
-                             </span>
-                          )}
-                        </div>
+                        {/* 2. 스위칭 */}
+                        {(c.manual.buffLevel || c.manual.buffAbyss) && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
+                            <span>스위칭 버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'}</span>
+                            {c.manual.buffAbyss && <span>(편린 {c.manual.buffAbyss}개)</span>}
+                          </div>
+                        )}
+
+                        {/* 3. 아바타군 - 회색조의 얇은 폰트로 차분하게 정보 정렬 */}
+                        {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar || c.manual.aura) && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#94a3b8' }}>
+                            {c.manual.avatar && <span>[아바타] {c.manual.avatar}{(c.manual.emblem || c.manual.platEmblem) && `(${[c.manual.emblem, c.manual.platEmblem].filter(Boolean).join(',')})`}</span>}
+                            {c.manual.skinAvatar && <span>[피부] {c.manual.skinAvatar}{c.manual.skinEmblem && `(${c.manual.skinEmblem})`}</span>}
+                            {c.manual.weaponAvatar && <span>[무기] {c.manual.weaponAvatar}{c.manual.weaponEmblem && `(${c.manual.weaponEmblem})`}</span>}
+                            {c.manual.aura && <span>[오라] {c.manual.aura}{c.manual.auraEmblem && `(${c.manual.auraEmblem})`}</span>}
+                          </div>
+                        )}
                       </div>
                     )}
                   </td>
