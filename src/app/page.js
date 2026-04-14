@@ -95,6 +95,15 @@ export default function Home() {
 
   const autoRefreshDone = React.useRef(false);
 
+  // Stale Closure 방지용 최신 상태 프록시 Ref
+  const charsRef = React.useRef(characters);
+  const logsRef = React.useRef(historyLogs);
+  const optsRef = React.useRef(customOptions);
+
+  useEffect(() => { charsRef.current = characters; }, [characters]);
+  useEffect(() => { logsRef.current = historyLogs; }, [historyLogs]);
+  useEffect(() => { optsRef.current = customOptions; }, [customOptions]);
+
   // --- 클라우드 동기화 엔진 ---
   const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts) => {
     if(!key) return;
@@ -171,11 +180,12 @@ export default function Home() {
   useEffect(() => {
     if (!apiKey || characters.length === 0) return;
     const timer = setInterval(() => {
-      handleRefreshAll(characters, apiKey);
+      // 최신 Ref를 전달해서 Stale Closure 우회
+      handleRefreshAll(charsRef.current, apiKey);
     }, 60000);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKey, characters]);
+  }, [apiKey]); // characters가 업데이트 될 때마다 Interval이 뜯어지는 것도 방지
 
   useEffect(() => {
     const key = localStorage.getItem("DNF_API_KEY") || "";
@@ -355,7 +365,9 @@ export default function Home() {
               newLogs.push(logEntry);
            }
            
-           return { ...res, manual: c.manual };
+           // manual 역시 과거 1분 전 상태가 아니라 가장 최신 상태인 charsRef.current에서 가져와야 레이스 컨디션을 방지함
+           const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
+           return { ...res, manual: latestManual };
         }
         return c;
       })
@@ -369,7 +381,8 @@ export default function Home() {
           const merged = [...newLogs, ...prev].slice(0, 1000); // 최대 1000개 기록 제한
           localStorage.setItem('DNF_HISTORY', JSON.stringify(merged));
           
-          if (keyToUse) syncUpCloudData(keyToUse, updatedList, merged, customOptions);
+          // 무조건 최신 optsRef.current를 전달하여 과거 커스텀옵션이 클라우드에 덮어씌워지는 대참사(Stale) 방지
+          if (keyToUse) syncUpCloudData(keyToUse, updatedList, merged, optsRef.current);
           
           return merged;
        });
