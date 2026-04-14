@@ -79,6 +79,9 @@ export default function Home() {
   const [isCloudSyncing, setIsCloudSyncing] = useState(false);
   const [apiKey, setApiKeyState] = useState('');
 
+  const [expandedSpecs, setExpandedSpecs] = useState({});
+  const toggleExpandedSpec = (id) => setExpandedSpecs(prev => ({ ...prev, [id]: !prev[id] }));
+
   const [manualModalChar, setManualModalChar] = useState(null);
   const [manualForm, setManualForm] = useState({ 
     enchant: '', title: '', 
@@ -563,7 +566,7 @@ export default function Home() {
               <tr>
                 <th>서버</th>
                 <th>직업</th>
-                <th>캐릭터명 (제원)</th>
+                <th>캐릭터명 (스펙 현황)</th>
                 <th>명성</th>
                 <th>장비 (점수)</th>
                 <th>서약 (점수)</th>
@@ -576,9 +579,20 @@ export default function Home() {
                 <tr key={c.id}>
                   <td data-label="서버">{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
                   <td data-label="직업">{c.base.jobGrowName}</td>
-                  <td data-label="제원">
+                  <td data-label="스펙 현황">
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
-                    {c.manual && (
+                    
+                    {/* 스펙 현황 토글 버튼 */}
+                    {c.manual && Object.values(c.manual).some(v => v) && (
+                      <button 
+                        onClick={() => toggleExpandedSpec(c.id)}
+                        style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '0.2rem 0.6rem', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '4px', fontSize: '0.75rem', marginTop: '0.4rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        {expandedSpecs[c.id] ? '스펙 현황 접기 🔼' : '스펙 현황 확인하기 🔽'}
+                      </button>
+                    )}
+
+                    {expandedSpecs[c.id] && c.manual && (
                       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.6rem', fontSize: '0.8rem', color: '#cbd5e1', textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>
                         <tbody>
                           {/* 1. 핵심 (칭호, 오라, 크리쳐) */}
