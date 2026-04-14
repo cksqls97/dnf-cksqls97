@@ -464,7 +464,12 @@ export default function Home() {
   const openOptionsModal = () => {
     const textFormat = {};
     for(const key of ALL_KEYS) {
-      textFormat[key] = (customOptions[key] || []).join(', ');
+      if (key === 'buffAbyss') {
+         const arr = customOptions[key] || [];
+         textFormat[key] = arr.length > 0 ? `${arr[0]}~${arr[arr.length - 1]}` : '0~12';
+      } else {
+         textFormat[key] = (customOptions[key] || []).join(', ');
+      }
     }
     setOptionsFormText(textFormat);
     setShowOptionsModal(true);
@@ -476,7 +481,16 @@ export default function Home() {
       if(!optionsFormText[key]) {
          newOpts[key] = [];
       } else {
-         newOpts[key] = optionsFormText[key].split(',').map(s => s.trim()).filter(s => s);
+         if (key === 'buffAbyss') {
+            const parts = optionsFormText[key].split('~');
+            const min = parseInt(parts[0]) || 0;
+            const max = parseInt(parts[1]) || 0;
+            const arr = [];
+            for(let i = min; i <= max; i++) arr.push(String(i));
+            newOpts[key] = arr;
+         } else {
+            newOpts[key] = optionsFormText[key].split(',').map(s => s.trim()).filter(s => s);
+         }
       }
     }
     setCustomOptions(newOpts);
@@ -825,14 +839,26 @@ export default function Home() {
                     {group.keys.map(k => (
                       <div key={k} style={{ marginBottom: '0.8rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
-                        <select 
-                          style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
-                          value={manualForm[k] || ''}
-                          onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
-                        >
-                          <option value="">- 선택 안 함 -</option>
-                          {customOptions[k]?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
+                        {k === 'buffAbyss' ? (
+                          <input 
+                            type="number"
+                            min={customOptions['buffAbyss'] ? customOptions['buffAbyss'][0] : 0}
+                            max={customOptions['buffAbyss'] ? customOptions['buffAbyss'][customOptions['buffAbyss'].length - 1] : 12}
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                            value={manualForm[k] || ''}
+                            placeholder={`${customOptions['buffAbyss'] ? customOptions['buffAbyss'][0] : 0} ~ ${customOptions['buffAbyss'] ? customOptions['buffAbyss'][customOptions['buffAbyss'].length - 1] : 12} 입력`}
+                            onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
+                          />
+                        ) : (
+                          <select 
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                            value={manualForm[k] || ''}
+                            onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
+                          >
+                            <option value="">- 선택 안 함 -</option>
+                            {customOptions[k]?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        )}
                       </div>
                     ))}
                  </div>
@@ -866,13 +892,33 @@ export default function Home() {
                     {group.keys.map(k => (
                       <div key={k} style={{ marginBottom: '0.8rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
-                        <textarea 
-                          rows={2}
-                          style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical', fontSize: '0.85rem' }}
-                          value={optionsFormText[k] || ''}
-                          placeholder={k === 'buffLevel' ? "0레벨, 1레벨, 2레벨..." : "종결, 가성비, 화려..."}
-                          onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
-                        />
+                        {k === 'buffAbyss' ? (
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <input 
+                              type="number" 
+                              style={{ width: '45%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                              value={optionsFormText[k]?.split('~')[0] || ''}
+                              placeholder="최소"
+                              onChange={e => setOptionsFormText({...optionsFormText, [k]: `${e.target.value}~${optionsFormText[k]?.split('~')[1] || '12'}`})}
+                            />
+                            <span>~</span>
+                            <input 
+                              type="number" 
+                              style={{ width: '45%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                              value={optionsFormText[k]?.split('~')[1] || ''}
+                              placeholder="최대"
+                              onChange={e => setOptionsFormText({...optionsFormText, [k]: `${optionsFormText[k]?.split('~')[0] || '0'}~${e.target.value}`})}
+                            />
+                          </div>
+                        ) : (
+                          <textarea 
+                            rows={2}
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical', fontSize: '0.85rem' }}
+                            value={optionsFormText[k] || ''}
+                            placeholder={k === 'buffLevel' ? "0레벨, 1레벨, 2레벨..." : "종결, 가성비, 화려..."}
+                            onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
+                          />
+                        )}
                       </div>
                     ))}
                  </div>
