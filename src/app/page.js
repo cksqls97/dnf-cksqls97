@@ -92,8 +92,6 @@ export default function Home() {
     title: ['기본', '가성비', '준종결', '종결'],
     creature: ['기본', '가성비', '준종결', '종결'],
     creatureArtifact: ['없음', '언커먼', '레어', '유니크'],
-    buffLevel: ['0레벨', '1레벨', '2레벨', '3레벨', '4레벨', '5레벨'],
-    buffAbyss: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
     avatar: ['기본', '이벤압', '레압', '클레압', '엔드'],
     emblem: ['없음', '화려', '찬란', '다발'],
     platEmblem: ['없음', '잡플티', '유효', '종결'],
@@ -457,20 +455,15 @@ export default function Home() {
   };
 
   const ALL_KEYS = [
+  const ALL_KEYS = [
     'enchant', 'title', 'creature', 'creatureArtifact', 
-    'buffLevel', 'buffAbyss', 'avatar', 'emblem', 'platEmblem', 
+    'avatar', 'emblem', 'platEmblem', 
     'skinAvatar', 'skinEmblem', 'weaponAvatar', 'weaponEmblem', 'aura', 'auraEmblem'
   ];
   const openOptionsModal = () => {
     const textFormat = {};
     for(const key of ALL_KEYS) {
-      if (key === 'buffAbyss' || key === 'buffLevel') {
-         const arr = customOptions[key] || [];
-         const defMax = key === 'buffLevel' ? '5' : '12';
-         textFormat[key] = arr.length > 0 ? `${arr[0]}~${arr[arr.length - 1]}` : `0~${defMax}`;
-      } else {
-         textFormat[key] = (customOptions[key] || []).join(', ');
-      }
+      textFormat[key] = (customOptions[key] || []).join(', ');
     }
     setOptionsFormText(textFormat);
     setShowOptionsModal(true);
@@ -482,16 +475,7 @@ export default function Home() {
       if(!optionsFormText[key]) {
          newOpts[key] = [];
       } else {
-         if (key === 'buffAbyss' || key === 'buffLevel') {
-            const parts = optionsFormText[key].split('~');
-            const min = parseInt(parts[0]) || 0;
-            const max = parseInt(parts[1]) || 0;
-            const arr = [];
-            for(let i = min; i <= max; i++) arr.push(String(i));
-            newOpts[key] = arr;
-         } else {
-            newOpts[key] = optionsFormText[key].split(',').map(s => s.trim()).filter(s => s);
-         }
+         newOpts[key] = optionsFormText[key].split(',').map(s => s.trim()).filter(s => s);
       }
     }
     setCustomOptions(newOpts);
@@ -858,11 +842,10 @@ export default function Home() {
                         {(k === 'buffAbyss' || k === 'buffLevel') ? (
                           <input 
                             type="number"
-                            min={customOptions[k] ? customOptions[k][0] : 0}
-                            max={customOptions[k] ? customOptions[k][customOptions[k].length - 1] : (k === 'buffLevel' ? 5 : 12)}
+                            min="0"
                             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
                             value={manualForm[k] || ''}
-                            placeholder={`${customOptions[k] ? customOptions[k][0] : 0} ~ ${customOptions[k] ? customOptions[k][customOptions[k].length - 1] : (k === 'buffLevel' ? 5 : 12)} 입력`}
+                            placeholder="양의 정수 입력"
                             onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
                           />
                         ) : (
@@ -909,22 +892,8 @@ export default function Home() {
                       <div key={k} style={{ marginBottom: '0.8rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
                         {(k === 'buffAbyss' || k === 'buffLevel') ? (
-                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <input 
-                              type="number" 
-                              style={{ width: '45%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
-                              value={optionsFormText[k]?.split('~')[0] || ''}
-                              placeholder="최소"
-                              onChange={e => setOptionsFormText({...optionsFormText, [k]: `${e.target.value}~${optionsFormText[k]?.split('~')[1] || (k === 'buffLevel' ? '5' : '12')}`})}
-                            />
-                            <span>~</span>
-                            <input 
-                              type="number" 
-                              style={{ width: '45%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
-                              value={optionsFormText[k]?.split('~')[1] || ''}
-                              placeholder="최대"
-                              onChange={e => setOptionsFormText({...optionsFormText, [k]: `${optionsFormText[k]?.split('~')[0] || '0'}~${e.target.value}`})}
-                            />
+                          <div style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.6rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center' }}>
+                            (각 캐릭터 개별 정수 입력)
                           </div>
                         ) : (
                           <textarea 
