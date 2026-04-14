@@ -31,8 +31,19 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { apiKey, characters, historyLogs, customOptions } = body;
+    const { apiKey, characters, historyLogs, customOptions, clientUpdateAt, forceOverride } = body;
     if (!apiKey) return NextResponse.json({ success: false, error: "Missing API Key" }, { status: 400 });
+    
+    // 기존 데이터 버전 확인
+    const existing = await redis.get(`sync_${apiKey}`);
+    
+    // 만약 클라우드에 기존 데이터가 있고, 클라이언트가 자신이 아는 버전(clientUpdateAt)을 보냈다면 검사
+    if (existing && existing.lastUpdateAt && clientUpdateAt) {
+       // 클라이언트 지식이 클라우드 최신 버전보다 오래되었다면 다중 탭 레이스컨디션으로 판주하고 차단
+       if (clientUpdateAt < existing.lastUpdateAt && !forceOverride) {
+          return NextResponse.json({ success: false, error: "Cloud has newer data. Blocked stale overwrite.", conflict: true });
+       }
+    }
     
     // 객체 필드들만 수합해서 KV에 저장 (Overwriting)
     const payload = {};
@@ -40,10 +51,13 @@ export async function POST(request) {
     if (historyLogs !== undefined) payload.historyLogs = historyLogs;
     if (customOptions !== undefined) payload.customOptions = customOptions;
     
-    // 만약 기존 데이터랑 병합하려면 get을 먼저 할수도 있으나 프론트엔드가 Source of Truth임을 가정 (Overriding 전체 데이터)
+    // 새 버전(타임스탬프) 부여
+    const newUpdateAt = Date.now();
+    payload.lastUpdateAt = newUpdateAt;
+    
     await redis.set(`sync_${apiKey}`, payload);
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, newUpdateAt });
   } catch(error) {
     console.error("DB POST Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

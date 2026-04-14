@@ -99,25 +99,41 @@ export default function Home() {
   const charsRef = React.useRef(characters);
   const logsRef = React.useRef(historyLogs);
   const optsRef = React.useRef(customOptions);
+  
+  // 클라우드 버전 관리를 위한 Ref (다중 탭 덮어쓰기 원천 차단용)
+  const lastCloudUpdateAtRef = React.useRef(0);
 
   useEffect(() => { charsRef.current = characters; }, [characters]);
   useEffect(() => { logsRef.current = historyLogs; }, [historyLogs]);
   useEffect(() => { optsRef.current = customOptions; }, [customOptions]);
 
   // --- 클라우드 동기화 엔진 ---
-  const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts) => {
+  const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts, forceOverride = false) => {
     if(!key) return;
     try {
-      await fetch('/api/sync', {
+      const res = await fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           apiKey: key,
           characters: updatedCharacters,
           historyLogs: updatedLogs,
-          customOptions: updatedOpts
+          customOptions: updatedOpts,
+          clientUpdateAt: lastCloudUpdateAtRef.current,
+          forceOverride
         })
       });
+      const resData = await res.json();
+      
+      if (resData.conflict) {
+          console.warn("다중 탭 충돌 감지! 클라우드에 더 최신 데이터가 존재하여 현재 구형 뷰의 덮어쓰기를 차단하고 클라우드를 내려받습니다.");
+          await syncDownCloudData(key, updatedCharacters, updatedLogs, updatedOpts);
+          return;
+      }
+      
+      if (resData.success && resData.newUpdateAt) {
+          lastCloudUpdateAtRef.current = resData.newUpdateAt; // 새 버전으로 지식 갱신
+      }
     } catch(e) { console.error(e) }
   };
 
@@ -127,7 +143,8 @@ export default function Home() {
        return;
     }
     setIsCloudSyncing(true);
-    await syncUpCloudData(apiKey, characters, historyLogs, customOptions);
+    // 버튼 등을 통한 수동 동기화 시에는 억지로라도 덮어씌움 (forceOverride = true)
+    await syncUpCloudData(apiKey, characters, historyLogs, customOptions, true);
     setIsCloudSyncing(false);
     alert("현재 기기의 최신 데이터가 클라우드 서버에 수동으로 백업되었습니다!");
   };
@@ -139,6 +156,12 @@ export default function Home() {
       const res = await fetch(`/api/sync?apiKey=${targetKey}`).then(r => r.json());
       if (res.success && res.data) {
          const cData = res.data;
+         
+         // 클라우드 버전 기록 흡수
+         if (cData.lastUpdateAt) {
+             lastCloudUpdateAtRef.current = cData.lastUpdateAt;
+         }
+         
          let modified = false;
          
          if (cData.characters && cData.characters.length > 0) {
@@ -311,8 +334,8 @@ export default function Home() {
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
     setCharName('');
     
-    // Cloud Sync
-    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions);
+    // Cloud Sync (유저 인터랙션 = forceOverride true)
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, true);
   };
 
   async function handleRefreshAll(charsToRefresh = characters, overrideKey = null) {
@@ -392,10 +415,11 @@ export default function Home() {
   };
 
   const handleDelete = (id) => {
+    if (!window.confirm("정말로 이 캐릭터를 삭제하시겠습니까?")) return;
     const newList = characters.filter(c => c.id !== id);
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
-    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions);
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, true);
   };
 
   const openManualModal = (char) => {
@@ -409,7 +433,7 @@ export default function Home() {
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
     setManualModalChar(null);
-    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions);
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, true);
   };
 
   const openOptionsModal = () => {
@@ -435,7 +459,7 @@ export default function Home() {
     setCustomOptions(newOpts);
     localStorage.setItem('DNF_OPTIONS', JSON.stringify(newOpts));
     setShowOptionsModal(false);
-    if (apiKey) syncUpCloudData(apiKey, characters, historyLogs, newOpts);
+    if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, newOpts, true);
   };
 
   const deleteLog = (id) => {
@@ -443,7 +467,7 @@ export default function Home() {
     setHistoryLogs(prev => {
       const updated = prev.filter(L => L.id !== id);
       localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
-      if (apiKey) syncUpCloudData(apiKey, characters, updated, customOptions);
+      if (apiKey) syncUpCloudData(apiKey, charsRef.current, updated, optsRef.current, true);
       return updated;
     });
   };
@@ -457,7 +481,7 @@ export default function Home() {
     setHistoryLogs(prev => {
       const updated = prev.map(L => L.id === editingLogId ? editLogForm : L);
       localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
-      if (apiKey) syncUpCloudData(apiKey, characters, updated, customOptions);
+      if (apiKey) syncUpCloudData(apiKey, charsRef.current, updated, optsRef.current, true);
       return updated;
     });
     setEditingLogId(null);
