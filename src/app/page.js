@@ -578,7 +578,7 @@ export default function Home() {
             </thead>
             <tbody>
               {characters.map(c => (
-                <tr key={c.id} style={{ verticalAlign: expandedSpecs[c.id] ? 'top' : 'middle' }}>
+                <tr key={c.id} style={{ verticalAlign: 'middle' }}>
                   <td data-label="서버">{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
                   <td data-label="직업">{c.base.jobGrowName}</td>
                   <td data-label="스펙 현황">
@@ -712,13 +712,15 @@ export default function Home() {
                       <span style={{ color: 'var(--text-muted)' }}>-</span>
                     )}
                   </td>
-                  <td data-label="관리" style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                    <button type="button" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', background: '#3b82f6' }} onClick={() => openManualModal(c)}>
-                      ⚙️
-                    </button>
-                    <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleDelete(c.id)}>
-                      🗑️
-                    </button>
+                  <td data-label="관리" style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                      <button type="button" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', background: '#3b82f6' }} onClick={() => openManualModal(c)}>
+                        ⚙️
+                      </button>
+                      <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleDelete(c.id)}>
+                        🗑️
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
