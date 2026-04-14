@@ -561,17 +561,17 @@ export default function Home() {
             상단의 폼을 이용해 관리할 캐릭터를 추가해주세요.
           </div>
         ) : (
-          <table>
+          <table style={{ tableLayout: 'fixed', width: '100%' }}>
             <thead>
               <tr>
-                <th>서버</th>
-                <th>직업</th>
-                <th>캐릭터명 (스펙 현황)</th>
-                <th>명성</th>
-                <th>장비 (점수)</th>
-                <th>서약 (점수)</th>
-                <th>던담 링크</th>
-                <th>관리</th>
+                <th style={{ width: '8%' }}>서버</th>
+                <th style={{ width: '11%' }}>직업</th>
+                <th style={{ width: '30%' }}>캐릭터명 (스펙 현황)</th>
+                <th style={{ width: '9%' }}>명성</th>
+                <th style={{ width: '15%' }}>장비 (점수)</th>
+                <th style={{ width: '10%' }}>서약 (점수)</th>
+                <th style={{ width: '9%' }}>던담 링크</th>
+                <th style={{ width: '8%' }}>관리</th>
               </tr>
             </thead>
             <tbody>
@@ -604,7 +604,7 @@ export default function Home() {
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#f472b6', padding: '0.3rem', width: '12%', fontWeight: '500' }}>오라</td>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '21%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                  {c.manual.aura && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.aura}</div>}
+                                  {c.manual.aura && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>종류: {c.manual.aura}</div>}
                                   {c.manual.auraEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.aura ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>엠블렘: {c.manual.auraEmblem}</div>}
                                   {(!c.manual.aura && !c.manual.auraEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
                                 </div>
@@ -613,7 +613,7 @@ export default function Home() {
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#10b981', padding: '0.3rem', width: '12%', fontWeight: '500' }}>크리쳐</td>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '22%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                  {c.manual.creature && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.creature}</div>}
+                                  {c.manual.creature && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>종류: {c.manual.creature}</div>}
                                   {c.manual.creatureArtifact && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.creature ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>아티팩트: {c.manual.creatureArtifact}</div>}
                                   {(!c.manual.creature && !c.manual.creatureArtifact) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
                                 </div>
@@ -638,34 +638,32 @@ export default function Home() {
                             </tr>
                           )}
 
-                          {/* 3. 아바타군 - 6칸 분할 */}
+                          {/* 3. 아바타군 - 6칸 분할, 3Rows 고정 정렬 그리드 */}
                           {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar) && (
                             <tr>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>아바타</td>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '21%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                  {c.manual.avatar && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.avatar}</div>}
-                                  {c.manual.emblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.avatar ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.emblem}</div>}
-                                  {c.manual.platEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: (c.manual.avatar || c.manual.emblem) ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.platEmblem === '없음' ? '플티 없음' : `플티 ${c.manual.platEmblem}`}</div>}
-                                  {(!c.manual.avatar && !c.manual.emblem && !c.manual.platEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
+                                <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr 1fr', height: '100%' }}>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.avatar ? `보유 여부: ${c.manual.avatar}` : '-'}</div>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.15)' }}>{c.manual.emblem ? `엠블렘: ${c.manual.emblem}` : '-'}</div>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.15)' }}>{c.manual.platEmblem ? (c.manual.platEmblem === '없음' ? '플티 없음' : `플티: ${c.manual.platEmblem}`) : '-'}</div>
                                 </div>
                               </td>
-
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>피부</td>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '21%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                  {c.manual.skinAvatar && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.skinAvatar}</div>}
-                                  {c.manual.skinEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.skinAvatar ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.skinEmblem}</div>}
-                                  {(!c.manual.skinAvatar && !c.manual.skinEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
+                                <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr 1fr', height: '100%' }}>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.skinAvatar ? `보유 여부: ${c.manual.skinAvatar}` : '-'}</div>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.15)' }}>{c.manual.skinEmblem ? `엠블렘: ${c.manual.skinEmblem}` : '-'}</div>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.15)' }}>-</div>
                                 </div>
                               </td>
 
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>무기압</td>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '22%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                                  {c.manual.weaponAvatar && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.weaponAvatar}</div>}
-                                  {c.manual.weaponEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.weaponAvatar ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.weaponEmblem}</div>}
-                                  {(!c.manual.weaponAvatar && !c.manual.weaponEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
+                                <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr 1fr', height: '100%' }}>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.weaponAvatar ? `보유 여부: ${c.manual.weaponAvatar}` : '-'}</div>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.15)' }}>{c.manual.weaponEmblem ? `엠블렘: ${c.manual.weaponEmblem}` : '-'}</div>
+                                  <div style={{ padding: '0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.15)' }}>-</div>
                                 </div>
                               </td>
                             </tr>
