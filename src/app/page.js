@@ -464,9 +464,10 @@ export default function Home() {
   const openOptionsModal = () => {
     const textFormat = {};
     for(const key of ALL_KEYS) {
-      if (key === 'buffAbyss') {
+      if (key === 'buffAbyss' || key === 'buffLevel') {
          const arr = customOptions[key] || [];
-         textFormat[key] = arr.length > 0 ? `${arr[0]}~${arr[arr.length - 1]}` : '0~12';
+         const defMax = key === 'buffLevel' ? '5' : '12';
+         textFormat[key] = arr.length > 0 ? `${arr[0]}~${arr[arr.length - 1]}` : `0~${defMax}`;
       } else {
          textFormat[key] = (customOptions[key] || []).join(', ');
       }
@@ -481,7 +482,7 @@ export default function Home() {
       if(!optionsFormText[key]) {
          newOpts[key] = [];
       } else {
-         if (key === 'buffAbyss') {
+         if (key === 'buffAbyss' || key === 'buffLevel') {
             const parts = optionsFormText[key].split('~');
             const min = parseInt(parts[0]) || 0;
             const max = parseInt(parts[1]) || 0;
@@ -599,7 +600,7 @@ export default function Home() {
                          {/* 스위칭 */}
                          {(c.manual.buffLevel || c.manual.buffAbyss) && (
                            <div><span style={{color: '#94a3b8', marginRight:'4px'}}>스위칭:</span>
-                             버프 {c.manual.buffLevel || '-'} 
+                             버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'} 
                              {c.manual.buffAbyss && ` (편린 ${c.manual.buffAbyss}개)`}
                            </div>
                          )}
@@ -839,14 +840,14 @@ export default function Home() {
                     {group.keys.map(k => (
                       <div key={k} style={{ marginBottom: '0.8rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
-                        {k === 'buffAbyss' ? (
+                        {(k === 'buffAbyss' || k === 'buffLevel') ? (
                           <input 
                             type="number"
-                            min={customOptions['buffAbyss'] ? customOptions['buffAbyss'][0] : 0}
-                            max={customOptions['buffAbyss'] ? customOptions['buffAbyss'][customOptions['buffAbyss'].length - 1] : 12}
+                            min={customOptions[k] ? customOptions[k][0] : 0}
+                            max={customOptions[k] ? customOptions[k][customOptions[k].length - 1] : (k === 'buffLevel' ? 5 : 12)}
                             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
                             value={manualForm[k] || ''}
-                            placeholder={`${customOptions['buffAbyss'] ? customOptions['buffAbyss'][0] : 0} ~ ${customOptions['buffAbyss'] ? customOptions['buffAbyss'][customOptions['buffAbyss'].length - 1] : 12} 입력`}
+                            placeholder={`${customOptions[k] ? customOptions[k][0] : 0} ~ ${customOptions[k] ? customOptions[k][customOptions[k].length - 1] : (k === 'buffLevel' ? 5 : 12)} 입력`}
                             onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
                           />
                         ) : (
@@ -892,14 +893,14 @@ export default function Home() {
                     {group.keys.map(k => (
                       <div key={k} style={{ marginBottom: '0.8rem' }}>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
-                        {k === 'buffAbyss' ? (
+                        {(k === 'buffAbyss' || k === 'buffLevel') ? (
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                             <input 
                               type="number" 
                               style={{ width: '45%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
                               value={optionsFormText[k]?.split('~')[0] || ''}
                               placeholder="최소"
-                              onChange={e => setOptionsFormText({...optionsFormText, [k]: `${e.target.value}~${optionsFormText[k]?.split('~')[1] || '12'}`})}
+                              onChange={e => setOptionsFormText({...optionsFormText, [k]: `${e.target.value}~${optionsFormText[k]?.split('~')[1] || (k === 'buffLevel' ? '5' : '12')}`})}
                             />
                             <span>~</span>
                             <input 
@@ -915,7 +916,7 @@ export default function Home() {
                             rows={2}
                             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical', fontSize: '0.85rem' }}
                             value={optionsFormText[k] || ''}
-                            placeholder={k === 'buffLevel' ? "0레벨, 1레벨, 2레벨..." : "종결, 가성비, 화려..."}
+                            placeholder="종결, 가성비, 화려..."
                             onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
                           />
                         )}
