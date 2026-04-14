@@ -581,32 +581,33 @@ export default function Home() {
                     {c.manual && (
                        <div className="manual-options-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', marginTop: '0.6rem', width: '100%', background: 'rgba(0,0,0,0.15)', padding: '0.5rem', borderRadius: '6px' }}>
                         
-                        {/* 1. 핵심 장비 (칭호, 마부, 크리쳐) - 핵심 키워드에만 컬러 하이라이트 */}
-                        {(c.manual.title || c.manual.enchant || c.manual.creature || c.manual.creatureArtifact) && (
+                        {/* 1. 핵심 (칭호, 오라, 크리쳐) - 핵심 키워드 컬러 하이라이트 */}
+                        {(c.manual.title || c.manual.aura || c.manual.creature || c.manual.creatureArtifact) && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#e2e8f0', fontWeight: '500' }}>
-                            {c.manual.title && <span><span style={{color: '#38bdf8'}}>칭호</span> {c.manual.title}</span>}
-                            {c.manual.enchant && <span><span style={{color: '#a78bfa'}}>마부</span> {c.manual.enchant}</span>}
+                            {c.manual.title && <span><span style={{color: '#38bdf8'}}>칭호:</span> {c.manual.title}</span>}
+                            {c.manual.aura && <span><span style={{color: '#f472b6'}}>오라:</span> {c.manual.aura}{c.manual.auraEmblem && `(${c.manual.auraEmblem})`}</span>}
                             {(c.manual.creature || c.manual.creatureArtifact) && (
-                              <span><span style={{color: '#10b981'}}>크리쳐</span> {c.manual.creature || '기본'} {c.manual.creatureArtifact && `(${c.manual.creatureArtifact})`}</span>
+                              <span><span style={{color: '#10b981'}}>크리쳐:</span> {c.manual.creature || '기본'} {c.manual.creatureArtifact && `(${c.manual.creatureArtifact})`}</span>
                             )}
                           </div>
                         )}
 
-                        {/* 2. 스위칭 */}
-                        {(c.manual.buffLevel || c.manual.buffAbyss) && (
+                        {/* 2. 상세 (마부, 스위칭) */}
+                        {(c.manual.enchant || c.manual.buffLevel || c.manual.buffAbyss) && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
-                            <span>스위칭 버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'}</span>
-                            {c.manual.buffAbyss && <span>(편린 {c.manual.buffAbyss}개)</span>}
+                            {c.manual.enchant && <span><span style={{color: '#a78bfa'}}>마부:</span> {c.manual.enchant}</span>}
+                            {(c.manual.buffLevel || c.manual.buffAbyss) && (
+                              <span><span style={{color: '#94a3b8'}}>스위칭:</span> 버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'} {c.manual.buffAbyss && `(편린 ${c.manual.buffAbyss})`}</span>
+                            )}
                           </div>
                         )}
 
-                        {/* 3. 아바타군 - 회색조의 얇은 폰트로 차분하게 정보 정렬 */}
-                        {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar || c.manual.aura) && (
+                        {/* 3. 아바타군 (아바타, 피부, 무기) - 회색조의 얇은 폰트로 정돈 */}
+                        {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar) && (
                           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#94a3b8' }}>
-                            {c.manual.avatar && <span>[아바타] {c.manual.avatar}{(c.manual.emblem || c.manual.platEmblem) && `(${[c.manual.emblem, c.manual.platEmblem].filter(Boolean).join(',')})`}</span>}
-                            {c.manual.skinAvatar && <span>[피부] {c.manual.skinAvatar}{c.manual.skinEmblem && `(${c.manual.skinEmblem})`}</span>}
-                            {c.manual.weaponAvatar && <span>[무기] {c.manual.weaponAvatar}{c.manual.weaponEmblem && `(${c.manual.weaponEmblem})`}</span>}
-                            {c.manual.aura && <span>[오라] {c.manual.aura}{c.manual.auraEmblem && `(${c.manual.auraEmblem})`}</span>}
+                            {c.manual.avatar && <span>아바타: {c.manual.avatar}{(c.manual.emblem || c.manual.platEmblem) && `(${[c.manual.emblem, c.manual.platEmblem ? `플티 ${c.manual.platEmblem}` : null].filter(Boolean).join(', ')})`}</span>}
+                            {c.manual.skinAvatar && <span>피부: {c.manual.skinAvatar}{c.manual.skinEmblem && `(${c.manual.skinEmblem})`}</span>}
+                            {c.manual.weaponAvatar && <span>무기: {c.manual.weaponAvatar}{c.manual.weaponEmblem && `(${c.manual.weaponEmblem})`}</span>}
                           </div>
                         )}
                       </div>
@@ -869,7 +870,7 @@ export default function Home() {
                  { title: '크리쳐 영역', keys: ['creature', 'creatureArtifact'], labels: { creature: '크리쳐 현황', creatureArtifact: '크리쳐 아티팩트' } },
                  { title: '스위칭 영역', keys: ['buffLevel', 'buffAbyss'], labels: { buffLevel: '버프 레벨', buffAbyss: '심연의 편린 개수' } },
                  { title: '아바타 영역', keys: ['avatar', 'emblem', 'platEmblem', 'skinAvatar', 'skinEmblem', 'weaponAvatar', 'weaponEmblem', 'aura', 'auraEmblem'], 
-                   labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘', skinAvatar: '피부 아바타', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
+                   labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘 엠블렘 보유 여부', skinAvatar: '피부 아바타', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
               ].map(group => (
                  <div key={group.title} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <h3 style={{ fontSize: '0.95rem', margin: '0 0 1rem 0', color: '#10b981', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
