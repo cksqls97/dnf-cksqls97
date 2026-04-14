@@ -455,7 +455,6 @@ export default function Home() {
   };
 
   const ALL_KEYS = [
-  const ALL_KEYS = [
     'enchant', 'title', 'creature', 'creatureArtifact', 
     'avatar', 'emblem', 'platEmblem', 
     'skinAvatar', 'skinEmblem', 'weaponAvatar', 'weaponEmblem', 'aura', 'auraEmblem'
