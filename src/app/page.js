@@ -587,7 +587,7 @@ export default function Home() {
                             {c.manual.title && <span><span style={{color: '#38bdf8'}}>칭호:</span> {c.manual.title}</span>}
                             {c.manual.aura && <span><span style={{color: '#f472b6'}}>오라:</span> {c.manual.aura}{c.manual.auraEmblem && `(${c.manual.auraEmblem})`}</span>}
                             {(c.manual.creature || c.manual.creatureArtifact) && (
-                              <span><span style={{color: '#10b981'}}>크리쳐:</span> {c.manual.creature || '기본'} {c.manual.creatureArtifact && `(${c.manual.creatureArtifact})`}</span>
+                              <span><span style={{color: '#10b981'}}>크리쳐:</span> {c.manual.creature || '기본'} {c.manual.creatureArtifact && `(아티팩트: ${c.manual.creatureArtifact})`}</span>
                             )}
                           </div>
                         )}
