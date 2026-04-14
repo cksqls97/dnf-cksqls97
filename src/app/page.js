@@ -579,38 +579,48 @@ export default function Home() {
                   <td data-label="제원">
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
                     {c.manual && (
-                       <div className="manual-options-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', marginTop: '0.6rem', width: '100%', background: 'rgba(0,0,0,0.15)', padding: '0.5rem', borderRadius: '6px' }}>
-                        
-                        {/* 1. 핵심 (칭호, 오라, 크리쳐) - 핵심 키워드 컬러 하이라이트 */}
-                        {(c.manual.title || c.manual.aura || c.manual.creature || c.manual.creatureArtifact) && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#e2e8f0', fontWeight: '500' }}>
-                            {c.manual.title && <span><span style={{color: '#38bdf8'}}>칭호:</span> {c.manual.title}</span>}
-                            {c.manual.aura && <span><span style={{color: '#f472b6'}}>오라:</span> {c.manual.aura}{c.manual.auraEmblem && `(${c.manual.auraEmblem})`}</span>}
-                            {(c.manual.creature || c.manual.creatureArtifact) && (
-                              <span><span style={{color: '#10b981'}}>크리쳐:</span> {c.manual.creature || '기본'} {c.manual.creatureArtifact && `(아티팩트: ${c.manual.creatureArtifact})`}</span>
-                            )}
-                          </div>
-                        )}
+                      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.6rem', fontSize: '0.8rem', color: '#cbd5e1', textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>
+                        <tbody>
+                          {/* 1. 핵심 (칭호, 오라, 크리쳐) - 테이블 분할행 */}
+                          {(c.manual.title || c.manual.aura || c.manual.creature || c.manual.creatureArtifact) && (
+                            <tr>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#38bdf8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>칭호</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.3rem', width: '21%', color: '#e2e8f0', fontSize: '0.75rem' }}>{c.manual.title || '-'}</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#f472b6', padding: '0.3rem', width: '12%', fontWeight: '500' }}>오라</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.3rem', width: '21%', color: '#e2e8f0', fontSize: '0.75rem' }}>{c.manual.aura ? `${c.manual.aura}${c.manual.auraEmblem ? `(엠블렘: ${c.manual.auraEmblem})` : ''}` : '-'}</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#10b981', padding: '0.3rem', width: '12%', fontWeight: '500' }}>크리쳐</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.3rem', width: '22%', color: '#e2e8f0', fontSize: '0.75rem' }}>{c.manual.creature ? `${c.manual.creature}${c.manual.creatureArtifact ? `(아티팩트: ${c.manual.creatureArtifact})` : ''}` : '-'}</td>
+                            </tr>
+                          )}
 
-                        {/* 2. 상세 (마부, 스위칭) */}
-                        {(c.manual.enchant || c.manual.buffLevel || c.manual.buffAbyss) && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
-                            {c.manual.enchant && <span><span style={{color: '#a78bfa'}}>마부:</span> {c.manual.enchant}</span>}
-                            {(c.manual.buffLevel || c.manual.buffAbyss) && (
-                              <span><span style={{color: '#94a3b8'}}>스위칭:</span> 버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'} {c.manual.buffAbyss && `(편린 ${c.manual.buffAbyss})`}</span>
-                            )}
-                          </div>
-                        )}
+                          {/* 2. 상세 (마부, 스위칭) - 병합셀 */}
+                          {(c.manual.enchant || c.manual.buffLevel || c.manual.buffAbyss) && (
+                            <tr>
+                              <td colSpan={6} style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#cbd5e1', fontSize: '0.75rem' }}>
+                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                  {c.manual.enchant && <span><span style={{color: '#a78bfa', fontWeight: '500'}}>마부:</span> {c.manual.enchant}</span>}
+                                  {(c.manual.buffLevel || c.manual.buffAbyss) && (
+                                    <span><span style={{color: '#94a3b8', fontWeight: '500'}}>스위칭:</span> 버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'} {c.manual.buffAbyss && `(편린 ${c.manual.buffAbyss})`}</span>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
 
-                        {/* 3. 아바타군 (아바타, 피부, 무기) - 회색조의 얇은 폰트로 정돈 */}
-                        {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar) && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.4rem', fontSize: '0.75rem', color: '#94a3b8' }}>
-                            {c.manual.avatar && <span>아바타: {c.manual.avatar}{(c.manual.emblem || c.manual.platEmblem) && `(${[c.manual.emblem, c.manual.platEmblem ? `플티 ${c.manual.platEmblem}` : null].filter(Boolean).join(', ')})`}</span>}
-                            {c.manual.skinAvatar && <span>피부: {c.manual.skinAvatar}{c.manual.skinEmblem && `(${c.manual.skinEmblem})`}</span>}
-                            {c.manual.weaponAvatar && <span>무기: {c.manual.weaponAvatar}{c.manual.weaponEmblem && `(${c.manual.weaponEmblem})`}</span>}
-                          </div>
-                        )}
-                      </div>
+                          {/* 3. 아바타군 - 병합셀 */}
+                          {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar) && (
+                            <tr>
+                              <td colSpan={6} style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#94a3b8', fontSize: '0.75rem' }}>
+                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                  {c.manual.avatar && <span>아바타: {c.manual.avatar}{(c.manual.emblem || c.manual.platEmblem) && `(${[c.manual.emblem, c.manual.platEmblem ? `플티 ${c.manual.platEmblem}` : null].filter(Boolean).join(', ')})`}</span>}
+                                  {c.manual.skinAvatar && <span>피부: {c.manual.skinAvatar}{c.manual.skinEmblem && `(${c.manual.skinEmblem})`}</span>}
+                                  {c.manual.weaponAvatar && <span>무기: {c.manual.weaponAvatar}{c.manual.weaponEmblem && `(${c.manual.weaponEmblem})`}</span>}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                     )}
                   </td>
                   <td data-label="명성">
