@@ -581,40 +581,77 @@ export default function Home() {
                     {c.manual && (
                       <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.6rem', fontSize: '0.8rem', color: '#cbd5e1', textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>
                         <tbody>
-                          {/* 1. 핵심 (칭호, 오라, 크리쳐) - 테이블 분할행 */}
+                          {/* 1. 핵심 (칭호, 오라, 크리쳐) */}
                           {(c.manual.title || c.manual.aura || c.manual.creature || c.manual.creatureArtifact) && (
                             <tr>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#38bdf8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>칭호</td>
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.3rem', width: '21%', color: '#e2e8f0', fontSize: '0.75rem' }}>{c.manual.title || '-'}</td>
+                              
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#f472b6', padding: '0.3rem', width: '12%', fontWeight: '500' }}>오라</td>
-                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.3rem', width: '21%', color: '#e2e8f0', fontSize: '0.75rem' }}>{c.manual.aura ? `${c.manual.aura}${c.manual.auraEmblem ? `(엠블렘: ${c.manual.auraEmblem})` : ''}` : '-'}</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '21%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                  {c.manual.aura && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.aura}</div>}
+                                  {c.manual.auraEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.aura ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>엠블렘: {c.manual.auraEmblem}</div>}
+                                  {(!c.manual.aura && !c.manual.auraEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
+                                </div>
+                              </td>
+                              
                               <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#10b981', padding: '0.3rem', width: '12%', fontWeight: '500' }}>크리쳐</td>
-                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.3rem', width: '22%', color: '#e2e8f0', fontSize: '0.75rem' }}>{c.manual.creature ? `${c.manual.creature}${c.manual.creatureArtifact ? `(아티팩트: ${c.manual.creatureArtifact})` : ''}` : '-'}</td>
-                            </tr>
-                          )}
-
-                          {/* 2. 상세 (마부, 스위칭) - 병합셀 */}
-                          {(c.manual.enchant || c.manual.buffLevel || c.manual.buffAbyss) && (
-                            <tr>
-                              <td colSpan={6} style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#cbd5e1', fontSize: '0.75rem' }}>
-                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                  {c.manual.enchant && <span><span style={{color: '#a78bfa', fontWeight: '500'}}>마부:</span> {c.manual.enchant}</span>}
-                                  {(c.manual.buffLevel || c.manual.buffAbyss) && (
-                                    <span><span style={{color: '#94a3b8', fontWeight: '500'}}>스위칭:</span> 버프 {c.manual.buffLevel ? (String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`) : '-'} {c.manual.buffAbyss && `(편린 ${c.manual.buffAbyss})`}</span>
-                                  )}
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '22%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                  {c.manual.creature && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.creature}</div>}
+                                  {c.manual.creatureArtifact && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.creature ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>아티팩트: {c.manual.creatureArtifact}</div>}
+                                  {(!c.manual.creature && !c.manual.creatureArtifact) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
                                 </div>
                               </td>
                             </tr>
                           )}
 
-                          {/* 3. 아바타군 - 병합셀 */}
+                          {/* 2. 상세 (마부, 스위칭) - 4칸 분할 (colspan 2 활용) */}
+                          {(c.manual.enchant || c.manual.buffLevel || c.manual.buffAbyss) && (
+                            <tr>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#a78bfa', padding: '0.3rem', width: '12%', fontWeight: '500' }}>마부</td>
+                              <td colSpan={2} style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.3rem', width: '33%', color: '#e2e8f0', fontSize: '0.75rem' }}>{c.manual.enchant || '-'}</td>
+                              
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>스위칭</td>
+                              <td colSpan={2} style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '43%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                  {c.manual.buffLevel && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>버프 {String(c.manual.buffLevel).includes('레벨') ? c.manual.buffLevel : `${c.manual.buffLevel}레벨`}</div>}
+                                  {c.manual.buffAbyss && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.buffLevel ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>편린 {c.manual.buffAbyss}개</div>}
+                                  {(!c.manual.buffLevel && !c.manual.buffAbyss) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* 3. 아바타군 - 6칸 분할 */}
                           {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar) && (
                             <tr>
-                              <td colSpan={6} style={{ border: '1px solid rgba(255,255,255,0.15)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#94a3b8', fontSize: '0.75rem' }}>
-                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                                  {c.manual.avatar && <span>아바타: {c.manual.avatar}{(c.manual.emblem || c.manual.platEmblem) && `(${[c.manual.emblem, c.manual.platEmblem ? `플티 ${c.manual.platEmblem}` : null].filter(Boolean).join(', ')})`}</span>}
-                                  {c.manual.skinAvatar && <span>피부: {c.manual.skinAvatar}{c.manual.skinEmblem && `(${c.manual.skinEmblem})`}</span>}
-                                  {c.manual.weaponAvatar && <span>무기: {c.manual.weaponAvatar}{c.manual.weaponEmblem && `(${c.manual.weaponEmblem})`}</span>}
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>아바타</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '21%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                  {c.manual.avatar && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.avatar}</div>}
+                                  {c.manual.emblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.avatar ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.emblem}</div>}
+                                  {c.manual.platEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: (c.manual.avatar || c.manual.emblem) ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.platEmblem === '없음' ? '플티 없음' : `플티 ${c.manual.platEmblem}`}</div>}
+                                  {(!c.manual.avatar && !c.manual.emblem && !c.manual.platEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
+                                </div>
+                              </td>
+
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>피부</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '21%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                  {c.manual.skinAvatar && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.skinAvatar}</div>}
+                                  {c.manual.skinEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.skinAvatar ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.skinEmblem}</div>}
+                                  {(!c.manual.skinAvatar && !c.manual.skinEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
+                                </div>
+                              </td>
+
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.3rem', width: '12%', fontWeight: '500' }}>무기압</td>
+                              <td style={{ border: '1px solid rgba(255,255,255,0.15)', padding: 0, width: '22%', color: '#e2e8f0', fontSize: '0.75rem', height: '100%' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                  {c.manual.weaponAvatar && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.manual.weaponAvatar}</div>}
+                                  {c.manual.weaponEmblem && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderTop: c.manual.weaponAvatar ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>{c.manual.weaponEmblem}</div>}
+                                  {(!c.manual.weaponAvatar && !c.manual.weaponEmblem) && <div style={{ padding: '0.3rem', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</div>}
                                 </div>
                               </td>
                             </tr>
