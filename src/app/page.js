@@ -80,14 +80,29 @@ export default function Home() {
   const [apiKey, setApiKeyState] = useState('');
 
   const [manualModalChar, setManualModalChar] = useState(null);
-  const [manualForm, setManualForm] = useState({ enchant: '', title: '', aura: '', creature: '', avatar: '', emblem: '' });
+  const [manualForm, setManualForm] = useState({ 
+    enchant: '', title: '', 
+    creature: '', creatureArtifact: '',
+    buffLevel: '', buffAbyss: '',
+    avatar: '', emblem: '', platEmblem: '', skinAvatar: '', skinEmblem: '', weaponAvatar: '', weaponEmblem: '', aura: '', auraEmblem: '' 
+  });
+  
   const [customOptions, setCustomOptions] = useState({
     enchant: ['기본', '가성비', '준종결', '종결'],
     title: ['기본', '가성비', '준종결', '종결'],
-    aura: ['기본', '가성비', '준종결', '종결'],
     creature: ['기본', '가성비', '준종결', '종결'],
-    avatar: ['기본', '이벤압', '레압', '클레압', '찬작', '엔드'],
-    emblem: ['기본', '화려', '찬란', '다발', '종결플티']
+    creatureArtifact: ['없음', '언커먼', '레어', '유니크'],
+    buffLevel: ['0레벨', '1레벨', '2레벨', '3레벨', '4레벨', '5레벨'],
+    buffAbyss: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+    avatar: ['기본', '이벤압', '레압', '클레압', '엔드'],
+    emblem: ['없음', '화려', '찬란', '다발'],
+    platEmblem: ['없음', '잡플티', '유효', '종결'],
+    skinAvatar: ['없음', '기본', '특판', '프리미엄'],
+    skinEmblem: ['없음', '화려', '찬란'],
+    weaponAvatar: ['없음', '기본', '레어'],
+    weaponEmblem: ['없음', '화려', '찬란'],
+    aura: ['기본', '가성비', '준종결', '종결'],
+    auraEmblem: ['없음', '화려', '찬란']
   });
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -423,7 +438,12 @@ export default function Home() {
   };
 
   const openManualModal = (char) => {
-    setManualForm(char.manual || { enchant: '', title: '', aura: '', creature: '', avatar: '', emblem: '' });
+    setManualForm(char.manual || { 
+      enchant: '', title: '', 
+      creature: '', creatureArtifact: '',
+      buffLevel: '', buffAbyss: '',
+      avatar: '', emblem: '', platEmblem: '', skinAvatar: '', skinEmblem: '', weaponAvatar: '', weaponEmblem: '', aura: '', auraEmblem: ''
+    });
     setManualModalChar(char);
   };
 
@@ -436,9 +456,13 @@ export default function Home() {
     if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, true);
   };
 
+  const ALL_KEYS = [
+    'enchant', 'title', 'creature', 'creatureArtifact', 
+    'buffLevel', 'buffAbyss', 'avatar', 'emblem', 'platEmblem', 
+    'skinAvatar', 'skinEmblem', 'weaponAvatar', 'weaponEmblem', 'aura', 'auraEmblem'
+  ];
   const openOptionsModal = () => {
     const textFormat = {};
-    const ALL_KEYS = ['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'];
     for(const key of ALL_KEYS) {
       textFormat[key] = (customOptions[key] || []).join(', ');
     }
@@ -448,7 +472,6 @@ export default function Home() {
 
   const handleSaveOptions = () => {
     const newOpts = {};
-    const ALL_KEYS = ['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'];
     for(const key of ALL_KEYS) {
       if(!optionsFormText[key]) {
          newOpts[key] = [];
@@ -558,13 +581,35 @@ export default function Home() {
                   <td data-label="제원">
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
                     {c.manual && (
-                       <div className="manual-options-container" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
-                         {c.manual.enchant && <span className="m-pill">마부: {c.manual.enchant}</span>}
-                         {c.manual.title && <span className="m-pill">칭호: {c.manual.title}</span>}
-                         {c.manual.aura && <span className="m-pill">오라: {c.manual.aura}</span>}
-                         {c.manual.creature && <span className="m-pill">크리쳐: {c.manual.creature}</span>}
-                         {c.manual.avatar && <span className="m-pill">아바타: {c.manual.avatar}</span>}
-                         {c.manual.emblem && <span className="m-pill">엠블렘: {c.manual.emblem}</span>}
+                       <div className="manual-options-container" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1', textAlign: 'left', background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '6px' }}>
+                         {/* 스위칭 */}
+                         {(c.manual.buffLevel || c.manual.buffAbyss) && (
+                           <div><span style={{color: '#94a3b8', marginRight:'4px'}}>스위칭:</span>
+                             버프 {c.manual.buffLevel || '-'} 
+                             {c.manual.buffAbyss && ` (편린 ${c.manual.buffAbyss}개)`}
+                           </div>
+                         )}
+                         {/* 장비/크리쳐 */}
+                         {(c.manual.title || c.manual.enchant || c.manual.creature || c.manual.creatureArtifact) && (
+                           <div><span style={{color: '#94a3b8', marginRight:'4px'}}>장비/크리쳐:</span>
+                             {[
+                               c.manual.title && `${c.manual.title}칭호`,
+                               c.manual.enchant && `${c.manual.enchant}마부`,
+                               c.manual.creature && `${c.manual.creature}크리쳐${c.manual.creatureArtifact ? `(${c.manual.creatureArtifact})` : ''}`
+                             ].filter(Boolean).join(' | ')}
+                           </div>
+                         )}
+                         {/* 아바타군 */}
+                         {(c.manual.avatar || c.manual.skinAvatar || c.manual.weaponAvatar || c.manual.aura) && (
+                           <div style={{ wordBreak: 'keep-all' }}><span style={{color: '#94a3b8', marginRight:'4px'}}>아바타:</span>
+                             {[
+                               c.manual.avatar && `[아바타] ${c.manual.avatar}${c.manual.emblem || c.manual.platEmblem ? ` (${[c.manual.emblem, c.manual.platEmblem].filter(Boolean).join(', ')})` : ''}`,
+                               c.manual.skinAvatar && `[피부] ${c.manual.skinAvatar}${c.manual.skinEmblem ? ` (${c.manual.skinEmblem})` : ''}`,
+                               c.manual.weaponAvatar && `[무기] ${c.manual.weaponAvatar}${c.manual.weaponEmblem ? ` (${c.manual.weaponEmblem})` : ''}`,
+                               c.manual.aura && `[오라] ${c.manual.aura}${c.manual.auraEmblem ? ` (${c.manual.auraEmblem})` : ''}`
+                             ].filter(Boolean).join(' | ')}
+                           </div>
+                         )}
                        </div>
                     )}
                   </td>
@@ -764,26 +809,34 @@ export default function Home() {
 
       {manualModalChar && (
         <div className="modal-overlay">
-          <div className="glass-panel modal-content" style={{ maxWidth: '360px' }}>
+          <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>[{manualModalChar.base.charName}] 수동 제원 설정</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>상단 🛠️ 탭에서 구성한 목록에서만 선택 가능합니다.</p>
-            <div className="manual-form">
-              {['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'].map(k => {
-                const labels = { enchant: '마부 상태', title: '칭호', aura: '오라', creature: '크리쳐', avatar: '아바타', emblem: '엠블렘' };
-                return (
-                  <div key={k} style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#94a3b8' }}>{labels[k]}</label>
-                    <select 
-                      style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.5rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px' }}
-                      value={manualForm[k] || ''}
-                      onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
-                    >
-                      <option value="">- 선택 안 함 -</option>
-                      {customOptions[k]?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </div>
-                )
-              })}
+            <div className="manual-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem', marginTop: '1rem' }}>
+              {[
+                 { title: '장비 영역', keys: ['enchant', 'title'], labels: { enchant: '마부 상태', title: '칭호 현황' } },
+                 { title: '크리쳐 영역', keys: ['creature', 'creatureArtifact'], labels: { creature: '크리쳐 현황', creatureArtifact: '크리쳐 아티팩트' } },
+                 { title: '스위칭 영역', keys: ['buffLevel', 'buffAbyss'], labels: { buffLevel: '버프 레벨', buffAbyss: '심연의 편린 개수' } },
+                 { title: '아바타 영역', keys: ['avatar', 'emblem', 'platEmblem', 'skinAvatar', 'skinEmblem', 'weaponAvatar', 'weaponEmblem', 'aura', 'auraEmblem'], 
+                   labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘', skinAvatar: '피부 아바타', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
+              ].map(group => (
+                 <div key={group.title} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h3 style={{ fontSize: '0.95rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
+                    {group.keys.map(k => (
+                      <div key={k} style={{ marginBottom: '0.8rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
+                        <select 
+                          style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                          value={manualForm[k] || ''}
+                          onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
+                        >
+                          <option value="">- 선택 안 함 -</option>
+                          {customOptions[k]?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                 </div>
+              ))}
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
               <button type="button" onClick={() => setManualModalChar(null)} style={{ background: 'transparent', border: '1px solid var(--border-color)' }}>취소</button>
@@ -795,27 +848,35 @@ export default function Home() {
 
       {showOptionsModal && (
         <div className="modal-overlay">
-          <div className="glass-panel modal-content" style={{ maxWidth: '450px' }}>
+          <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>🛠️ 드롭다운 전체 항목 편집</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
               각 카테고리별로 콤마(,)를 사용해 선택지를 자유롭게 입력하세요. 
             </p>
-            <div className="options-form" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '10px' }}>
-              {['enchant', 'title', 'aura', 'creature', 'avatar', 'emblem'].map(k => {
-                const labels = { enchant: '마부 옵션', title: '칭호 옵션', aura: '오라 옵션', creature: '크리쳐 옵션', avatar: '아바타 옵션', emblem: '엠블렘 옵션' };
-                return (
-                  <div key={k} style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: '#94a3b8' }}>{labels[k]}</label>
-                    <textarea 
-                      rows={2}
-                      style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.5rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical' }}
-                      value={optionsFormText[k] || ''}
-                      placeholder="종결, 짭종결, 가성비, 기본"
-                      onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
-                    />
-                  </div>
-                )
-              })}
+            <div className="options-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem', marginTop: '1rem' }}>
+              {[
+                 { title: '장비 영역', keys: ['enchant', 'title'], labels: { enchant: '마부 상태', title: '칭호 현황' } },
+                 { title: '크리쳐 영역', keys: ['creature', 'creatureArtifact'], labels: { creature: '크리쳐 현황', creatureArtifact: '크리쳐 아티팩트' } },
+                 { title: '스위칭 영역', keys: ['buffLevel', 'buffAbyss'], labels: { buffLevel: '버프 레벨', buffAbyss: '심연의 편린 개수' } },
+                 { title: '아바타 영역', keys: ['avatar', 'emblem', 'platEmblem', 'skinAvatar', 'skinEmblem', 'weaponAvatar', 'weaponEmblem', 'aura', 'auraEmblem'], 
+                   labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘', skinAvatar: '피부 아바타', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
+              ].map(group => (
+                 <div key={group.title} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h3 style={{ fontSize: '0.95rem', margin: '0 0 1rem 0', color: '#10b981', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
+                    {group.keys.map(k => (
+                      <div key={k} style={{ marginBottom: '0.8rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
+                        <textarea 
+                          rows={2}
+                          style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical', fontSize: '0.85rem' }}
+                          value={optionsFormText[k] || ''}
+                          placeholder={k === 'buffLevel' ? "0레벨, 1레벨, 2레벨..." : "종결, 가성비, 화려..."}
+                          onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
+                        />
+                      </div>
+                    ))}
+                 </div>
+              ))}
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
               <button type="button" onClick={() => setShowOptionsModal(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)' }}>취소</button>
