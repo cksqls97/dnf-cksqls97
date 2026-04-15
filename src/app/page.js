@@ -679,6 +679,16 @@ export default function Home() {
                        {c.base.fame.toLocaleString()}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', alignItems: 'center' }}>
+                       {(() => {
+                           const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
+                           if (!nextDungeon) return null;
+                           const diff = nextDungeon.fame - c.base.fame;
+                           return (
+                             <div style={{ fontSize: '0.75rem', color: '#fca5a5', marginBottom: '1px', background: 'rgba(248, 113, 113, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(248, 113, 113, 0.2)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                               🚀 {nextDungeon.name}까지 <strong style={{color: '#f87171'}}>{diff.toLocaleString()}</strong> 남음
+                             </div>
+                           );
+                       })()}
                        {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2).map((dungeon, idx) => (
                           <span key={dungeon.name} style={{ background: idx === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)', color: idx === 0 ? '#38bdf8' : 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: idx === 0 ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
                              {dungeon.name}
