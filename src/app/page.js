@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const SERVER_LIST = [
   { id: "cain", name: "카인" },
@@ -71,6 +72,138 @@ export default function Home() {
 
   const [editingLogId, setEditingLogId] = useState(null);
   const [editLogForm, setEditLogForm] = useState(null);
+  
+  const chartData = React.useMemo(() => {
+    const timestamps = new Set();
+    historyLogs.forEach(log => {
+        if (log.fameChange) timestamps.add(log.timestamp);
+    });
+    
+    const sortedTimes = Array.from(timestamps).sort((a,b) => a - b);
+    
+    if (sortedTimes.length === 0) {
+        if (characters.length > 0) {
+            return [{
+                time: Date.now(),
+                formattedTime: '현재',
+                fame: characters.reduce((acc, c) => acc + c.base.fame, 0)
+            }];
+        }
+        return [];
+    }
+
+    const dataPoints = [];
+    
+    let targetTimes = sortedTimes;
+    if (historyFilterChar !== '') {
+        const charTimes = new Set();
+        historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).forEach(l => charTimes.add(l.timestamp));
+        targetTimes = Array.from(charTimes).sort((a,b) => a - b);
+        if (targetTimes.length === 0) {
+            const char = characters.find(c => c.id === historyFilterChar);
+            if (char) {
+                return [{ time: Date.now(), formattedTime: '현재', fame: char.base.fame }];
+            }
+            return [];
+        }
+    }
+
+    targetTimes.forEach(t => {
+        let totalFame = 0;
+        
+        if (historyFilterChar === '') {
+            characters.forEach(c => {
+                const cLogs = historyLogs.filter(l => l.charId === c.id && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+                if (cLogs.length === 0) {
+                    totalFame += c.base.fame;
+                } else {
+                    const pastLogs = cLogs.filter(l => l.timestamp <= t);
+                    if (pastLogs.length > 0) {
+                        totalFame += pastLogs[pastLogs.length - 1].fameChange.new;
+                    } else {
+                        totalFame += cLogs[0].fameChange.old;
+                    }
+                }
+            });
+        } else {
+            const c = characters.find(char => char.id === historyFilterChar);
+            if (c) {
+                const cLogs = historyLogs.filter(l => l.charId === c.id && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+                const pastLogs = cLogs.filter(l => l.timestamp <= t);
+                if (pastLogs.length > 0) {
+                    totalFame = pastLogs[pastLogs.length - 1].fameChange.new;
+                } else {
+                    totalFame = cLogs[0].fameChange.old;
+                }
+            } else {
+                const cLogs = historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+                const pastLogs = cLogs.filter(l => l.timestamp <= t);
+                if (pastLogs.length > 0) {
+                    totalFame = pastLogs[pastLogs.length - 1].fameChange.new;
+                } else {
+                    totalFame = cLogs[0].fameChange.old;
+                }
+            }
+        }
+
+        const dt = new Date(t);
+        dataPoints.push({
+            time: t,
+            formattedTime: `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`,
+            fame: totalFame
+        });
+    });
+
+    const now = Date.now();
+    const lastTime = targetTimes[targetTimes.length - 1];
+    
+    if (targetTimes.length > 0) {
+       const firstTime = targetTimes[0];
+       let initialTotalFame = 0;
+       if (historyFilterChar === '') {
+           characters.forEach(c => {
+               const cLogs = historyLogs.filter(l => l.charId === c.id && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+               if (cLogs.length === 0) {
+                   initialTotalFame += c.base.fame;
+               } else {
+                   initialTotalFame += cLogs[0].fameChange.old;
+               }
+           });
+       } else {
+           const cLogs = historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+           if (cLogs.length > 0) initialTotalFame = cLogs[0].fameChange.old;
+           else if (characters.find(char => char.id === historyFilterChar)) initialTotalFame = characters.find(char => char.id === historyFilterChar).base.fame;
+       }
+       
+       dataPoints.unshift({
+           time: firstTime - 1,
+           formattedTime: `시작`, 
+           fame: initialTotalFame
+       });
+    }
+
+    if (now - lastTime > 60000) {
+        let currentTotal = 0;
+        if (historyFilterChar === '') {
+            currentTotal = characters.reduce((acc, c) => acc + c.base.fame, 0);
+        } else {
+            const c = characters.find(char => char.id === historyFilterChar);
+            if (c) currentTotal = c.base.fame;
+            else {
+                const cLogs = historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+                if (cLogs.length > 0) currentTotal = cLogs[cLogs.length - 1].fameChange.new;
+            }
+        }
+        
+        dataPoints.push({
+            time: now,
+            formattedTime: '현재',
+            fame: currentTotal
+        });
+    }
+
+    return dataPoints;
+  }, [historyLogs, characters, historyFilterChar]);
   
   const [server, setServer] = useState('cain');
   const [charName, setCharName] = useState('');
@@ -751,6 +884,25 @@ export default function Home() {
             </select>
           </div>
           
+          {chartData.length > 0 && (
+            <div style={{ width: '100%', height: 300, marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis dataKey="formattedTime" stroke="#94a3b8" fontSize={11} tickMargin={10} minTickGap={20} />
+                  <YAxis domain={['dataMin', 'dataMax']} stroke="#94a3b8" fontSize={11} width={50} tickFormatter={(v) => v >= 10000 ? `${(v/10000).toFixed(1)}만` : v.toLocaleString()} />
+                  <Tooltip 
+                     contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc' }}
+                     itemStyle={{ color: '#38bdf8', fontWeight: 'bold' }}
+                     formatter={(value) => [value.toLocaleString(), historyFilterChar === '' ? '모험단 총 명성' : '명성']}
+                     labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
+                  />
+                  <Line type="stepAfter" dataKey="fame" stroke="#38bdf8" strokeWidth={2} dot={{ r: 3, strokeWidth: 1, fill: '#0f172a' }} activeDot={{ r: 5 }} animationDuration={1000} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
           {historyLogs.filter(L => historyFilterChar === '' || L.charId === historyFilterChar).length === 0 ? (
             <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem' }}>
               아직 변동 기록이 없습니다.<br/>서버에서 새로운 스펙업 정보가 감지되면 자동으로 이곳에 누적 기록됩니다!
