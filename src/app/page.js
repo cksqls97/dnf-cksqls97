@@ -877,7 +877,28 @@ export default function Home() {
       {activeTab === 'history' && (
         <section className="glass-panel" style={{ minHeight: '60vh' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap:'wrap', gap:'1rem' }}>
-            <h2 style={{ margin: 0 }}>성장 일지</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <h2 style={{ margin: 0 }}>성장 일지</h2>
+              {(() => {
+                let currentFame = 0;
+                if (historyFilterChar === '') {
+                  currentFame = characters.reduce((acc, c) => acc + c.base.fame, 0);
+                } else {
+                  const char = characters.find(c => c.id === historyFilterChar);
+                  if (char) {
+                    currentFame = char.base.fame;
+                  } else {
+                    const charLogs = historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+                    if (charLogs.length > 0) currentFame = charLogs[charLogs.length - 1].fameChange.new;
+                  }
+                }
+                return currentFame > 0 ? (
+                  <div style={{ padding: '0.4rem 0.8rem', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', color: '#38bdf8', fontWeight: 'bold' }}>
+                    현재 명성: <span style={{ color: '#fff' }}>{currentFame.toLocaleString()}</span>
+                  </div>
+                ) : null;
+              })()}
+            </div>
             <select value={historyFilterChar} onChange={e => setHistoryFilterChar(e.target.value)} style={{ padding: '0.5rem', minWidth: '200px' }}>
               <option value="">전체 캐릭터 보기</option>
               {characters.map(c => <option key={c.id} value={c.id}>{c.base.charName} ({c.base.jobGrowName})</option>)}
