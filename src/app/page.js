@@ -56,6 +56,11 @@ const ADVANCED_DUNGEONS = [
   { name: '달이 잠긴 호수', fame: 34749 }
 ];
 
+const RAIDS = [
+  { name: '이내 황혼전', fame: 72688 },
+  { name: '디레지에 레이드', fame: 63257 }
+];
+
 export default function Home() {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -835,12 +840,41 @@ export default function Home() {
                                  boxShadow: isImminent ? '0 0 8px rgba(234, 179, 8, 0.4)' : 'none',
                                  fontWeight: isImminent ? 'bold' : 'normal'
                                }}>
-                                 {isImminent ? '🔥' : '🚀'} {nextDungeon.name}까지 <strong style={{color: isImminent ? '#fde047' : '#f87171'}}>{diff.toLocaleString()}</strong> 남음
+                                 {isImminent ? '🔥' : '🚀'} 상급 {nextDungeon.name}까지 <strong style={{color: isImminent ? '#fde047' : '#f87171'}}>{diff.toLocaleString()}</strong>
                                </div>
                              )}
-                             {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2).map((dungeon, idx) => (
-                                <span key={dungeon.name} style={{ background: idx === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)', color: idx === 0 ? '#38bdf8' : 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: idx === 0 ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
-                                   {dungeon.name}
+                             {(() => {
+                               const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
+                               if (!nextRaid) return null;
+                               const raidDiff = nextRaid.fame - c.base.fame;
+                               const isRaidImminent = raidDiff < 1000;
+                               return (
+                                 <div style={{ 
+                                   fontSize: '0.75rem', 
+                                   color: isRaidImminent ? '#fef08a' : '#c084fc', 
+                                   marginBottom: '1px', 
+                                   background: isRaidImminent ? 'rgba(234, 179, 8, 0.2)' : 'rgba(192, 132, 252, 0.1)', 
+                                   padding: '0.2rem 0.5rem', 
+                                   borderRadius: '4px', 
+                                   border: isRaidImminent ? '1px solid rgba(234, 179, 8, 0.5)' : '1px solid rgba(192, 132, 252, 0.2)', 
+                                   textAlign: 'center', 
+                                   whiteSpace: 'nowrap',
+                                   boxShadow: isRaidImminent ? '0 0 8px rgba(234, 179, 8, 0.4)' : 'none',
+                                   fontWeight: isRaidImminent ? 'bold' : 'normal'
+                                 }}>
+                                   {isRaidImminent ? '🔥' : '⚔️'} 레이드 {nextRaid.name}까지 <strong style={{color: isRaidImminent ? '#fde047' : '#a855f7'}}>{raidDiff.toLocaleString()}</strong>
+                                 </div>
+                               );
+                             })()}
+
+                             {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 1).map((dungeon, idx) => (
+                                <span key={dungeon.name} style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                                   클리어: {dungeon.name}
+                                </span>
+                             ))}
+                             {RAIDS.filter(r => c.base.fame >= r.fame).slice(0, 1).map((raid, idx) => (
+                                <span key={raid.name} style={{ background: 'rgba(192, 132, 252, 0.2)', color: '#d8b4fe', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: '1px solid rgba(192, 132, 252, 0.3)', marginTop: '1px' }}>
+                                   클리어: {raid.name}
                                 </span>
                              ))}
                            </div>
@@ -1006,49 +1040,73 @@ export default function Home() {
                    return diffA - diffB;
                });
 
-               if (imminentChars.length === 0) {
-                 return (
-                   <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem', gridColumn: '1 / -1' }}>
-                     모든 상급던전 조건을 달성했거나 등록된 캐릭터가 없습니다.
-                   </div>
-                 );
-               }
-
-               return imminentChars.map(c => {
-                 const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
-                 const diff = nextDungeon.fame - c.base.fame;
-                 const isImminent = diff < 1000;
-                 return (
-                   <div key={c.id} style={{ 
-                     background: isImminent ? 'rgba(234, 179, 8, 0.05)' : 'rgba(255, 255, 255, 0.02)', 
-                     border: isImminent ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)', 
-                     borderRadius: '8px', 
-                     padding: '1.2rem', 
-                     boxShadow: isImminent ? '0 0 12px rgba(234, 179, 8, 0.1)' : 'none', 
-                     display: 'flex', 
-                     flexDirection: 'column', 
-                     gap: '0.8rem' 
-                   }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                       <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isImminent ? '#fef08a' : '#e2e8f0' }}>{c.base.charName}</span>
-                       <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
-                     </div>
-                     <div style={{ fontSize: '0.95rem', color: '#cbd5e1' }}>현재 명성: <span style={{ color: isImminent ? '#fbbf24' : '#38bdf8', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
-                     <div style={{ 
-                       background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255, 255, 255, 0.05)', 
-                       padding: '0.8rem', 
-                       borderRadius: '6px', 
-                       fontSize: '1rem', 
-                       color: isImminent ? '#fef08a' : '#cbd5e1', 
-                       textAlign: 'center', 
-                       marginTop: 'auto', 
-                       border: isImminent ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' 
-                     }}>
-                       {isImminent ? '🔥' : '🚀'} <strong>{nextDungeon.name}</strong> 컷까지 <strong style={{ color: '#fff', fontSize: '1.15em' }}>{diff.toLocaleString()}</strong> 남음{isImminent ? '!' : ''}
-                     </div>
-                   </div>
-                 );
+               const raidChars = characters.filter(c => {
+                   const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
+                   return nextRaid != null;
+               }).sort((a, b) => {
+                   const diffA = [...RAIDS].reverse().find(d => d.fame > a.base.fame).fame - a.base.fame;
+                   const diffB = [...RAIDS].reverse().find(d => d.fame > b.base.fame).fame - b.base.fame;
+                   return diffA - diffB;
                });
+
+               const renderCards = (chars, type) => {
+                 if (chars.length === 0) {
+                   return (
+                     <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', gridColumn: '1 / -1', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                       모든 {type} 조건을 달성했거나 대상 캐릭터가 없습니다.
+                     </div>
+                   );
+                 }
+                 return chars.map(c => {
+                   const dungeons = type === '상급던전' ? ADVANCED_DUNGEONS : RAIDS;
+                   const target = [...dungeons].reverse().find(d => d.fame > c.base.fame);
+                   const diff = target.fame - c.base.fame;
+                   const isImminent = diff < 1000;
+                   return (
+                     <div key={c.id} style={{ 
+                       background: isImminent ? 'rgba(234, 179, 8, 0.05)' : 'rgba(255, 255, 255, 0.02)', 
+                       border: isImminent ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(255, 255, 255, 0.1)', 
+                       borderRadius: '8px', 
+                       padding: '1.2rem', 
+                       boxShadow: isImminent ? '0 0 12px rgba(234, 179, 8, 0.1)' : 'none', 
+                       display: 'flex', 
+                       flexDirection: 'column', 
+                       gap: '0.8rem' 
+                     }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                         <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isImminent ? '#fef08a' : '#e2e8f0' }}>{c.base.charName}</span>
+                         <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
+                       </div>
+                       <div style={{ fontSize: '0.95rem', color: '#cbd5e1' }}>현재 명성: <span style={{ color: isImminent ? '#fbbf24' : '#38bdf8', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
+                       <div style={{ 
+                         background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255, 255, 255, 0.05)', 
+                         padding: '0.8rem', 
+                         borderRadius: '6px', 
+                         fontSize: '1rem', 
+                         color: isImminent ? '#fef08a' : '#cbd5e1', 
+                         textAlign: 'center', 
+                         marginTop: 'auto', 
+                         border: isImminent ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' 
+                       }}>
+                         {isImminent ? '🔥' : (type === '상급던전' ? '🚀' : '⚔️')} <strong>{target.name}</strong> 컷까지 <strong style={{ color: '#fff', fontSize: '1.15em' }}>{diff.toLocaleString()}</strong> 남음{isImminent ? '!' : ''}
+                       </div>
+                     </div>
+                   );
+                 });
+               };
+
+               return (
+                 <div style={{ gridColumn: '1 / -1' }}>
+                    <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#93c5fd' }}>■ 상급 던전 편</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                       {renderCards(imminentChars, '상급던전')}
+                    </div>
+                    <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#d8b4fe' }}>■ 레이드 편 (입장컷 기준)</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+                       {renderCards(raidChars, '레이드')}
+                    </div>
+                 </div>
+               );
             })()}
           </div>
         </section>
