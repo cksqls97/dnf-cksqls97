@@ -663,7 +663,7 @@ export default function Home() {
       <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
          <button className={`tab-btn ${activeTab === 'roster' ? 'active' : ''}`} onClick={() => setActiveTab('roster')}>👥 캐릭터 로스터</button>
          <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>📜 성장 일지 기록</button>
-         <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>🚨 입장 임박 캐릭터</button>
+         <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>🔥컷 임박 (1000 미만)</button>
       </div>
 
       {activeTab === 'roster' && (
@@ -809,39 +809,44 @@ export default function Home() {
                     )}
                   </td>
                   <td data-label="명성">
-                    <div style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textAlign: 'center' }}>
-                       {c.base.fame.toLocaleString()}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', alignItems: 'center' }}>
-                       {(() => {
-                           const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
-                           if (!nextDungeon) return null;
-                           const diff = nextDungeon.fame - c.base.fame;
-                           const isImminent = diff < 1000;
-                           return (
-                             <div style={{ 
-                               fontSize: '0.75rem', 
-                               color: isImminent ? '#fef08a' : '#fca5a5', 
-                               marginBottom: '1px', 
-                               background: isImminent ? 'rgba(234, 179, 8, 0.2)' : 'rgba(248, 113, 113, 0.1)', 
-                               padding: '0.2rem 0.5rem', 
-                               borderRadius: '4px', 
-                               border: isImminent ? '1px solid rgba(234, 179, 8, 0.5)' : '1px solid rgba(248, 113, 113, 0.2)', 
-                               textAlign: 'center', 
-                               whiteSpace: 'nowrap',
-                               boxShadow: isImminent ? '0 0 8px rgba(234, 179, 8, 0.4)' : 'none',
-                               fontWeight: isImminent ? 'bold' : 'normal'
-                             }}>
-                               {isImminent ? '🔥' : '🚀'} {nextDungeon.name}까지 <strong style={{color: isImminent ? '#fde047' : '#f87171'}}>{diff.toLocaleString()}</strong> 남음
-                             </div>
-                           );
-                       })()}
-                       {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2).map((dungeon, idx) => (
-                          <span key={dungeon.name} style={{ background: idx === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)', color: idx === 0 ? '#38bdf8' : 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: idx === 0 ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
-                             {dungeon.name}
-                          </span>
-                       ))}
-                    </div>
+                    {(() => {
+                       const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
+                       const diff = nextDungeon ? nextDungeon.fame - c.base.fame : 99999;
+                       const isImminent = nextDungeon && (diff < 1000);
+                       
+                       return (
+                         <>
+                           <div style={{ color: isImminent ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textAlign: 'center', textShadow: isImminent ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }}>
+                             {isImminent && <span style={{marginRight: '3px'}}>🔥</span>}
+                             {c.base.fame.toLocaleString()}
+                           </div>
+                           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', alignItems: 'center' }}>
+                             {nextDungeon && (
+                               <div style={{ 
+                                 fontSize: '0.75rem', 
+                                 color: isImminent ? '#fef08a' : '#fca5a5', 
+                                 marginBottom: '1px', 
+                                 background: isImminent ? 'rgba(234, 179, 8, 0.2)' : 'rgba(248, 113, 113, 0.1)', 
+                                 padding: '0.2rem 0.5rem', 
+                                 borderRadius: '4px', 
+                                 border: isImminent ? '1px solid rgba(234, 179, 8, 0.5)' : '1px solid rgba(248, 113, 113, 0.2)', 
+                                 textAlign: 'center', 
+                                 whiteSpace: 'nowrap',
+                                 boxShadow: isImminent ? '0 0 8px rgba(234, 179, 8, 0.4)' : 'none',
+                                 fontWeight: isImminent ? 'bold' : 'normal'
+                               }}>
+                                 {isImminent ? '🔥' : '🚀'} {nextDungeon.name}까지 <strong style={{color: isImminent ? '#fde047' : '#f87171'}}>{diff.toLocaleString()}</strong> 남음
+                               </div>
+                             )}
+                             {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2).map((dungeon, idx) => (
+                                <span key={dungeon.name} style={{ background: idx === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)', color: idx === 0 ? '#38bdf8' : 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: idx === 0 ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                   {dungeon.name}
+                                </span>
+                             ))}
+                           </div>
+                         </>
+                       );
+                    })()}
                   </td>
                   <td data-label="장비">
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.equipment.setName}</div>
@@ -987,7 +992,7 @@ export default function Home() {
 
       {activeTab === 'imminent' && (
         <section className="glass-panel" style={{ minHeight: '60vh' }}>
-          <h2 style={{ margin: '0 0 1.5rem 0' }}>🚨 상급던전 입장 임박 캐릭터</h2>
+          <h2 style={{ margin: '0 0 1.5rem 0' }}>🔥 다음 던전 컷 임박 캐릭터 (명성 1,000 미만)</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>다음 상급던전 입장까지 명성이 1,000 미만으로 남은 캐릭터 목록입니다.</p>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
