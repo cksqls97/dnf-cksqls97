@@ -867,14 +867,14 @@ export default function Home() {
                                );
                              })()}
 
-                             {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 1).map((dungeon, idx) => (
-                                <span key={dungeon.name} style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-                                   클리어: {dungeon.name}
+                             {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2).map((dungeon, idx) => (
+                                <span key={dungeon.name} style={{ background: idx === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)', color: idx === 0 ? '#38bdf8' : 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: idx === 0 ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                   {dungeon.name}
                                 </span>
                              ))}
                              {RAIDS.filter(r => c.base.fame >= r.fame).slice(0, 1).map((raid, idx) => (
                                 <span key={raid.name} style={{ background: 'rgba(192, 132, 252, 0.2)', color: '#d8b4fe', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: '1px solid rgba(192, 132, 252, 0.3)', marginTop: '1px' }}>
-                                   클리어: {raid.name}
+                                   {raid.name}
                                 </span>
                              ))}
                            </div>
