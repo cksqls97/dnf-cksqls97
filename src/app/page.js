@@ -663,6 +663,7 @@ export default function Home() {
       <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
          <button className={`tab-btn ${activeTab === 'roster' ? 'active' : ''}`} onClick={() => setActiveTab('roster')}>👥 캐릭터 로스터</button>
          <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>📜 성장 일지 기록</button>
+         <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>🚨 입장 임박 캐릭터</button>
       </div>
 
       {activeTab === 'roster' && (
@@ -816,9 +817,22 @@ export default function Home() {
                            const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
                            if (!nextDungeon) return null;
                            const diff = nextDungeon.fame - c.base.fame;
+                           const isImminent = diff < 1000;
                            return (
-                             <div style={{ fontSize: '0.75rem', color: '#fca5a5', marginBottom: '1px', background: 'rgba(248, 113, 113, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(248, 113, 113, 0.2)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                               🚀 {nextDungeon.name}까지 <strong style={{color: '#f87171'}}>{diff.toLocaleString()}</strong> 남음
+                             <div style={{ 
+                               fontSize: '0.75rem', 
+                               color: isImminent ? '#fef08a' : '#fca5a5', 
+                               marginBottom: '1px', 
+                               background: isImminent ? 'rgba(234, 179, 8, 0.2)' : 'rgba(248, 113, 113, 0.1)', 
+                               padding: '0.2rem 0.5rem', 
+                               borderRadius: '4px', 
+                               border: isImminent ? '1px solid rgba(234, 179, 8, 0.5)' : '1px solid rgba(248, 113, 113, 0.2)', 
+                               textAlign: 'center', 
+                               whiteSpace: 'nowrap',
+                               boxShadow: isImminent ? '0 0 8px rgba(234, 179, 8, 0.4)' : 'none',
+                               fontWeight: isImminent ? 'bold' : 'normal'
+                             }}>
+                               {isImminent ? '🔥' : '🚀'} {nextDungeon.name}까지 <strong style={{color: isImminent ? '#fde047' : '#f87171'}}>{diff.toLocaleString()}</strong> 남음
                              </div>
                            );
                        })()}
@@ -968,6 +982,51 @@ export default function Home() {
               })}
             </div>
           )}
+        </section>
+      )}
+
+      {activeTab === 'imminent' && (
+        <section className="glass-panel" style={{ minHeight: '60vh' }}>
+          <h2 style={{ margin: '0 0 1.5rem 0' }}>🚨 상급던전 입장 임박 캐릭터</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>다음 상급던전 입장까지 명성이 1,000 미만으로 남은 캐릭터 목록입니다.</p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+            {(() => {
+               const imminentChars = characters.filter(c => {
+                   const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
+                   return nextDungeon && (nextDungeon.fame - c.base.fame) < 1000;
+               }).sort((a, b) => {
+                   const diffA = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > a.base.fame).fame - a.base.fame;
+                   const diffB = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > b.base.fame).fame - b.base.fame;
+                   return diffA - diffB;
+               });
+
+               if (imminentChars.length === 0) {
+                 return (
+                   <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem', gridColumn: '1 / -1' }}>
+                     입장이 임박한 상급던전 캐릭터가 없습니다.
+                   </div>
+                 );
+               }
+
+               return imminentChars.map(c => {
+                 const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
+                 const diff = nextDungeon.fame - c.base.fame;
+                 return (
+                   <div key={c.id} style={{ background: 'rgba(234, 179, 8, 0.05)', border: '1px solid rgba(234, 179, 8, 0.4)', borderRadius: '8px', padding: '1.2rem', boxShadow: '0 0 12px rgba(234, 179, 8, 0.1)', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#fef08a' }}>{c.base.charName}</span>
+                       <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
+                     </div>
+                     <div style={{ fontSize: '0.95rem', color: '#cbd5e1' }}>현재 명성: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
+                     <div style={{ background: 'rgba(234, 179, 8, 0.15)', padding: '0.8rem', borderRadius: '6px', fontSize: '1rem', color: '#fef08a', textAlign: 'center', marginTop: 'auto', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
+                       🔥 <strong>{nextDungeon.name}</strong> 컷까지 <strong style={{ color: '#fff', fontSize: '1.15em' }}>{diff.toLocaleString()}</strong> 남음!
+                     </div>
+                   </div>
+                 );
+               });
+            })()}
+          </div>
         </section>
       )}
 
