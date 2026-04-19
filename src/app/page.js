@@ -702,6 +702,7 @@ export default function Home() {
             상단의 폼을 이용해 관리할 캐릭터를 추가해주세요.
           </div>
         ) : (
+          <table style={{ tableLayout: 'fixed', width: '100%' }}>
             <thead>
               <tr>
                 <th style={{ width: '6%', textAlign: 'center' }}>서버</th>
@@ -837,7 +838,7 @@ export default function Home() {
                       const isImminent = diff !== null && diff < 1000;
                       const cleared = ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2);
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           {nextDungeon && (
                             <div style={{
                               fontSize: '0.72rem',
