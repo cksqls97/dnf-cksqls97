@@ -705,14 +705,16 @@ export default function Home() {
           <table style={{ tableLayout: 'fixed', width: '100%' }}>
             <thead>
               <tr>
-                <th style={{ width: '8%' }}>서버</th>
-                <th style={{ width: '11%' }}>직업</th>
-                <th style={{ width: '28%' }}>캐릭터명 (스펙 현황)</th>
-                <th style={{ width: '9%' }}>명성</th>
-                <th style={{ width: '15%' }}>장비 (점수)</th>
-                <th style={{ width: '10%' }}>서약 (점수)</th>
-                <th style={{ width: '8%' }}>던담 링크</th>
-                <th style={{ width: '11%' }}>관리</th>
+                <th style={{ width: '6%' }}>서버</th>
+                <th style={{ width: '9%' }}>직업</th>
+                <th style={{ width: '20%' }}>캐릭터명 (스펙 현황)</th>
+                <th style={{ width: '7%' }}>명성</th>
+                <th style={{ width: '13%' }}>상급던전</th>
+                <th style={{ width: '11%' }}>레이드</th>
+                <th style={{ width: '13%' }}>장비 (점수)</th>
+                <th style={{ width: '9%' }}>서약 (점수)</th>
+                <th style={{ width: '6%' }}>던담</th>
+                <th style={{ width: '6%' }}>관리</th>
               </tr>
             </thead>
             <tbody>
@@ -813,73 +815,103 @@ export default function Home() {
                       </table>
                     )}
                   </td>
-                  <td data-label="명성">
+                  <td data-label="명성" style={{ textAlign: 'center' }}>
                     {(() => {
-                       const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
-                       const diff = nextDungeon ? nextDungeon.fame - c.base.fame : 99999;
-                       const isImminent = nextDungeon && (diff < 1000);
-                       
-                       return (
-                         <>
-                           <div style={{ color: isImminent ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textAlign: 'center', textShadow: isImminent ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }}>
-                             {isImminent && <span style={{marginRight: '3px'}}>🔥</span>}
-                             {c.base.fame.toLocaleString()}
-                           </div>
-                           <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '6px', alignItems: 'center' }}>
-                             {nextDungeon && (
-                               <div style={{ 
-                                 fontSize: '0.75rem', 
-                                 color: isImminent ? '#fef08a' : '#fca5a5', 
-                                 marginBottom: '1px', 
-                                 background: isImminent ? 'rgba(234, 179, 8, 0.2)' : 'rgba(248, 113, 113, 0.1)', 
-                                 padding: '0.2rem 0.5rem', 
-                                 borderRadius: '4px', 
-                                 border: isImminent ? '1px solid rgba(234, 179, 8, 0.5)' : '1px solid rgba(248, 113, 113, 0.2)', 
-                                 textAlign: 'center', 
-                                 whiteSpace: 'nowrap',
-                                 boxShadow: isImminent ? '0 0 8px rgba(234, 179, 8, 0.4)' : 'none',
-                                 fontWeight: isImminent ? 'bold' : 'normal'
-                               }}>
-                                 {isImminent ? '🔥' : '🚀'} 상급 {nextDungeon.name}까지 <strong style={{color: isImminent ? '#fde047' : '#f87171'}}>{diff.toLocaleString()}</strong>
-                               </div>
-                             )}
-                             {(() => {
-                               const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
-                               if (!nextRaid) return null;
-                               const raidDiff = nextRaid.fame - c.base.fame;
-                               const isRaidImminent = raidDiff < 1000;
-                               return (
-                                 <div style={{ 
-                                   fontSize: '0.75rem', 
-                                   color: isRaidImminent ? '#fef08a' : '#c084fc', 
-                                   marginBottom: '1px', 
-                                   background: isRaidImminent ? 'rgba(234, 179, 8, 0.2)' : 'rgba(192, 132, 252, 0.1)', 
-                                   padding: '0.2rem 0.5rem', 
-                                   borderRadius: '4px', 
-                                   border: isRaidImminent ? '1px solid rgba(234, 179, 8, 0.5)' : '1px solid rgba(192, 132, 252, 0.2)', 
-                                   textAlign: 'center', 
-                                   whiteSpace: 'nowrap',
-                                   boxShadow: isRaidImminent ? '0 0 8px rgba(234, 179, 8, 0.4)' : 'none',
-                                   fontWeight: isRaidImminent ? 'bold' : 'normal'
-                                 }}>
-                                   {isRaidImminent ? '🔥' : '⚔️'} 레이드 {nextRaid.name}까지 <strong style={{color: isRaidImminent ? '#fde047' : '#a855f7'}}>{raidDiff.toLocaleString()}</strong>
-                                 </div>
-                               );
-                             })()}
-
-                             {ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2).map((dungeon, idx) => (
-                                <span key={dungeon.name} style={{ background: idx === 0 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)', color: idx === 0 ? '#38bdf8' : 'var(--text-muted)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: idx === 0 ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
-                                   {dungeon.name}
-                                </span>
-                             ))}
-                             {RAIDS.filter(r => c.base.fame >= r.fame).slice(0, 1).map((raid, idx) => (
-                                <span key={raid.name} style={{ background: 'rgba(192, 132, 252, 0.2)', color: '#d8b4fe', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', whiteSpace: 'nowrap', border: '1px solid rgba(192, 132, 252, 0.3)', marginTop: '1px' }}>
-                                   {raid.name}
-                                </span>
-                             ))}
-                           </div>
-                         </>
-                       );
+                        const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
+                        const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
+                        const diffD = nextDungeon ? nextDungeon.fame - c.base.fame : null;
+                        const diffR = nextRaid ? nextRaid.fame - c.base.fame : null;
+                        const isImminent = (diffD !== null && diffD < 1000) || (diffR !== null && diffR < 1000);
+                        return (
+                          <div style={{ color: isImminent ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textShadow: isImminent ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }}>
+                            {isImminent && <span style={{ marginRight: '3px' }}>🔥</span>}
+                            {c.base.fame.toLocaleString()}
+                          </div>
+                        );
+                    })()}
+                  </td>
+                  <td data-label="상급던전">
+                    {(() => {
+                      const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
+                      const diff = nextDungeon ? nextDungeon.fame - c.base.fame : null;
+                      const isImminent = diff !== null && diff < 1000;
+                      const cleared = ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2);
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {nextDungeon && (
+                            <div style={{
+                              fontSize: '0.72rem',
+                              color: isImminent ? '#fef08a' : '#fca5a5',
+                              background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(248, 113, 113, 0.08)',
+                              padding: '0.2rem 0.4rem',
+                              borderRadius: '4px',
+                              border: isImminent ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(248, 113, 113, 0.2)',
+                              whiteSpace: 'nowrap',
+                              fontWeight: isImminent ? 'bold' : 'normal',
+                              boxShadow: isImminent ? '0 0 6px rgba(234, 179, 8, 0.3)' : 'none'
+                            }}>
+                              {isImminent ? '🔥' : '🚀'} {nextDungeon.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#f87171' }}>{diff.toLocaleString()}</strong>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+                            {cleared.map((dungeon) => (
+                              <span key={dungeon.name} style={{
+                                background: 'rgba(56, 189, 248, 0.15)',
+                                color: '#38bdf8',
+                                padding: '0.1rem 0.3rem',
+                                borderRadius: '3px',
+                                fontSize: '0.65rem',
+                                border: '1px solid rgba(56,189,248,0.2)'
+                              }}>
+                                {dungeon.name}
+                              </span>
+                            ))}
+                          </div>
+                          {!nextDungeon && cleared.length === 0 && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>}
+                        </div>
+                      );
+                    })()}
+                  </td>
+                  <td data-label="레이드">
+                    {(() => {
+                      const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
+                      const raidDiff = nextRaid ? nextRaid.fame - c.base.fame : null;
+                      const isImminent = raidDiff !== null && raidDiff < 1000;
+                      const clearedRaids = RAIDS.filter(r => c.base.fame >= r.fame);
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {nextRaid && (
+                            <div style={{
+                              fontSize: '0.72rem',
+                              color: isImminent ? '#fef08a' : '#c084fc',
+                              background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(192, 132, 252, 0.08)',
+                              padding: '0.2rem 0.4rem',
+                              borderRadius: '4px',
+                              border: isImminent ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(192, 132, 252, 0.2)',
+                              whiteSpace: 'nowrap',
+                              fontWeight: isImminent ? 'bold' : 'normal',
+                              boxShadow: isImminent ? '0 0 6px rgba(234, 179, 8, 0.3)' : 'none'
+                            }}>
+                              {isImminent ? '🔥' : '⚔️'} {nextRaid.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#a855f7' }}>{raidDiff.toLocaleString()}</strong>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+                            {clearedRaids.map((raid) => (
+                              <span key={raid.name} style={{
+                                background: 'rgba(192, 132, 252, 0.15)',
+                                color: '#d8b4fe',
+                                padding: '0.1rem 0.3rem',
+                                borderRadius: '3px',
+                                fontSize: '0.65rem',
+                                border: '1px solid rgba(192, 132, 252, 0.2)'
+                              }}>
+                                {raid.name}
+                              </span>
+                            ))}
+                          </div>
+                          {!nextRaid && clearedRaids.length === 0 && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>}
+                        </div>
+                      );
                     })()}
                   </td>
                   <td data-label="장비">
