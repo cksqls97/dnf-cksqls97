@@ -702,27 +702,26 @@ export default function Home() {
             상단의 폼을 이용해 관리할 캐릭터를 추가해주세요.
           </div>
         ) : (
-          <table style={{ tableLayout: 'fixed', width: '100%' }}>
             <thead>
               <tr>
-                <th style={{ width: '6%' }}>서버</th>
-                <th style={{ width: '9%' }}>직업</th>
-                <th style={{ width: '20%' }}>캐릭터명 (스펙 현황)</th>
-                <th style={{ width: '7%' }}>명성</th>
-                <th style={{ width: '13%' }}>상급던전</th>
-                <th style={{ width: '11%' }}>레이드</th>
-                <th style={{ width: '13%' }}>장비 (점수)</th>
-                <th style={{ width: '9%' }}>서약 (점수)</th>
-                <th style={{ width: '6%' }}>던담</th>
-                <th style={{ width: '6%' }}>관리</th>
+                <th style={{ width: '6%', textAlign: 'center' }}>서버</th>
+                <th style={{ width: '9%', textAlign: 'center' }}>직업</th>
+                <th style={{ width: '20%', textAlign: 'center' }}>캐릭터명 (스펙 현황)</th>
+                <th style={{ width: '7%', textAlign: 'center' }}>명성</th>
+                <th style={{ width: '13%', textAlign: 'center' }}>상급던전</th>
+                <th style={{ width: '11%', textAlign: 'center' }}>레이드</th>
+                <th style={{ width: '13%', textAlign: 'center' }}>장비 (점수)</th>
+                <th style={{ width: '9%', textAlign: 'center' }}>서약 (점수)</th>
+                <th style={{ width: '6%', textAlign: 'center' }}>던담</th>
+                <th style={{ width: '6%', textAlign: 'center' }}>관리</th>
               </tr>
             </thead>
             <tbody>
-              {characters.map(c => (
+              {characters.map((c, idx) => (
                 <tr key={c.id} style={{ verticalAlign: 'middle' }}>
-                  <td data-label="서버">{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
-                  <td data-label="직업">{c.base.jobGrowName}</td>
-                  <td data-label="스펙 현황">
+                  <td data-label="서버" style={{ textAlign: 'center' }}>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
+                  <td data-label="직업" style={{ textAlign: 'center' }}>{c.base.jobGrowName}</td>
+                  <td data-label="스펙 현황" style={{ textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '1.05rem', marginBottom: '4px' }}>{c.base.charName}</div>
                     
                     {/* 스펙 현황 토글 버튼 */}
@@ -817,8 +816,9 @@ export default function Home() {
                   </td>
                   <td data-label="명성" style={{ textAlign: 'center' }}>
                     {(() => {
+                        const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || idx < 8);
                         const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
-                        const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
+                        const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
                         const diffD = nextDungeon ? nextDungeon.fame - c.base.fame : null;
                         const diffR = nextRaid ? nextRaid.fame - c.base.fame : null;
                         const isImminent = (diffD !== null && diffD < 1000) || (diffR !== null && diffR < 1000);
@@ -830,7 +830,7 @@ export default function Home() {
                         );
                     })()}
                   </td>
-                  <td data-label="상급던전">
+                  <td data-label="상급던전" style={{ textAlign: 'center' }}>
                     {(() => {
                       const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
                       const diff = nextDungeon ? nextDungeon.fame - c.base.fame : null;
@@ -872,14 +872,15 @@ export default function Home() {
                       );
                     })()}
                   </td>
-                  <td data-label="레이드">
+                  <td data-label="레이드" style={{ textAlign: 'center' }}>
                     {(() => {
-                      const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
+                      const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || idx < 8);
+                      const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
                       const raidDiff = nextRaid ? nextRaid.fame - c.base.fame : null;
                       const isImminent = raidDiff !== null && raidDiff < 1000;
-                      const clearedRaids = RAIDS.filter(r => c.base.fame >= r.fame);
+                      const clearedRaids = filteredRaids.filter(r => c.base.fame >= r.fame);
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           {nextRaid && (
                             <div style={{
                               fontSize: '0.72rem',
@@ -895,7 +896,7 @@ export default function Home() {
                               {isImminent ? '🔥' : '⚔️'} {nextRaid.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#a855f7' }}>{raidDiff.toLocaleString()}</strong>
                             </div>
                           )}
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center' }}>
                             {clearedRaids.map((raid) => (
                               <span key={raid.name} style={{
                                 background: 'rgba(192, 132, 252, 0.15)',
@@ -914,13 +915,13 @@ export default function Home() {
                       );
                     })()}
                   </td>
-                  <td data-label="장비">
+                  <td data-label="장비" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.equipment.setName}</div>
                     <div className={getTierClass(c.equipment.rarity)}>
                       {c.equipment.gradeDesc} ({c.equipment.points})
                     </div>
                   </td>
-                  <td data-label="서약">
+                  <td data-label="서약" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.oath.setName}</div>
                     <div className={getTierClass(c.oath.rarity)}>
                       {c.oath.gradeDesc} ({c.oath.points})
@@ -1072,26 +1073,28 @@ export default function Home() {
                    return diffA - diffB;
                });
 
-               const raidChars = characters.filter(c => {
-                   const nextRaid = [...RAIDS].reverse().find(r => r.fame > c.base.fame);
-                   return nextRaid != null;
-               }).sort((a, b) => {
-                   const diffA = [...RAIDS].reverse().find(d => d.fame > a.base.fame).fame - a.base.fame;
-                   const diffB = [...RAIDS].reverse().find(d => d.fame > b.base.fame).fame - b.base.fame;
+               const raidChars = characters.map((c, i) => {
+                   const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || i < 8);
+                   const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
+                   return { char: c, nextRaid, originalIndex: i };
+               }).filter(item => item.nextRaid != null).sort((a, b) => {
+                   const diffA = a.nextRaid.fame - a.char.base.fame;
+                   const diffB = b.nextRaid.fame - b.char.base.fame;
                    return diffA - diffB;
                });
 
-               const renderCards = (chars, type) => {
-                 if (chars.length === 0) {
+               const renderCards = (items, type) => {
+                 if (items.length === 0) {
                    return (
                      <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', gridColumn: '1 / -1', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                        모든 {type} 조건을 달성했거나 대상 캐릭터가 없습니다.
                      </div>
                    );
                  }
-                 return chars.map(c => {
-                   const dungeons = type === '상급던전' ? ADVANCED_DUNGEONS : RAIDS;
-                   const target = [...dungeons].reverse().find(d => d.fame > c.base.fame);
+                 return items.map(item => {
+                   const c = item.char;
+                   const target = item.nextRaid || (type === '상급던전' ? [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame) : null);
+                   if (!target) return null;
                    const diff = target.fame - c.base.fame;
                    const isImminent = diff < 1000;
                    return (
@@ -1127,11 +1130,20 @@ export default function Home() {
                  });
                };
 
+               const imminentItems = characters.map((c, i) => {
+                 const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
+                 return { char: c, nextDungeon, originalIndex: i };
+               }).filter(item => item.nextDungeon != null).sort((a, b) => {
+                 const diffA = a.nextDungeon.fame - a.char.base.fame;
+                 const diffB = b.nextDungeon.fame - b.char.base.fame;
+                 return diffA - diffB;
+               });
+
                return (
                  <div style={{ gridColumn: '1 / -1' }}>
                     <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#93c5fd' }}>■ 상급 던전 편</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                       {renderCards(imminentChars, '상급던전')}
+                       {renderCards(imminentItems, '상급던전')}
                     </div>
                     <h3 style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#d8b4fe' }}>■ 레이드 편 (입장컷 기준)</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
