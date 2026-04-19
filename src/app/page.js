@@ -870,8 +870,9 @@ export default function Home() {
                       <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleDelete(c.id)}>
                         🗑️
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                  </td>
+                </tr>
 
                   {/* 확장 스펙 현황 행 (Full Width) */}
                   {expandedSpecs[c.id] && c.manual && (
