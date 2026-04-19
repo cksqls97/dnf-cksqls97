@@ -967,6 +967,7 @@ export default function Home() {
                     </tr>
                   )}
                 </React.Fragment>
+              ))}
             </tbody>
           </table>
         )}
