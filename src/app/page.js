@@ -1451,7 +1451,7 @@ export default function Home() {
                   </div>
                   {remaining !== null && (
                     <div style={{ fontSize: '0.9rem', color: isNearTarget ? '#fef08a' : '#fb923c', fontWeight: isNearTarget ? 'bold' : 'normal' }}>
-                      {isNearTarget ? '🔥' : '📈'} {remaining === 0 ? '목표 달성!' : ${remaining.toLocaleString()} 부족}
+                      {isNearTarget ? '🔥' : '📈'} {remaining === 0 ? '목표 달성!' : `${remaining.toLocaleString()} 부족`}
                     </div>
                   )}
                 </div>
