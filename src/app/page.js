@@ -807,6 +807,7 @@ export default function Home() {
             style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}
           >🎽 캐릭터 아이템 현황</button>
         </div>
+        {rosterSubTab === 'overview' && (
         <section className="glass-panel" style={{ marginBottom: '2rem' }}>
         <form className="add-form" onSubmit={handleAdd}>
           <select value={server} onChange={e => setServer(e.target.value)}>
@@ -829,7 +830,9 @@ export default function Home() {
           </div>
         </form>
       </section>
+      )}
 
+      {rosterSubTab === 'overview' && (
       <section className="glass-panel table-wrapper">
         {characters.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
@@ -1041,6 +1044,7 @@ export default function Home() {
           </table>
         )}
       </section>
+      )}
 
       {/* 캐릭터 아이템 현황 서브탭 */}
       {rosterSubTab === 'items' && (
