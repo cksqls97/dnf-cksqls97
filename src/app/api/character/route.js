@@ -132,6 +132,7 @@ export async function POST(request) {
       oath: {
         setName: oathSetName,
         points: finalOathPoints,
+        rawPoints: rawOathPoints,
         gradeDesc: formatGrade(oathGradeTier),
         rarity: oathGradeTier.rarity
       }

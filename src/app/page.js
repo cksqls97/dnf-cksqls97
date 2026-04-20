@@ -1407,7 +1407,7 @@ export default function Home() {
 
       {activeTab === 'merc' && (() => {
         const top20 = characters.slice(0, 20);
-        const totalOath = top20.reduce((acc, c) => acc + (c.oath.points || 0), 0);
+        const totalOath = top20.reduce((acc, c) => acc + (c.oath.rawPoints ?? c.oath.points ?? 0), 0);
         const hasTarget = mercNextLevelTarget > 0;
         const progress = hasTarget ? Math.min(totalOath / mercNextLevelTarget * 100, 100) : 0;
         const remaining = hasTarget ? Math.max(mercNextLevelTarget - totalOath, 0) : null;
@@ -1479,9 +1479,9 @@ export default function Home() {
                 {top20.length === 0 ? (
                   <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>캐릭터를 먼저 추가해주세요.</div>
                 ) : top20.map((c, i) => {
-                  const pts = c.oath.points || 0;
+                  const pts = c.oath.rawPoints ?? c.oath.points ?? 0;
                   const pct = totalOath > 0 ? (pts / totalOath * 100) : 0;
-                  const maxPts = top20.reduce((mx, ch) => Math.max(mx, ch.oath.points||0), 0);
+                  const maxPts = top20.reduce((mx, ch) => Math.max(mx, ch.oath.rawPoints ?? ch.oath.points ?? 0), 0);
                   const relPct = maxPts > 0 ? (pts / maxPts * 100) : 0;
                   return (
                     <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
