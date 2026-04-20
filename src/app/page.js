@@ -1458,7 +1458,7 @@ export default function Home() {
                 {hasTarget && (
                   <div>
                     <div style={{ height: '18px', background: 'rgba(255,255,255,0.07)', borderRadius: '9px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div style={{ height: '100%', width: ${progress}%, borderRadius: '9px', background: progress >= 100 ? 'linear-gradient(90deg,#22c55e,#16a34a)' : isNearTarget ? 'linear-gradient(90deg,#fbbf24,#f59e0b)' : 'linear-gradient(90deg,#fb923c,#f97316)', transition: 'width 0.6s ease', boxShadow: isNearTarget ? '0 0 10px rgba(251,191,36,0.5)' : '0 0 8px rgba(251,146,60,0.4)' }} />
+                      <div style={{ height: '100%', width: `${progress}%`, borderRadius: '9px', background: progress >= 100 ? 'linear-gradient(90deg,#22c55e,#16a34a)' : isNearTarget ? 'linear-gradient(90deg,#fbbf24,#f59e0b)' : 'linear-gradient(90deg,#fb923c,#f97316)', transition: 'width 0.6s ease', boxShadow: isNearTarget ? '0 0 10px rgba(251,191,36,0.5)' : '0 0 8px rgba(251,146,60,0.4)' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.3rem', fontSize: '0.72rem', color: '#64748b' }}>
                       <span>Lv.{mercLevel}</span>
@@ -1491,7 +1491,7 @@ export default function Home() {
                         <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{c.base.jobGrowName}</div>
                       </div>
                       <div style={{ flex: 1, height: '10px', background: 'rgba(255,255,255,0.06)', borderRadius: '5px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: ${relPct}%, background: 'linear-gradient(90deg,#fb923c,#f97316)', borderRadius: '5px', transition: 'width 0.4s ease' }} />
+                        <div style={{ height: '100%', width: `${relPct}%`, background: 'linear-gradient(90deg,#fb923c,#f97316)', borderRadius: '5px', transition: 'width 0.4s ease' }} />
                       </div>
                       <span style={{ width: '70px', textAlign: 'right', fontWeight: 'bold', color: '#fb923c', fontSize: '0.9rem', flexShrink: 0 }}>{pts.toLocaleString()}</span>
                       <span style={{ width: '45px', textAlign: 'right', fontSize: '0.75rem', color: '#64748b', flexShrink: 0 }}>{pct.toFixed(1)}%</span>
