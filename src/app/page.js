@@ -77,8 +77,106 @@ export default function Home() {
 
   const [editingLogId, setEditingLogId] = useState(null);
   const [editLogForm, setEditLogForm] = useState(null);
+  const [chartViewMode, setChartViewMode] = useState('event'); // 'event' | 'daily'
   
   const chartData = React.useMemo(() => {
+    // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
+    if (chartViewMode === 'daily') {
+      // 어떤 로그를 대상으로 할지 결정
+      const relevantLogs = historyLogs
+        .filter(l => l.fameChange && (historyFilterChar === '' || l.charId === historyFilterChar))
+        .sort((a, b) => a.timestamp - b.timestamp);
+
+      if (relevantLogs.length === 0) {
+        if (characters.length > 0) {
+          const now = new Date();
+          return [{ time: Date.now(), formattedTime: '현재', fame: historyFilterChar === '' ? characters.reduce((acc, c) => acc + c.base.fame, 0) : (characters.find(c => c.id === historyFilterChar)?.base.fame ?? 0) }];
+        }
+        return [];
+      }
+
+      // 각 타임스탬프에 대해 '일자 키' 계산 (06:00 기준 → KST=UTC+9, 06:00 KST = 21:00 UTC 전날)
+      const getDayKey = (ts) => {
+        const d = new Date(ts);
+        // 06:00 KST 기준: UTC 시간에서 -9+6=-3시간 빼기 → 같은 날로 묶기
+        const offset = (9 - 6) * 60 * 60 * 1000; // 3시간
+        const adjusted = new Date(ts - offset);
+        return `${adjusted.getUTCFullYear()}-${String(adjusted.getUTCMonth()+1).padStart(2,'0')}-${String(adjusted.getUTCDate()).padStart(2,'0')}`;
+      };
+
+      // 각 타임스탬프별 전체 명성값 계산 (이벤트 모드와 동일 로직)
+      const allTimestamps = [...new Set(historyLogs.filter(l => l.fameChange).map(l => l.timestamp))].sort((a,b)=>a-b);
+      const computeFameAt = (t) => {
+        let total = 0;
+        if (historyFilterChar === '') {
+          characters.forEach(c => {
+            const cLogs = historyLogs.filter(l => l.charId === c.id && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+            if (cLogs.length === 0) { total += c.base.fame; }
+            else {
+              const past = cLogs.filter(l => l.timestamp <= t);
+              total += past.length > 0 ? past[past.length-1].fameChange.new : cLogs[0].fameChange.old;
+            }
+          });
+        } else {
+          const cLogs = historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).sort((a,b) => a.timestamp - b.timestamp);
+          const past = cLogs.filter(l => l.timestamp <= t);
+          total = past.length > 0 ? past[past.length-1].fameChange.new : (cLogs[0]?.fameChange.old ?? 0);
+        }
+        return total;
+      };
+
+      // 관련 타임스탬프만 추출
+      const targetTimestamps = historyFilterChar === ''
+        ? allTimestamps
+        : [...new Set(historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).map(l => l.timestamp))].sort((a,b)=>a-b);
+
+      // 일자별로 가장 마지막 타임스탬프 선택
+      const dayMap = {};
+      targetTimestamps.forEach(t => {
+        const key = getDayKey(t);
+        dayMap[key] = t; // 덮어쓰면 자연스럽게 당일 최신값
+      });
+
+      const days = Object.keys(dayMap).sort();
+      const dataPoints = days.map(day => {
+        const t = dayMap[day];
+        const fame = computeFameAt(t);
+        const [y, m, d] = day.split('-');
+        return { time: t, formattedTime: `${m}/${d}`, fame };
+      });
+
+      // 시작 포인트 추가
+      if (dataPoints.length > 0) {
+        const firstT = targetTimestamps[0];
+        let initFame = 0;
+        if (historyFilterChar === '') {
+          characters.forEach(c => {
+            const cLogs = historyLogs.filter(l => l.charId === c.id && l.fameChange).sort((a,b)=>a.timestamp-b.timestamp);
+            initFame += cLogs.length > 0 ? cLogs[0].fameChange.old : c.base.fame;
+          });
+        } else {
+          const cLogs = historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).sort((a,b)=>a.timestamp-b.timestamp);
+          initFame = cLogs.length > 0 ? cLogs[0].fameChange.old : (characters.find(c=>c.id===historyFilterChar)?.base.fame ?? 0);
+        }
+        const firstDay = getDayKey(firstT);
+        const [y,m,d] = firstDay.split('-');
+        dataPoints.unshift({ time: firstT - 1, formattedTime: `${m}/${d} 이전`, fame: initFame });
+      }
+
+      // 현재 포인트 추가
+      const now = Date.now();
+      const lastT = targetTimestamps[targetTimestamps.length - 1];
+      if (now - lastT > 60000) {
+        let curFame = historyFilterChar === ''
+          ? characters.reduce((acc,c) => acc+c.base.fame, 0)
+          : (characters.find(c=>c.id===historyFilterChar)?.base.fame ?? (() => { const cl = historyLogs.filter(l=>l.charId===historyFilterChar&&l.fameChange).sort((a,b)=>a.timestamp-b.timestamp); return cl.length>0?cl[cl.length-1].fameChange.new:0; })());
+        dataPoints.push({ time: now, formattedTime: '현재', fame: curFame });
+      }
+
+      return dataPoints;
+    }
+
+    // --- 이벤트 모드 (기존 로직) ---
     const timestamps = new Set();
     historyLogs.forEach(log => {
         if (log.fameChange) timestamps.add(log.timestamp);
@@ -208,7 +306,7 @@ export default function Home() {
     }
 
     return dataPoints;
-  }, [historyLogs, characters, historyFilterChar]);
+  }, [historyLogs, characters, historyFilterChar, chartViewMode]);
   
   const [server, setServer] = useState('cain');
   const [charName, setCharName] = useState('');
@@ -1005,7 +1103,34 @@ export default function Home() {
               {characters.map(c => <option key={c.id} value={c.id}>{c.base.charName} ({c.base.jobGrowName})</option>)}
             </select>
           </div>
-          
+
+          {/* 그래프 뷰 모드 토글 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>그래프 기준:</span>
+            <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '3px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <button
+                onClick={() => setChartViewMode('event')}
+                style={{
+                  padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                  background: chartViewMode === 'event' ? 'rgba(56, 189, 248, 0.25)' : 'transparent',
+                  color: chartViewMode === 'event' ? '#38bdf8' : '#94a3b8',
+                  fontWeight: chartViewMode === 'event' ? 'bold' : 'normal',
+                  boxShadow: chartViewMode === 'event' ? '0 0 8px rgba(56,189,248,0.2)' : 'none'
+                }}
+              >⚡ 이벤트 발생 기준</button>
+              <button
+                onClick={() => setChartViewMode('daily')}
+                style={{
+                  padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                  background: chartViewMode === 'daily' ? 'rgba(167, 139, 250, 0.25)' : 'transparent',
+                  color: chartViewMode === 'daily' ? '#a78bfa' : '#94a3b8',
+                  fontWeight: chartViewMode === 'daily' ? 'bold' : 'normal',
+                  boxShadow: chartViewMode === 'daily' ? '0 0 8px rgba(167,139,250,0.2)' : 'none'
+                }}
+              >📅 일자별 (매일 06:00 기준)</button>
+            </div>
+          </div>
+
           {chartData.length > 0 && (
             <div style={{ width: '100%', height: 300, marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -1019,7 +1144,7 @@ export default function Home() {
                      formatter={(value) => [value.toLocaleString(), historyFilterChar === '' ? '모험단 총 명성' : '명성']}
                      labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
                   />
-                  <Line type="stepAfter" dataKey="fame" stroke="#38bdf8" strokeWidth={2} dot={{ r: 3, strokeWidth: 1, fill: '#0f172a' }} activeDot={{ r: 5 }} animationDuration={1000} />
+                  <Line type={chartViewMode === 'daily' ? 'linear' : 'stepAfter'} dataKey="fame" stroke={chartViewMode === 'daily' ? '#a78bfa' : '#38bdf8'} strokeWidth={2} dot={{ r: 3, strokeWidth: 1, fill: '#0f172a' }} activeDot={{ r: 5 }} animationDuration={1000} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
