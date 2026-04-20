@@ -61,6 +61,12 @@ const RAIDS = [
   { name: '디레지에 레이드', fame: 63257 }
 ];
 
+const APOCALYPSE = [
+  { name: '2단계', fame: 105881 },
+  { name: '1단계', fame: 98171 },
+  { name: '매칭', fame: 73993 }
+];
+
 export default function Home() {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -803,16 +809,17 @@ export default function Home() {
           <table style={{ tableLayout: 'fixed', width: '100%' }}>
             <thead>
               <tr>
-                <th style={{ width: '6%', textAlign: 'center' }}>서버</th>
-                <th style={{ width: '9%', textAlign: 'center' }}>직업</th>
-                <th style={{ width: '20%', textAlign: 'center' }}>캐릭터명 (스펙 현황)</th>
-                <th style={{ width: '7%', textAlign: 'center' }}>명성</th>
-                <th style={{ width: '13%', textAlign: 'center' }}>상급던전</th>
-                <th style={{ width: '11%', textAlign: 'center' }}>레이드</th>
-                <th style={{ width: '13%', textAlign: 'center' }}>장비 (점수)</th>
-                <th style={{ width: '9%', textAlign: 'center' }}>서약 (점수)</th>
-                <th style={{ width: '6%', textAlign: 'center' }}>던담</th>
-                <th style={{ width: '6%', textAlign: 'center' }}>관리</th>
+                <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>직업</th>
+                <th style={{ width: '16%', textAlign: 'center' }}>캐릭터명 (스펙 현황)</th>
+                <th style={{ width: '6%', textAlign: 'center' }}>명성</th>
+                <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
+                <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
+                <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
+                <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
+                <th style={{ width: '7%', textAlign: 'center' }}>던담</th>
+                <th style={{ width: '7%', textAlign: 'center' }}>관리</th>
               </tr>
             </thead>
             <tbody>
@@ -934,6 +941,48 @@ export default function Home() {
                       );
                     })()}
                   </td>
+                  <td data-label="아포칼립스" style={{ textAlign: 'center' }}>
+                    {(() => {
+                      const nextApoc = [...APOCALYPSE].find(a => a.fame > c.base.fame);
+                      const apocDiff = nextApoc ? nextApoc.fame - c.base.fame : null;
+                      const isImminent = apocDiff !== null && apocDiff < 1000;
+                      const clearedApoc = APOCALYPSE.filter(a => c.base.fame >= a.fame);
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                          {nextApoc && (
+                            <div style={{
+                              fontSize: '0.72rem',
+                              color: isImminent ? '#fef08a' : '#fb923c',
+                              background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(251, 146, 60, 0.08)',
+                              padding: '0.2rem 0.4rem',
+                              borderRadius: '4px',
+                              border: isImminent ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(251, 146, 60, 0.25)',
+                              whiteSpace: 'nowrap',
+                              fontWeight: isImminent ? 'bold' : 'normal',
+                              boxShadow: isImminent ? '0 0 6px rgba(234, 179, 8, 0.3)' : 'none'
+                            }}>
+                              {isImminent ? '🔥' : '💀'} {nextApoc.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{apocDiff.toLocaleString()}</strong>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center' }}>
+                            {clearedApoc.map((apoc) => (
+                              <span key={apoc.name} style={{
+                                background: 'rgba(251, 146, 60, 0.15)',
+                                color: '#fb923c',
+                                padding: '0.1rem 0.3rem',
+                                borderRadius: '3px',
+                                fontSize: '0.65rem',
+                                border: '1px solid rgba(251,146,60,0.25)'
+                              }}>
+                                {apoc.name}
+                              </span>
+                            ))}
+                          </div>
+                          {!nextApoc && clearedApoc.length === 0 && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>}
+                        </div>
+                      );
+                    })()}
+                  </td>
                   <td data-label="장비" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.equipment.setName}</div>
                     <div className={getTierClass(c.equipment.rarity)}>
@@ -975,7 +1024,7 @@ export default function Home() {
                   {/* 확장 스펙 현황 행 (Full Width) */}
                   {expandedSpecs[c.id] && c.manual && (
                     <tr style={{ background: 'rgba(255, 255, 255, 0.02)' }}>
-                      <td colSpan={10} style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                      <td colSpan={11} style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.8rem' }}>
                           <span style={{ fontSize: '0.9rem', color: '#38bdf8', fontWeight: 'bold' }}>🔍 {c.base.charName} 상세 스펙 현황</span>
                           <div style={{ height: '1px', flex: 1, background: 'linear-gradient(90deg, rgba(56, 189, 248, 0.3), transparent)' }}></div>
@@ -1289,6 +1338,49 @@ export default function Home() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
                        {renderCards(raidChars, '레이드')}
                     </div>
+                     <h3 style={{ borderBottom: '1px solid rgba(251,146,60,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#fb923c' }}>■ 아포칼립스 던전 편</h3>
+                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+                        {(() => {
+                          const apocItems = characters.map((c) => {
+                            const nextApoc = [...APOCALYPSE].find(a => a.fame > c.base.fame);
+                            return { char: c, nextApoc };
+                          }).filter(item => item.nextApoc != null).sort((a, b) =>
+                            (a.nextApoc.fame - a.char.base.fame) - (b.nextApoc.fame - b.char.base.fame)
+                          );
+                          if (apocItems.length === 0) return (
+                            <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', gridColumn: '1 / -1', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                              모든 아포칼립스 조건을 달성했거나 대상 캐릭터가 없습니다.
+                            </div>
+                          );
+                          return apocItems.map(({ char: c, nextApoc: target }) => {
+                            const diff = target.fame - c.base.fame;
+                            const isImminent = diff < 1000;
+                            return (
+                              <div key={c.id} style={{
+                                background: isImminent ? 'rgba(234, 179, 8, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                border: isImminent ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(251, 146, 60, 0.2)',
+                                borderRadius: '8px', padding: '1.2rem',
+                                boxShadow: isImminent ? '0 0 12px rgba(234, 179, 8, 0.1)' : '0 0 6px rgba(251,146,60,0.05)',
+                                display: 'flex', flexDirection: 'column', gap: '0.8rem'
+                              }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isImminent ? '#fef08a' : '#e2e8f0' }}>{c.base.charName}</span>
+                                  <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
+                                </div>
+                                <div style={{ fontSize: '0.95rem', color: '#cbd5e1' }}>현재 명성: <span style={{ color: isImminent ? '#fbbf24' : '#fb923c', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
+                                <div style={{
+                                  background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(251, 146, 60, 0.08)',
+                                  padding: '0.8rem', borderRadius: '6px', fontSize: '1rem',
+                                  color: isImminent ? '#fef08a' : '#fb923c', textAlign: 'center', marginTop: 'auto',
+                                  border: isImminent ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(251,146,60,0.25)'
+                                }}>
+                                  {isImminent ? '🔥' : '💀'} <strong>{target.name}</strong> 컷까지 <strong style={{ color: '#fff', fontSize: '1.15em' }}>{diff.toLocaleString()}</strong> 남음{isImminent ? '!' : ''}
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+                     </div>
                  </div>
                );
             })()}
