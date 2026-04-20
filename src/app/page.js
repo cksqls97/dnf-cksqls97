@@ -943,42 +943,35 @@ export default function Home() {
                   </td>
                   <td data-label="아포칼립스" style={{ textAlign: 'center' }}>
                     {(() => {
-                      const nextApoc = [...APOCALYPSE].find(a => a.fame > c.base.fame);
-                      const apocDiff = nextApoc ? nextApoc.fame - c.base.fame : null;
-                      const isImminent = apocDiff !== null && apocDiff < 1000;
-                      const clearedApoc = APOCALYPSE.filter(a => c.base.fame >= a.fame);
+                      // state: 0=진입불가, 1=매칭가능, 2=1단계가능, 3=2단계가능
+                      const fame = c.base.fame;
+                      const state = fame >= 105881 ? 3 : fame >= 98171 ? 2 : fame >= 73993 ? 1 : 0;
+                      const stateLabels = ['', '매칭', '1단계', '2단계'];
+                      const nextTargets = [{ name: '매칭', fame: 73993 }, { name: '1단계', fame: 98171 }, { name: '2단계', fame: 105881 }, null];
+                      const currentLabel = stateLabels[state];
+                      const nextTarget = state < 3 ? nextTargets[state] : null;
+                      const diff = nextTarget ? nextTarget.fame - fame : null;
+                      const isImminent = diff !== null && diff < 1000;
+                      if (state === 0) {
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>
+                            <div style={{ fontSize: '0.65rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.08)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.25)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
+                              {isImminent ? '🔥' : '💀'} 매칭까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
+                            </div>
+                          </div>
+                        );
+                      }
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                          {nextApoc && (
-                            <div style={{
-                              fontSize: '0.72rem',
-                              color: isImminent ? '#fef08a' : '#fb923c',
-                              background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(251, 146, 60, 0.08)',
-                              padding: '0.2rem 0.4rem',
-                              borderRadius: '4px',
-                              border: isImminent ? '1px solid rgba(234, 179, 8, 0.4)' : '1px solid rgba(251, 146, 60, 0.25)',
-                              whiteSpace: 'nowrap',
-                              fontWeight: isImminent ? 'bold' : 'normal',
-                              boxShadow: isImminent ? '0 0 6px rgba(234, 179, 8, 0.3)' : 'none'
-                            }}>
-                              {isImminent ? '🔥' : '💀'} {nextApoc.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{apocDiff.toLocaleString()}</strong>
+                          <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
+                            💀 {currentLabel}
+                          </span>
+                          {nextTarget && (
+                            <div style={{ fontSize: '0.65rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.05)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.2)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
+                              {isImminent ? '🔥' : '▶'} {nextTarget.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
                             </div>
                           )}
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center' }}>
-                            {clearedApoc.map((apoc) => (
-                              <span key={apoc.name} style={{
-                                background: 'rgba(251, 146, 60, 0.15)',
-                                color: '#fb923c',
-                                padding: '0.1rem 0.3rem',
-                                borderRadius: '3px',
-                                fontSize: '0.65rem',
-                                border: '1px solid rgba(251,146,60,0.25)'
-                              }}>
-                                {apoc.name}
-                              </span>
-                            ))}
-                          </div>
-                          {!nextApoc && clearedApoc.length === 0 && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>}
                         </div>
                       );
                     })()}
@@ -1342,17 +1335,21 @@ export default function Home() {
                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
                         {(() => {
                           const apocItems = characters.map((c) => {
-                            const nextApoc = [...APOCALYPSE].find(a => a.fame > c.base.fame);
-                            return { char: c, nextApoc };
-                          }).filter(item => item.nextApoc != null).sort((a, b) =>
-                            (a.nextApoc.fame - a.char.base.fame) - (b.nextApoc.fame - b.char.base.fame)
+                            const fame = c.base.fame;
+                            const state = fame >= 105881 ? 3 : fame >= 98171 ? 2 : fame >= 73993 ? 1 : 0;
+                            const currentLabel = ['없음', '매칭', '1단계', '2단계'][state];
+                            const apocTiers = [{ name: '매칭', fame: 73993 }, { name: '1단계', fame: 98171 }, { name: '2단계', fame: 105881 }];
+                            const nextTarget = state < 3 ? apocTiers[state] : null;
+                            return { char: c, state, currentLabel, nextTarget };
+                          }).filter(item => item.nextTarget != null).sort((a, b) =>
+                            (a.nextTarget.fame - a.char.base.fame) - (b.nextTarget.fame - b.char.base.fame)
                           );
                           if (apocItems.length === 0) return (
                             <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', gridColumn: '1 / -1', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                               모든 아포칼립스 조건을 달성했거나 대상 캐릭터가 없습니다.
                             </div>
                           );
-                          return apocItems.map(({ char: c, nextApoc: target }) => {
+                          return apocItems.map(({ char: c, state, currentLabel, nextTarget: target }) => {
                             const diff = target.fame - c.base.fame;
                             const isImminent = diff < 1000;
                             return (
@@ -1367,7 +1364,11 @@ export default function Home() {
                                   <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isImminent ? '#fef08a' : '#e2e8f0' }}>{c.base.charName}</span>
                                   <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
                                 </div>
-                                <div style={{ fontSize: '0.95rem', color: '#cbd5e1' }}>현재 명성: <span style={{ color: isImminent ? '#fbbf24' : '#fb923c', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>현재 명성: <span style={{ color: isImminent ? '#fbbf24' : '#fb923c', fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
+                                  {state > 0 && <span style={{ fontSize: '0.75rem', background: 'rgba(251,146,60,0.2)', color: '#fb923c', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(251,146,60,0.3)' }}>현재: {currentLabel}</span>}
+                                  {state === 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '0.15rem 0.5rem' }}>미진입</span>}
+                                </div>
                                 <div style={{
                                   background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(251, 146, 60, 0.08)',
                                   padding: '0.8rem', borderRadius: '6px', fontSize: '1rem',
