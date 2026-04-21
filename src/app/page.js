@@ -91,6 +91,7 @@ export default function Home() {
   const [rosterSubTab, setRosterSubTab] = useState('overview'); // 'overview' | 'items'
   const [imminentSubTab, setImminentSubTab] = useState('dungeon'); // 'dungeon' | 'raid' | 'apoc'
   const [dungeonView, setDungeonView] = useState('overall'); // 'overall' | 'byDungeon'
+  const [apocView, setApocView] = useState('overall'); // 'overall' | 'byTier'
   
   const chartData = React.useMemo(() => {
     // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
@@ -1328,6 +1329,12 @@ export default function Home() {
                   <button onClick={() => setDungeonView('byDungeon')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: dungeonView === 'byDungeon' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'byDungeon' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'byDungeon' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 던전별 정렬</button>
                 </div>
               )}
+              {imminentSubTab === 'apoc' && (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={() => setApocView('overall')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: apocView === 'overall' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'overall' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'overall' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
+                  <button onClick={() => setApocView('byTier')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: apocView === 'byTier' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'byTier' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'byTier' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 단계별 정렬</button>
+                </div>
+              )}
             </div>
 
             {/* 서브탭 버튼 */}
@@ -1408,16 +1415,51 @@ export default function Home() {
             {/* ────────────── 아포칼립스 탭 ────────────── */}
             {imminentSubTab === 'apoc' && (() => {
               const apocTiers = [{ name: '매칭', fame: 73993 }, { name: '1단계', fame: 98171 }, { name: '2단계', fame: 105881 }];
-              const apocItems = characters.map(c => {
-                const fame = c.base.fame;
-                const state = fame >= 105881 ? 3 : fame >= 98171 ? 2 : fame >= 73993 ? 1 : 0;
-                const currentLabel = ['없음', '매칭', '1단계', '2단계'][state];
-                const next = state < 3 ? apocTiers[state] : null;
-                return { c, state, currentLabel, next };
-              }).filter(x => x.next).sort((a, b) => (a.next.fame - a.c.base.fame) - (b.next.fame - b.c.base.fame));
+
+              if (apocView === 'overall') {
+                const apocItems = characters.map(c => {
+                  const fame = c.base.fame;
+                  const state = fame >= 105881 ? 3 : fame >= 98171 ? 2 : fame >= 73993 ? 1 : 0;
+                  const currentLabel = ['없음', '매칭', '1단계', '2단계'][state];
+                  const next = state < 3 ? apocTiers[state] : null;
+                  return { c, state, currentLabel, next };
+                }).filter(x => x.next).sort((a, b) => (a.next.fame - a.c.base.fame) - (b.next.fame - b.c.base.fame));
+                return (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+                    {apocItems.length === 0 ? emptyMsg('모든 캐릭터가 아포칼립스 2단계에 진입 가능합니다.') : apocItems.map(({ c, state, currentLabel, next }) => renderCard(c, next, next.fame - c.base.fame, '💀', '#fb923c', state > 0 ? `현재: ${currentLabel}` : '미진입'))}
+                  </div>
+                );
+              }
+
+              // 단계별 정렬: 2단계 → 1단계 → 매칭 순서로 표시
+              // 각 단계를 목표로 하는 캐릭터(현재 state = 목표 state - 1)만 표시
+              const tierGroups = [
+                { target: apocTiers[2], currentLabel: '1단계', minFame: 98171, maxFame: 105881 },  // 2단계 목표: 현재 1단계
+                { target: apocTiers[1], currentLabel: '매칭',  minFame: 73993, maxFame: 98171  },  // 1단계 목표: 현재 매칭
+                { target: apocTiers[0], currentLabel: '미진입', minFame: 0,     maxFame: 73993  },  // 매칭 목표: 현재 미진입
+              ];
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-                  {apocItems.length === 0 ? emptyMsg('모든 캐릭터가 아포칼립스 2단계에 진입 가능합니다.') : apocItems.map(({ c, state, currentLabel, next }) => renderCard(c, next, next.fame - c.base.fame, '💀', '#fb923c', state > 0 ? `현재: ${currentLabel}` : '미진입'))}
+                <div>
+                  {tierGroups.map(({ target, currentLabel, minFame, maxFame }) => {
+                    const eligible = characters.filter(c =>
+                      c.base.fame >= minFame && c.base.fame < maxFame
+                    ).sort((a, b) => (target.fame - a.base.fame) - (target.fame - b.base.fame));
+                    return (
+                      <div key={target.name} style={{ marginBottom: '2rem' }}>
+                        <h3 style={{ borderBottom: '1px solid rgba(251,146,60,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#fb923c', fontSize: '1rem' }}>
+                          💀 {target.name} 진입 목표
+                          <span style={{ marginLeft: '0.6rem', fontSize: '0.8rem', color: '#64748b', fontWeight: 'normal' }}>현재: {currentLabel} | 잔여 {eligible.length}명</span>
+                        </h3>
+                        {eligible.length === 0 ? (
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.8rem' }}>
+                            {eligible.map(c => renderCard(c, target, target.fame - c.base.fame, '💀', '#fb923c', `현재: ${currentLabel}`))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })()}
