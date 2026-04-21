@@ -1031,9 +1031,6 @@ export default function Home() {
                   </td>
                   <td data-label="관리" style={{ textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                      <button type="button" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', background: '#3b82f6' }} onClick={() => openManualModal(c)}>
-                        ⚙️
-                      </button>
                       <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleDelete(c.id)}>
                         🗑️
                       </button>
@@ -1072,6 +1069,7 @@ export default function Home() {
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#818cf8', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>아바타</th>
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e879f9', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>피부</th>
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>무기압인</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#64748b', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>수동설정</th>
                 </tr>
               </thead>
               <tbody>
@@ -1152,6 +1150,12 @@ export default function Home() {
                           </div>
                         ) : dash
                       )}
+                      {/* 수동설정 버튼 */}
+                      <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'middle', background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
+                        <button type="button" onClick={() => openManualModal(c)} style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer' }}>
+                          ⚙️
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
