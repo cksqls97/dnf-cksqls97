@@ -1355,11 +1355,13 @@ export default function Home() {
                 );
               }
 
-              // 던전별 정렬: 각 던전을 target으로, current = target 바로 이전 던전인 캐릭터만
+              // 던전별 정렬: 높은 명성(배교자의 성) → 낮은 명성(달이 잠긴 호수) 순 표시
               return (
                 <div>
-                  {dungeons.map((target, idx) => {
-                    const prevDungeon = idx > 0 ? dungeons[idx - 1] : null;
+                  {ADVANCED_DUNGEONS.map((target) => {
+                    // dungeons(오름차순)에서 target의 인덱스를 찾아 이전 던전을 계산
+                    const targetIdx = dungeons.findIndex(d => d.name === target.name);
+                    const prevDungeon = targetIdx > 0 ? dungeons[targetIdx - 1] : null;
                     // 이 던전에 아직 못 들어가고 (fame < target.fame)
                     // 그리고 이전 던전은 클리어했거나(fame >= prevDungeon.fame) 이전 던전 자체가 없는 경우
                     const eligible = characters.filter(c =>
