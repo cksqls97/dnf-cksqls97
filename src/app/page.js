@@ -93,6 +93,9 @@ export default function Home() {
   const [dungeonView, setDungeonView] = useState('overall'); // 'overall' | 'byDungeon'
   const [apocView, setApocView] = useState('overall'); // 'overall' | 'byTier'
   
+  const [draggedIdx, setDraggedIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+  
   const chartData = React.useMemo(() => {
     // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
     if (chartViewMode === 'daily') {
@@ -584,6 +587,31 @@ export default function Home() {
     return res.json();
   };
 
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index);
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  const handleDragEnter = (e, index) => {
+    e.preventDefault();
+    setDragOverIdx(index);
+  };
+
+  const handleDragEnd = () => {
+    if (draggedIdx !== null && dragOverIdx !== null && draggedIdx !== dragOverIdx) {
+      const copy = [...characters];
+      const item = copy[draggedIdx];
+      copy.splice(draggedIdx, 1);
+      copy.splice(dragOverIdx, 0, item);
+      setCharacters(copy);
+      localStorage.setItem('DNF_CHARS', JSON.stringify(copy));
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!charName.trim()) return;
@@ -861,7 +889,21 @@ export default function Home() {
             <tbody>
               {characters.map((c, idx) => (
                 <React.Fragment key={c.id}>
-                  <tr style={{ verticalAlign: 'middle' }}>
+                  <tr 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, idx)}
+                    onDragEnter={(e) => handleDragEnter(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    style={{ 
+                      verticalAlign: 'middle',
+                      cursor: 'grab',
+                      background: draggedIdx === idx ? 'rgba(255,255,255,0.1)' : dragOverIdx === idx ? 'rgba(56,189,248,0.1)' : 'transparent',
+                      opacity: draggedIdx === idx ? 0.5 : 1,
+                      borderBottom: dragOverIdx === idx ? '2px solid #38bdf8' : 'none',
+                      transition: 'background 0.2s, opacity 0.2s'
+                    }}
+                  >
                   <td data-label="서버" style={{ textAlign: 'center' }}>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
                   <td data-label="직업" style={{ textAlign: 'center' }}>{c.base.jobGrowName}</td>
                     <td data-label="캐릭터명" style={{ textAlign: 'center' }}>
@@ -1480,7 +1522,7 @@ export default function Home() {
 
 
       {activeTab === 'merc' && (() => {
-        const top20 = characters.slice(0, 20);
+        const top20 = [...characters].sort((a,b) => (b.oath.rawPoints ?? b.oath.points ?? 0) - (a.oath.rawPoints ?? a.oath.points ?? 0)).slice(0, 20);
         const totalOath = top20.reduce((acc, c) => acc + (c.oath.rawPoints ?? c.oath.points ?? 0), 0);
         const hasTarget = mercNextLevelTarget > 0;
         const progress = hasTarget ? Math.min(totalOath / mercNextLevelTarget * 100, 100) : 0;
