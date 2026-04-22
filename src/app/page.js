@@ -1004,14 +1004,14 @@ export default function Home() {
                     })()}
                   </td>
                   <td data-label="장비" style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.equipment.setName}</div>
-                    <div className={getTierClass(c.equipment.rarity)}>
+                    <div style={{ fontSize: '0.72rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.equipment.setName}</div>
+                    <div className={getTierClass(c.equipment.rarity)} style={{ fontSize: '0.82rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.equipment.gradeDesc} ({c.equipment.points})
                     </div>
                   </td>
                   <td data-label="서약" style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{c.oath.setName}</div>
-                    <div className={getTierClass(c.oath.rarity)}>
+                    <div style={{ fontSize: '0.72rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.oath.setName}</div>
+                    <div className={getTierClass(c.oath.rarity)} style={{ fontSize: '0.82rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.oath.gradeDesc} ({c.oath.points})
                     </div>
                   </td>
