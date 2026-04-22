@@ -95,6 +95,7 @@ export default function Home() {
   
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
+  const [isReorderMode, setIsReorderMode] = useState(false);
   
   const chartData = React.useMemo(() => {
     // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
@@ -854,7 +855,10 @@ export default function Home() {
             {isAdding ? <div className="loader"/> : "캐릭터 추가"}
           </button>
           
-          <div style={{ marginLeft: 'auto' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+             <button type="button" onClick={() => setIsReorderMode(!isReorderMode)} style={{ background: isReorderMode ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255,255,255,0.05)', color: isReorderMode ? '#38bdf8' : '#e2e8f0', border: isReorderMode ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid transparent' }}>
+               {isReorderMode ? "✅ 조정 완료" : "↕️ 순서 조정"}
+             </button>
              <button type="button" onClick={() => handleRefreshAll()} disabled={isRefreshing || characters.length === 0} style={{ background: '#475569' }}>
                {isRefreshing ? <div className="loader"/> : "🔄 전체 갱신"}
              </button>
@@ -890,17 +894,17 @@ export default function Home() {
               {characters.map((c, idx) => (
                 <React.Fragment key={c.id}>
                   <tr 
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, idx)}
-                    onDragEnter={(e) => handleDragEnter(e, idx)}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={(e) => e.preventDefault()}
+                    draggable={isReorderMode}
+                    onDragStart={(e) => { if (isReorderMode) handleDragStart(e, idx); }}
+                    onDragEnter={(e) => { if (isReorderMode) handleDragEnter(e, idx); }}
+                    onDragEnd={() => { if (isReorderMode) handleDragEnd(); }}
+                    onDragOver={(e) => { if (isReorderMode) e.preventDefault(); }}
                     style={{ 
                       verticalAlign: 'middle',
-                      cursor: 'grab',
-                      background: draggedIdx === idx ? 'rgba(255,255,255,0.1)' : dragOverIdx === idx ? 'rgba(56,189,248,0.1)' : 'transparent',
-                      opacity: draggedIdx === idx ? 0.5 : 1,
-                      borderBottom: dragOverIdx === idx ? '2px solid #38bdf8' : 'none',
+                      cursor: isReorderMode ? 'grab' : 'default',
+                      background: (isReorderMode && draggedIdx === idx) ? 'rgba(255,255,255,0.1)' : (isReorderMode && dragOverIdx === idx) ? 'rgba(56,189,248,0.1)' : 'transparent',
+                      opacity: (isReorderMode && draggedIdx === idx) ? 0.5 : 1,
+                      borderBottom: (isReorderMode && dragOverIdx === idx) ? '2px solid #38bdf8' : '1px solid rgba(255,255,255,0.05)',
                       transition: 'background 0.2s, opacity 0.2s'
                     }}
                   >
