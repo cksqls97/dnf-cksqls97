@@ -639,8 +639,9 @@ export default function Home() {
       return;
     }
 
-    const bufferJobs = ['진 크루세이더(여)', '진 뮤즈', '진 인챈트리스', '진 크루세이더'];
-    const autoRole = bufferJobs.includes(data.base?.jobGrowName) ? 'buffer' : 'dealer';
+    const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+    const jobName = data.base?.jobGrowName || data.base?.jobName || '';
+    const autoRole = bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
     data.manual = { role: autoRole };
 
     // Check duplicate
