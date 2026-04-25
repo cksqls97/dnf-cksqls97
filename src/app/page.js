@@ -371,6 +371,8 @@ export default function Home() {
   const charsRef = React.useRef(characters);
   const logsRef = React.useRef(historyLogs);
   const optsRef = React.useRef(customOptions);
+  const mercRef = React.useRef({ level: mercLevel, target: mercNextLevelTarget });
+  useEffect(() => { mercRef.current = { level: mercLevel, target: mercNextLevelTarget }; }, [mercLevel, mercNextLevelTarget]);
   
   // 클라우드 버전 관리를 위한 Ref (다중 탭 덮어쓰기 원천 차단용)
   const lastCloudUpdateAtRef = React.useRef(0);
@@ -380,7 +382,7 @@ export default function Home() {
   useEffect(() => { optsRef.current = customOptions; }, [customOptions]);
 
   // --- 클라우드 동기화 엔진 ---
-  const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts, forceOverride = false) => {
+  const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts, updatedMerc, forceOverride = false) => {
     if(!key) return;
     try {
       const res = await fetch('/api/sync', {
@@ -391,6 +393,7 @@ export default function Home() {
           characters: updatedCharacters,
           historyLogs: updatedLogs,
           customOptions: updatedOpts,
+          merc: updatedMerc,
           clientUpdateAt: lastCloudUpdateAtRef.current,
           forceOverride
         })
@@ -416,7 +419,7 @@ export default function Home() {
     }
     setIsCloudSyncing(true);
     // 버튼 등을 통한 수동 동기화 시에는 억지로라도 덮어씌움 (forceOverride = true)
-    await syncUpCloudData(apiKey, characters, historyLogs, customOptions, true);
+    await syncUpCloudData(apiKey, characters, historyLogs, customOptions, mercRef.current, true);
     setIsCloudSyncing(false);
     alert("현재 기기의 최신 데이터가 클라우드 서버에 수동으로 백업되었습니다!");
   };
@@ -454,7 +457,7 @@ export default function Home() {
          
          // 클라우드가 텅 비어있고, 로컬에는 기존 데이터가 가득하다면 (첫 이주, Migration)
          if (!modified && (localChars?.length > 0 || localLogs?.length > 0)) {
-            await syncUpCloudData(targetKey, localChars, localLogs, localOpts);
+            await syncUpCloudData(targetKey, localChars, localLogs, localOpts, mercRef.current);
          }
          
          if (modified) {
@@ -464,7 +467,7 @@ export default function Home() {
       } else if (res.success && (!res.data)) {
          // 클라우드가 아예 null (키가 처음 생성된 상태)
          if (localChars?.length > 0 || localLogs?.length > 0) {
-            await syncUpCloudData(targetKey, localChars, localLogs, localOpts);
+            await syncUpCloudData(targetKey, localChars, localLogs, localOpts, mercRef.current);
          }
       }
     } catch(e) { console.error("Cloud Sync Failed:", e) }
@@ -550,7 +553,11 @@ export default function Home() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ server: c.base.server, charName: c.base.charName, apiKey: key })
            }).then(r => r.json());
-           return res.success ? { ...res, manual: c.manual } : c;
+           if (res.success) {
+              if (res.base.fame < (c.base.fame || 0)) return c;
+              return { ...res, manual: c.manual };
+           }
+           return c;
         })).then((updatedList) => {
            setCharacters(updatedList);
            localStorage.setItem('DNF_CHARACTERS', JSON.stringify(updatedList));
@@ -643,7 +650,7 @@ export default function Home() {
     setCharName('');
     
     // Cloud Sync (유저 인터랙션 = forceOverride true)
-    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, true);
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, mercRef.current, true);
   };
 
   async function handleRefreshAll(charsToRefresh = characters, overrideKey = null) {
@@ -658,6 +665,8 @@ export default function Home() {
       targetChars.map(async (c) => {
         const res = await fetchCharacterData(c.base.server, c.base.charName, keyToUse);
         if (res.success) {
+           if (res.base.fame < (c.base.fame || 0)) return c;
+           
            let changed = false;
            let logEntry = {
               id: Date.now() + Math.random().toString(36).substr(2, 9),
@@ -713,7 +722,7 @@ export default function Home() {
           localStorage.setItem('DNF_HISTORY', JSON.stringify(merged));
           
           // 무조건 최신 optsRef.current를 전달하여 과거 커스텀옵션이 클라우드에 덮어씌워지는 대참사(Stale) 방지
-          if (keyToUse) syncUpCloudData(keyToUse, updatedList, merged, optsRef.current);
+          if (keyToUse) syncUpCloudData(keyToUse, updatedList, merged, optsRef.current, mercRef.current);
           
           return merged;
        });
@@ -727,7 +736,7 @@ export default function Home() {
     const newList = characters.filter(c => c.id !== id);
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
-    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, true);
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, mercRef.current, true);
   };
 
   const openManualModal = (char) => {
@@ -746,7 +755,7 @@ export default function Home() {
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
     setManualModalChar(null);
-    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, true);
+    if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, mercRef.current, true);
   };
 
   const ALL_KEYS = [
@@ -775,7 +784,7 @@ export default function Home() {
     setCustomOptions(newOpts);
     localStorage.setItem('DNF_OPTIONS', JSON.stringify(newOpts));
     setShowOptionsModal(false);
-    if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, newOpts, true);
+    if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, newOpts, mercRef.current, true);
   };
 
   const deleteLog = (id) => {
@@ -783,7 +792,7 @@ export default function Home() {
     setHistoryLogs(prev => {
       const updated = prev.filter(L => L.id !== id);
       localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
-      if (apiKey) syncUpCloudData(apiKey, charsRef.current, updated, optsRef.current, true);
+      if (apiKey) syncUpCloudData(apiKey, charsRef.current, updated, optsRef.current, mercRef.current, true);
       return updated;
     });
   };
@@ -797,7 +806,7 @@ export default function Home() {
     setHistoryLogs(prev => {
       const updated = prev.map(L => L.id === editingLogId ? editLogForm : L);
       localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
-      if (apiKey) syncUpCloudData(apiKey, charsRef.current, updated, optsRef.current, true);
+      if (apiKey) syncUpCloudData(apiKey, charsRef.current, updated, optsRef.current, mercRef.current, true);
       return updated;
     });
     setEditingLogId(null);
@@ -1114,7 +1123,7 @@ export default function Home() {
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#fb923c', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>스위칭</th>
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#818cf8', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>아바타</th>
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e879f9', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>피부</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>무기압인</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>무기압</th>
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#64748b', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>수동설정</th>
                 </tr>
               </thead>
@@ -1186,7 +1195,7 @@ export default function Home() {
                           </div>
                         ) : dash
                       )}
-                      {/* 무기압인: 종류 + 소켓 + 엠블렘 */}
+                      {/* 무기압: 종류 + 소켓 + 엠블렘 */}
                       {cell(
                         (m.weaponAvatar || m.weaponSocket || m.weaponEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
@@ -1537,7 +1546,9 @@ export default function Home() {
           const tgt = parseInt(mercTargetInput.replace(/,/g, '')) || 0;
           setMercLevel(lv);
           setMercNextLevelTarget(tgt);
-          localStorage.setItem('DNF_MERC', JSON.stringify({ level: lv, target: tgt }));
+          const newMerc = { level: lv, target: tgt };
+          localStorage.setItem('DNF_MERC', JSON.stringify(newMerc));
+          if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, optsRef.current, newMerc, true);
         };
         return (
           <section className='glass-panel' style={{ minHeight: '60vh' }}>
