@@ -109,9 +109,21 @@ table {
 }
 
 th, td {
-  padding: 1rem;
+  padding: 0.6rem 0.4rem;
   border-bottom: 1px solid rgba(255,255,255,0.05);
   vertical-align: middle;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+td {
+  font-size: clamp(0.65rem, 1.1vw, 1rem);
+}
+
+td > div {
+  font-size: inherit;
 }
 
 th {
