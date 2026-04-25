@@ -747,20 +747,29 @@ export default function Home() {
 
   const openManualModal = (char) => {
     const existingManual = char.manual || {};
+    
+    let defaultRole = 'dealer';
+    const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+    const jobName = char.base?.jobGrowName || char.base?.jobName || '';
+    if (bufferKeywords.some(kw => jobName.includes(kw))) {
+        defaultRole = 'buffer';
+    }
+
     setManualForm({ 
-      role: 'dealer',
       enchant: '', title: '', 
       creature: '', creatureArtifact: '',
       buffLevel: '', buffAbyss: '',
       avatar: '', emblem: '', platEmblem: '', skinAvatar: '', skinSocket: '', skinEmblem: '', weaponAvatar: '', weaponSocket: '', weaponEmblem: '', aura: '', auraEmblem: '',
-      ...existingManual
+      ...existingManual,
+      role: existingManual.isManualRoleSet ? existingManual.role : defaultRole
     });
     setManualModalChar(char);
   };
 
   const handleSaveManual = () => {
     if(!manualModalChar) return;
-    const newList = characters.map(c => c.id === manualModalChar.id ? { ...c, manual: manualForm } : c);
+    const formToSave = { ...manualForm, isManualRoleSet: true };
+    const newList = characters.map(c => c.id === manualModalChar.id ? { ...c, manual: formToSave } : c);
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
     setManualModalChar(null);
@@ -1238,8 +1247,14 @@ export default function Home() {
 
       {/* 로스터 편성 서브탭 */}
       {activeTab === 'roster' && rosterSubTab === 'groups' && (() => {
-        const dealers = characters.filter(c => c.manual?.role !== 'buffer').sort((a,b) => b.base.fame - a.base.fame);
-        const buffers = characters.filter(c => c.manual?.role === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+        const getRole = (c) => {
+          if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
+          const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+          const jobName = c.base?.jobGrowName || c.base?.jobName || '';
+          return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
+        };
+        const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
+        const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
         const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
         const groups = [];
         for (let i = 0; i < maxGroups; i++) {
