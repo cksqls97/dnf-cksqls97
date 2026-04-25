@@ -1261,82 +1261,17 @@ export default function Home() {
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
+                })]);
+              })()}
+            </tbody>
+          </table>
           )}
         </section>
       )}
       </>
       )}
 
-      {/* 로스터 편성 서브탭 */}
-      {activeTab === 'roster' && rosterSubTab === 'groups' && (() => {
-        const getRole = (c) => {
-          if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
-          const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
-          const jobName = c.base?.jobGrowName || c.base?.jobName || '';
-          return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
-        };
-        const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
-        const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
-        const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
-        const groups = [];
-        for (let i = 0; i < maxGroups; i++) {
-          groups.push({
-            d1: dealers[i * 3] || null,
-            d2: dealers[i * 3 + 1] || null,
-            d3: dealers[i * 3 + 2] || null,
-            b1: buffers[i] || null,
-          });
-        }
-        
-        const renderSlot = (c, roleType) => {
-          if (!c) {
-            return (
-              <div style={{ padding: '1rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)' }}>
-                {roleType === 'dealer' ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
-              </div>
-            );
-          }
-          return (
-            <div style={{ padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', background: roleType === 'dealer' ? 'rgba(239, 68, 68, 0.05)' : 'rgba(16, 185, 129, 0.05)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '1.05rem', color: '#e2e8f0' }}>{c.base.charName}</span>
-                <span style={{ fontSize: '0.8rem', color: roleType === 'dealer' ? '#fca5a5' : '#6ee7b7' }}>{roleType === 'dealer' ? '딜러' : '버퍼'}</span>
-              </div>
-              <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</div>
-              <div style={{ fontSize: '0.95rem', color: '#fbbf24', fontWeight: 'bold' }}>명성: {c.base.fame.toLocaleString()}</div>
-            </div>
-          );
-        };
 
-        return (
-          <section className="glass-panel" style={{ minHeight: '60vh' }}>
-            <h3 style={{ margin: '0 0 1.2rem', fontSize: '1rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: '0.5rem' }}>
-              👥 캐릭터 로스터 편성
-              <span style={{ fontSize: '0.78rem', color: '#64748b', marginLeft: '0.6rem', fontWeight: 'normal' }}>명성순으로 자동 배치된 3딜 1벞 그룹입니다.</span>
-            </h3>
-            {groups.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>캐릭터를 추가해주세요.</div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {groups.map((g, i) => (
-                  <div key={i} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1.2rem' }}>
-                    <h4 style={{ margin: '0 0 1rem', color: '#38bdf8' }}>Group {i + 1}</h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                      {renderSlot(g.d1, 'dealer')}
-                      {renderSlot(g.d2, 'dealer')}
-                      {renderSlot(g.d3, 'dealer')}
-                      {renderSlot(g.b1, 'buffer')}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        );
-      })()}
 
       {activeTab === 'history' && (
         <section className="glass-panel" style={{ minHeight: '60vh' }}>
