@@ -90,8 +90,8 @@ export default function Home() {
   const [mercTargetInput, setMercTargetInput] = useState('');
   const [rosterSubTab, setRosterSubTab] = useState('overview'); // 'overview' | 'items'
   const [imminentSubTab, setImminentSubTab] = useState('dungeon'); // 'dungeon' | 'raid' | 'apoc'
-  const [dungeonView, setDungeonView] = useState('overall'); // 'overall' | 'byDungeon'
-  const [apocView, setApocView] = useState('overall'); // 'overall' | 'byTier'
+  const [dungeonView, setDungeonView] = useState('byDungeon'); // 'overall' | 'byDungeon'
+  const [apocView, setApocView] = useState('byTier'); // 'overall' | 'byTier'
   
   
   const chartData = React.useMemo(() => {
@@ -1440,14 +1440,14 @@ export default function Home() {
               {/* 상급던전 뷰 토글 - 상급던전 탭일 때만 표시 */}
               {imminentSubTab === 'dungeon' && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setDungeonView('overall')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: dungeonView === 'overall' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'overall' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'overall' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
                   <button onClick={() => setDungeonView('byDungeon')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: dungeonView === 'byDungeon' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'byDungeon' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'byDungeon' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 던전별 정렬</button>
+                  <button onClick={() => setDungeonView('overall')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: dungeonView === 'overall' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'overall' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'overall' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
                 </div>
               )}
               {imminentSubTab === 'apoc' && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setApocView('overall')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: apocView === 'overall' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'overall' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'overall' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
                   <button onClick={() => setApocView('byTier')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: apocView === 'byTier' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'byTier' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'byTier' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 단계별 정렬</button>
+                  <button onClick={() => setApocView('overall')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: apocView === 'overall' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'overall' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'overall' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
                 </div>
               )}
             </div>
