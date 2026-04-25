@@ -338,6 +338,7 @@ export default function Home() {
 
   const [manualModalChar, setManualModalChar] = useState(null);
   const [manualForm, setManualForm] = useState({ 
+    role: 'dealer',
     enchant: '', title: '', 
     creature: '', creatureArtifact: '',
     buffLevel: '', buffAbyss: '',
@@ -638,6 +639,10 @@ export default function Home() {
       return;
     }
 
+    const bufferJobs = ['진 크루세이더(여)', '진 뮤즈', '진 인챈트리스', '진 크루세이더'];
+    const autoRole = bufferJobs.includes(data.base?.jobGrowName) ? 'buffer' : 'dealer';
+    data.manual = { role: autoRole };
+
     // Check duplicate
     if (characters.some(c => c.id === data.id)) {
       alert("이미 등록된 캐릭터입니다.");
@@ -740,11 +745,14 @@ export default function Home() {
   };
 
   const openManualModal = (char) => {
-    setManualForm(char.manual || { 
+    const existingManual = char.manual || {};
+    setManualForm({ 
+      role: 'dealer',
       enchant: '', title: '', 
       creature: '', creatureArtifact: '',
       buffLevel: '', buffAbyss: '',
-      avatar: '', emblem: '', platEmblem: '', skinAvatar: '', skinSocket: '', skinEmblem: '', weaponAvatar: '', weaponSocket: '', weaponEmblem: '', aura: '', auraEmblem: ''
+      avatar: '', emblem: '', platEmblem: '', skinAvatar: '', skinSocket: '', skinEmblem: '', weaponAvatar: '', weaponSocket: '', weaponEmblem: '', aura: '', auraEmblem: '',
+      ...existingManual
     });
     setManualModalChar(char);
   };
@@ -847,6 +855,11 @@ export default function Home() {
             onClick={() => setRosterSubTab('items')}
             style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}
           >🎽 캐릭터 아이템 현황</button>
+          <button
+            className={`tab-btn ${rosterSubTab === 'groups' ? 'active' : ''}`}
+            onClick={() => setRosterSubTab('groups')}
+            style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}
+          >👥 로스터 편성</button>
         </div>
         {rosterSubTab === 'overview' && (
         <section className="glass-panel" style={{ marginBottom: '2rem' }}>
@@ -1221,6 +1234,68 @@ export default function Home() {
       )}
       </>
       )}
+
+      {/* 로스터 편성 서브탭 */}
+      {activeTab === 'roster' && rosterSubTab === 'groups' && (() => {
+        const dealers = characters.filter(c => c.manual?.role !== 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+        const buffers = characters.filter(c => c.manual?.role === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+        const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
+        const groups = [];
+        for (let i = 0; i < maxGroups; i++) {
+          groups.push({
+            d1: dealers[i * 3] || null,
+            d2: dealers[i * 3 + 1] || null,
+            d3: dealers[i * 3 + 2] || null,
+            b1: buffers[i] || null,
+          });
+        }
+        
+        const renderSlot = (c, roleType) => {
+          if (!c) {
+            return (
+              <div style={{ padding: '1rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)' }}>
+                {roleType === 'dealer' ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
+              </div>
+            );
+          }
+          return (
+            <div style={{ padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', background: roleType === 'dealer' ? 'rgba(239, 68, 68, 0.05)' : 'rgba(16, 185, 129, 0.05)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '1.05rem', color: '#e2e8f0' }}>{c.base.charName}</span>
+                <span style={{ fontSize: '0.8rem', color: roleType === 'dealer' ? '#fca5a5' : '#6ee7b7' }}>{roleType === 'dealer' ? '딜러' : '버퍼'}</span>
+              </div>
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</div>
+              <div style={{ fontSize: '0.95rem', color: '#fbbf24', fontWeight: 'bold' }}>명성: {c.base.fame.toLocaleString()}</div>
+            </div>
+          );
+        };
+
+        return (
+          <section className="glass-panel" style={{ minHeight: '60vh' }}>
+            <h3 style={{ margin: '0 0 1.2rem', fontSize: '1rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: '0.5rem' }}>
+              👥 캐릭터 로스터 편성
+              <span style={{ fontSize: '0.78rem', color: '#64748b', marginLeft: '0.6rem', fontWeight: 'normal' }}>명성순으로 자동 배치된 3딜 1벞 그룹입니다.</span>
+            </h3>
+            {groups.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>캐릭터를 추가해주세요.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {groups.map((g, i) => (
+                  <div key={i} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1.2rem' }}>
+                    <h4 style={{ margin: '0 0 1rem', color: '#38bdf8' }}>Group {i + 1}</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                      {renderSlot(g.d1, 'dealer')}
+                      {renderSlot(g.d2, 'dealer')}
+                      {renderSlot(g.d3, 'dealer')}
+                      {renderSlot(g.b1, 'buffer')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })()}
 
       {activeTab === 'history' && (
         <section className="glass-panel" style={{ minHeight: '60vh' }}>
@@ -1723,6 +1798,18 @@ export default function Home() {
           <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>[{manualModalChar.base.charName}] 수동 제원 설정</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>상단 🛠️ 탭에서 구성한 목록에서만 선택 가능합니다.</p>
+            <div style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <h3 style={{ fontSize: '0.95rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>기본 설정</h3>
+               <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>역할군 (로스터 편성에 사용됨)</label>
+               <select 
+                 style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                 value={manualForm.role || 'dealer'}
+                 onChange={e => setManualForm({...manualForm, role: e.target.value})}
+               >
+                 <option value="dealer">딜러</option>
+                 <option value="buffer">버퍼</option>
+               </select>
+            </div>
             <div className="manual-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem', marginTop: '1rem' }}>
               {[
                  { title: '장비 영역', keys: ['enchant', 'title'], labels: { enchant: '마부 상태', title: '칭호 현황' } },
