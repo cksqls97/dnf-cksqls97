@@ -93,9 +93,6 @@ export default function Home() {
   const [dungeonView, setDungeonView] = useState('overall'); // 'overall' | 'byDungeon'
   const [apocView, setApocView] = useState('overall'); // 'overall' | 'byTier'
   
-  const [draggedIdx, setDraggedIdx] = useState(null);
-  const [dragOverIdx, setDragOverIdx] = useState(null);
-  const [isReorderMode, setIsReorderMode] = useState(false);
   
   const chartData = React.useMemo(() => {
     // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
@@ -596,30 +593,7 @@ export default function Home() {
     return res.json();
   };
 
-  const handleDragStart = (e, index) => {
-    setDraggedIdx(index);
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move';
-    }
-  };
 
-  const handleDragEnter = (e, index) => {
-    e.preventDefault();
-    setDragOverIdx(index);
-  };
-
-  const handleDragEnd = () => {
-    if (draggedIdx !== null && dragOverIdx !== null && draggedIdx !== dragOverIdx) {
-      const copy = [...characters];
-      const item = copy[draggedIdx];
-      copy.splice(draggedIdx, 1);
-      copy.splice(dragOverIdx, 0, item);
-      setCharacters(copy);
-      localStorage.setItem('DNF_CHARS', JSON.stringify(copy));
-    }
-    setDraggedIdx(null);
-    setDragOverIdx(null);
-  };
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -865,11 +839,6 @@ export default function Home() {
             onClick={() => setRosterSubTab('items')}
             style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}
           >🎽 캐릭터 아이템 현황</button>
-          <button
-            className={`tab-btn ${rosterSubTab === 'groups' ? 'active' : ''}`}
-            onClick={() => setRosterSubTab('groups')}
-            style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}
-          >👥 로스터 편성</button>
         </div>
         {rosterSubTab === 'overview' && (
         <section className="glass-panel" style={{ marginBottom: '2rem' }}>
@@ -888,9 +857,7 @@ export default function Home() {
           </button>
           
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-             <button type="button" onClick={() => setIsReorderMode(!isReorderMode)} style={{ background: isReorderMode ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255,255,255,0.05)', color: isReorderMode ? '#38bdf8' : '#e2e8f0', border: isReorderMode ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid transparent' }}>
-               {isReorderMode ? "✅ 조정 완료" : "↕️ 순서 조정"}
-             </button>
+
              <button type="button" onClick={() => handleRefreshAll()} disabled={isRefreshing || characters.length === 0} style={{ background: '#475569' }}>
                {isRefreshing ? <div className="loader"/> : "🔄 전체 갱신"}
              </button>
@@ -906,41 +873,64 @@ export default function Home() {
             상단의 폼을 이용해 관리할 캐릭터를 추가해주세요.
           </div>
         ) : (
-          <table style={{ tableLayout: 'fixed', width: '100%' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
-                <th style={{ width: '8%', textAlign: 'center' }}>직업</th>
-                <th style={{ width: '16%', textAlign: 'center' }}>캐릭터명</th>
-                <th style={{ width: '6%', textAlign: 'center' }}>명성</th>
-                <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
-                <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
-                <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
-                <th style={{ width: '7%', textAlign: 'center' }}>던담</th>
-                <th style={{ width: '7%', textAlign: 'center' }}>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {characters.map((c, idx) => (
-                <React.Fragment key={c.id}>
-                  <tr 
-                    draggable={isReorderMode}
-                    onDragStart={(e) => { if (isReorderMode) handleDragStart(e, idx); }}
-                    onDragEnter={(e) => { if (isReorderMode) handleDragEnter(e, idx); }}
-                    onDragEnd={() => { if (isReorderMode) handleDragEnd(); }}
-                    onDragOver={(e) => { if (isReorderMode) e.preventDefault(); }}
-                    style={{ 
-                      verticalAlign: 'middle',
-                      cursor: isReorderMode ? 'grab' : 'default',
-                      background: (isReorderMode && draggedIdx === idx) ? 'rgba(255,255,255,0.1)' : (isReorderMode && dragOverIdx === idx) ? 'rgba(56,189,248,0.1)' : 'transparent',
-                      opacity: (isReorderMode && draggedIdx === idx) ? 0.5 : 1,
-                      borderBottom: (isReorderMode && dragOverIdx === idx) ? '2px solid #38bdf8' : '1px solid rgba(255,255,255,0.05)',
-                      transition: 'background 0.2s, opacity 0.2s'
-                    }}
-                  >
-                  <td data-label="서버" style={{ textAlign: 'center' }}>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
+          (() => {
+            const getRole = (c) => {
+              if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
+              const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+              const jobName = c.base?.jobGrowName || c.base?.jobName || '';
+              return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
+            };
+            const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
+            const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+            const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
+            const groups = [];
+            for (let i = 0; i < maxGroups; i++) {
+              groups.push([dealers[i * 3] || null, dealers[i * 3 + 1] || null, dealers[i * 3 + 2] || null, buffers[i] || null]);
+            }
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {groups.map((group, gIdx) => (
+                  <div key={gIdx} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '12px', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <h3 style={{ marginBottom: '1rem', color: '#38bdf8', fontSize: '1.1rem', paddingLeft: '0.5rem', borderLeft: '3px solid #38bdf8' }}>그룹 {gIdx + 1}</h3>
+                    <table style={{ tableLayout: 'fixed', width: '100%' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
+                          <th style={{ width: '8%', textAlign: 'center' }}>직업</th>
+                          <th style={{ width: '16%', textAlign: 'center' }}>캐릭터명</th>
+                          <th style={{ width: '6%', textAlign: 'center' }}>명성</th>
+                          <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
+                          <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
+                          <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
+                          <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
+                          <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
+                          <th style={{ width: '7%', textAlign: 'center' }}>던담</th>
+                          <th style={{ width: '7%', textAlign: 'center' }}>관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {group.map((c, mIdx) => {
+                          if (!c) {
+                            return (
+                              <tr key={`empty-${mIdx}`}>
+                                <td colSpan="11" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem', background: 'rgba(0,0,0,0.2)' }}>
+                                  {mIdx < 3 ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
+                                </td>
+                              </tr>
+                            );
+                          }
+                          const idx = characters.findIndex(char => char.id === c.id);
+                          return (
+                            <React.Fragment key={c.id}>
+                              <tr 
+                                style={{ 
+                                  verticalAlign: 'middle',
+                                  background: mIdx === 3 ? 'rgba(167, 139, 250, 0.05)' : 'transparent',
+                                  borderBottom: '1px solid rgba(255,255,255,0.05)'
+                                }}
+                              >
+                                <td data-label="서버" style={{ textAlign: 'center' }}>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
                   <td data-label="직업" style={{ textAlign: 'center' }}>{c.base.jobGrowName}</td>
                     <td data-label="캐릭터명" style={{ textAlign: 'center' }}>
                       <div style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>{c.base.charName}</div>
@@ -1116,10 +1106,16 @@ export default function Home() {
                   </td>
                 </tr>
 
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+              </div>
+            );
+          })()
         )}
       </section>
       )}
@@ -1151,18 +1147,47 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {characters.map((c, idx) => {
-                  const m = c.manual || {};
-                  const cell = (content) => (
-                    <td style={{ padding: '0.5rem 0.7rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'middle', background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
-                      {content}
-                    </td>
-                  );
-                  const dash = <span style={{ color: '#475569' }}>-</span>;
-                  return (
-                    <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(56,189,248,0.04)'}
-                      onMouseLeave={e => e.currentTarget.style.background = ''}>
+                {(() => {
+                  const getRole = (c) => {
+                    if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
+                    const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+                    const jobName = c.base?.jobGrowName || c.base?.jobName || '';
+                    return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
+                  };
+                  const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
+                  const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+                  const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
+                  const groups = [];
+                  for (let i = 0; i < maxGroups; i++) {
+                    groups.push([dealers[i * 3] || null, dealers[i * 3 + 1] || null, dealers[i * 3 + 2] || null, buffers[i] || null]);
+                  }
+                  
+                  return groups.flatMap((group, gIdx) => [
+                    <tr key={`group-${gIdx}-header`} style={{ background: 'rgba(56,189,248,0.1)', borderBottom: '1px solid rgba(56,189,248,0.3)' }}>
+                       <td colSpan="11" style={{ textAlign: 'left', fontWeight: 'bold', color: '#38bdf8', padding: '0.4rem 1rem' }}>그룹 {gIdx + 1}</td>
+                    </tr>,
+                    ...group.map((c, mIdx) => {
+                      if (!c) {
+                        return (
+                          <tr key={`group-${gIdx}-empty-${mIdx}`}>
+                            <td colSpan="11" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.5rem', background: 'rgba(0,0,0,0.2)' }}>
+                              {mIdx < 3 ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
+                            </td>
+                          </tr>
+                        );
+                      }
+                      const m = c.manual || {};
+                      const idx = characters.findIndex(char => char.id === c.id);
+                      const cell = (content) => (
+                        <td style={{ padding: '0.5rem 0.7rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'middle', background: mIdx === 3 ? 'rgba(167, 139, 250, 0.05)' : 'transparent' }}>
+                          {content}
+                        </td>
+                      );
+                      const dash = <span style={{ color: '#475569' }}>-</span>;
+                      return (
+                        <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.15s' }}
+                          onMouseEnter={e => e.currentTarget.style.background = mIdx === 3 ? 'rgba(167, 139, 250, 0.1)' : 'rgba(56,189,248,0.04)'}
+                          onMouseLeave={e => e.currentTarget.style.background = ''}>
                       {/* 캐릭터명 */}
                       {cell(<span style={{ fontWeight: 'bold', color: '#e2e8f0' }}>{c.base.charName}</span>)}
                       {/* 직업 */}
