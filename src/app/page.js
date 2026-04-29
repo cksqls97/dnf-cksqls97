@@ -937,7 +937,7 @@ export default function Home() {
                     </td>
                   <td data-label="명성" style={{ textAlign: 'center' }}>
                     {(() => {
-                        const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || idx < 8);
+                        const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || gIdx < 2);
                         const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
                         const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
                         const diffD = nextDungeon ? nextDungeon.fame - c.base.fame : null;
@@ -995,7 +995,7 @@ export default function Home() {
                   </td>
                   <td data-label="레이드" style={{ textAlign: 'center' }}>
                     {(() => {
-                      const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || idx < 8);
+                      const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || gIdx < 2);
                       const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
                       const raidDiff = nextRaid ? nextRaid.fame - c.base.fame : null;
                       const isImminent = raidDiff !== null && raidDiff < 1000;
@@ -1515,8 +1515,21 @@ export default function Home() {
 
             {/* ────────────── 레이드 탭 ────────────── */}
             {imminentSubTab === 'raid' && (() => {
-              const raidItems = characters.map((c, i) => {
-                const filtered = RAIDS.filter(r => r.name !== '이내 황혼전' || i < 8);
+              const getRole = (char) => {
+                if (char.manual?.isManualRoleSet && char.manual?.role) return char.manual.role;
+                const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+                const jobName = char.base?.jobGrowName || char.base?.jobName || '';
+                return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
+              };
+              const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
+              const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+
+              const raidItems = characters.map((c) => {
+                const role = getRole(c);
+                const rank = role === 'dealer' ? dealers.findIndex(x => x.id === c.id) : buffers.findIndex(x => x.id === c.id);
+                const gIdx = rank === -1 ? 999 : (role === 'dealer' ? Math.floor(rank / 3) : rank);
+                
+                const filtered = RAIDS.filter(r => r.name !== '이내 황혼전' || gIdx < 2);
                 const next = [...filtered].reverse().find(r => r.fame > c.base.fame);
                 return { c, next };
               }).filter(x => x.next).sort((a, b) => (a.next.fame - a.c.base.fame) - (b.next.fame - b.c.base.fame));
