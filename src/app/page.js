@@ -1833,35 +1833,49 @@ export default function Home() {
                </div>
             </div>
 
+            {/* Character Selector */}
+            <div style={{ marginBottom: '1.5rem' }}>
+               <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
+               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                 {characters.map(c => {
+                    const isSelected = getCharForm(c.id).selected;
+                    return (
+                      <button key={c.id} onClick={() => togglePilgrimageChar(c.id)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', borderRadius: '4px', border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)', background: isSelected ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.05)', color: isSelected ? '#fff' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}>
+                        {c.base.charName}
+                      </button>
+                    );
+                 })}
+               </div>
+            </div>
+
             {/* Main Table */}
             <div style={{ overflowX: 'auto', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>선택</th>
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>캐릭터</th>
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>시작 피로도</th>
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
                     <th colSpan="5" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (입력)</th>
                     <th colSpan="3" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                   </tr>
-                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem' }}>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순례의 인장</th>
-                    <th style={{ padding: '0.4rem' }}>응축 라이언</th>
-                    <th style={{ padding: '0.4rem' }}>빛조결</th>
-                    <th style={{ padding: '0.4rem' }}>무결 응축</th>
-                    <th style={{ padding: '0.4rem' }}>무결 빛조결</th>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순례의 증표</th>
-                    <th style={{ padding: '0.4rem' }}>피로도 영약</th>
-                    <th style={{ padding: '0.4rem' }}>무색 큐브(판당)</th>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem', lineHeight: '1.2' }}>
+                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순례의<br/>인장</th>
+                    <th style={{ padding: '0.4rem' }}>응축된<br/>라이언 코어</th>
+                    <th style={{ padding: '0.4rem' }}>빛나는 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.4rem' }}>무결점<br/>라이언 코어</th>
+                    <th style={{ padding: '0.4rem' }}>무결점 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
+                    <th style={{ padding: '0.4rem' }}>피로 회복의<br/>영약</th>
+                    <th style={{ padding: '0.4rem' }}>무색 큐브 조각<br/>(판당)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {characters.length === 0 ? (
+                  {characters.filter(c => getCharForm(c.id).selected).length === 0 ? (
                     <tr>
-                      <td colSpan="12" style={{ padding: '2rem', color: 'var(--text-muted)' }}>등록된 캐릭터가 없습니다.</td>
+                      <td colSpan="11" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
                     </tr>
-                  ) : characters.map((c, idx) => {
+                  ) : characters.filter(c => getCharForm(c.id).selected).map((c, idx) => {
                     const form = getCharForm(c.id);
                     const fatigue = Number(form.startFatigue || 0);
                     const runs = Math.ceil(fatigue / 8) + 4;
@@ -1871,11 +1885,8 @@ export default function Home() {
                     
                     return (
                       <tr key={c.id} style={rowStyle}>
-                        <td style={{ padding: '0.5rem' }}>
-                          <input type="checkbox" checked={isSelected} onChange={() => togglePilgrimageChar(c.id)} style={{ transform: 'scale(1.2)', cursor: 'pointer' }} />
-                        </td>
-                        <td style={{ padding: '0.5rem', fontWeight: isSelected ? 'bold' : 'normal', color: isSelected ? '#38bdf8' : '#e2e8f0', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)}>
-                          {c.base.charName}
+                        <td style={{ padding: '0.5rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
+                          {c.base.charName} <span style={{fontSize:'0.8rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
                         </td>
                         <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
                         <td style={{ padding: '0.5rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
@@ -1918,14 +1929,14 @@ export default function Home() {
                              <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                                <th style={{ padding: '0.4rem', textAlign: 'left' }}>캐릭터</th>
                                <th style={{ padding: '0.4rem' }}>피로도(판수)</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>인장</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>응축라이언</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>빛조결</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결응축</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결빛조결</th>
-                               <th style={{ padding: '0.4rem', color: '#f87171' }}>증표</th>
-                               <th style={{ padding: '0.4rem', color: '#f87171' }}>영약</th>
-                               <th style={{ padding: '0.4rem', color: '#f87171' }}>총 무큐 소모</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>응축된 라이언 코어</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 라이언 코어</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
+                               <th style={{ padding: '0.4rem', color: '#f87171' }}>닳아버린 순례의 증표</th>
+                               <th style={{ padding: '0.4rem', color: '#f87171' }}>피로 회복의 영약</th>
+                               <th style={{ padding: '0.4rem', color: '#f87171' }}>총 무색 큐브 조각 소모</th>
                              </tr>
                            </thead>
                            <tbody>
