@@ -2517,26 +2517,45 @@ export default function Home() {
                 </div>
               </div>
             )}
-            {showAuctionPricesModal && (
+            {showAuctionPricesModal && (() => {
+              const baseItems = ['\ubb34\uacb0\uc810 \ub77c\uc774\uc5b8 \ucf54\uc5b4', '\ubb34\uacb0\uc810 \uc870\ud654\uc758 \uacb0\uc815\uccb4', '\ub2f3\uc544\ubc84\ub9b0 \uc21c\ub840\uc758 \uc99d\ud45c', '\uc21c\ub840\uc758 \uc778\uc7a5(1\ud68c \uad50\ud658 \uac00\ub2a5)', '\uc21c\ub840\uc758 \uc778\uc7a5(1\ud68c \uad50\ud658 \uac00\ub2a5) \uad50\ud658\uad8c 1\uac1c \uc0c1\uc790'];
+              return (
               <div className="modal-overlay">
                 <div className="modal-content glass-panel" style={{ maxWidth: '500px', width: '90%' }}>
                    <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                      ⚖️ 현재 적용된 경매장 단가
                    </h3>
-                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
-                     {Object.entries(auctionPrices).map(([name, price]) => (
-                       <div key={name} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.4rem' }}>
-                         <span style={{ color: '#cbd5e1' }}>{name}</span>
-                         <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{price.toLocaleString()} G</span>
-                       </div>
-                     ))}
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                     {Object.entries(auctionPrices).map(([name, price]) => {
+                       const isBase = baseItems.includes(name);
+                       return (
+                        <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.4rem' }}>
+                          <span style={{ flex: 1, color: '#cbd5e1', fontSize: '0.75rem' }}>{name}</span>
+                          <input type="number" value={price} onChange={e => {
+                            setAuctionPrices(prev => ({ ...prev, [name]: Number(e.target.value) || 0 }));
+                          }} style={{ width: '90px', padding: '0.3rem 0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fbbf24', borderRadius: '4px', textAlign: 'right', fontWeight: 'bold' }} />
+                          <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>G</span>
+                          {!isBase && (
+                            <button onClick={() => {
+                              setAuctionPrices(prev => {
+                                const next = { ...prev };
+                                delete next[name];
+                                return next;
+                              });
+                            }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 0.2rem', flexShrink: 0 }} title="목록에서 삭제">×</button>
+                          )}
+                          {isBase && <span style={{ width: '1.2rem' }}></span>}
+                        </div>
+                       );
+                     })}
                    </div>
                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <button onClick={() => setShowAuctionPricesModal(false)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
                    </div>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>히스토리</h3>
             {pilgrimageHistory.length === 0 ? (
