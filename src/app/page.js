@@ -1136,7 +1136,7 @@ export default function Home() {
                       }
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                          <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
+                          <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.71rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
                             💀 {currentLabel}
                           </span>
                           {nextTarget && (
@@ -1276,7 +1276,7 @@ export default function Home() {
                         (m.aura || m.auraEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.aura && <span style={{ color: '#f472b6' }}>{m.aura}</span>}
-                            {m.auraEmblem && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>[{m.auraEmblem}]</span>}
+                            {m.auraEmblem && <span style={{ color: '#94a3b8', fontSize: '0.71rem' }}>[{m.auraEmblem}]</span>}
                           </div>
                         ) : dash
                       )}
@@ -2064,7 +2064,7 @@ export default function Home() {
                     <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (기록)</th>
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
-                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
+                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
                     
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem', lineHeight: '1.2' }}>
@@ -2084,7 +2084,8 @@ export default function Home() {
                     <th style={{ padding: '0.2rem 0.1rem' }}>레시피 (구매/인장/판매)</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속<br/>가치</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>교환<br/>가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>총 순수익</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순수익<br/>(귀속 포함)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8' }}>순수익<br/>(귀속 제외)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2093,7 +2094,7 @@ export default function Home() {
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
-                           <td colSpan="21" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
+                           <td colSpan="22" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
                          </tr>
                        );
                      }
@@ -2230,7 +2231,8 @@ export default function Home() {
 
                             {/* 19 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
                             {/* 20 */} <td style={{ padding: '0.2rem 0.1rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
-                            {/* 21 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
+                            {/* 21 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalBoundValue + finalTradableValue - totalConsumedValue) > 0 ? '#4ade80' : ((finalBoundValue + finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{(finalBoundValue + finalTradableValue - totalConsumedValue) !== 0 ? (finalBoundValue + finalTradableValue - totalConsumedValue).toLocaleString() : '-'}</td>
+                            {/* 22 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalTradableValue - totalConsumedValue) > 0 ? '#38bdf8' : ((finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{(finalTradableValue - totalConsumedValue) !== 0 ? (finalTradableValue - totalConsumedValue).toLocaleString() : '-'}</td>
                             
                           </tr>
                         );
