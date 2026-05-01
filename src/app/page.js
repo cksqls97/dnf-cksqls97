@@ -97,6 +97,7 @@ export default function Home() {
   const [globalStartFatigue, setGlobalStartFatigue] = useState('');
   const [pilgrimageHistory, setPilgrimageHistory] = useState([]);
   const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
+  const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
 
   useEffect(() => {
     const draft = localStorage.getItem('DNF_PILGRIMAGE_FORM_DRAFT');
@@ -1968,9 +1969,14 @@ export default function Home() {
                  <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
                </div>
                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                 <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer' }}>
-                   {isFetchingPrices ? '불러오는 중...' : '경매장 단가 불러오기'}
-                 </button>
+                 <div style={{ display: 'flex', gap: '0.5rem' }}>
+                   <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer' }}>
+                     {isFetchingPrices ? '불러오는 중...' : '경매장 단가 불러오기'}
+                   </button>
+                   <button onClick={() => setShowAuctionPricesModal(true)} style={{ padding: '0.5rem 1rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>
+                     단가 확인
+                   </button>
+                 </div>
                  <button onClick={handleSavePilgrimage} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px' }}>선택 캐릭터 저장</button>
                </div>
             </div>
@@ -2186,6 +2192,28 @@ export default function Home() {
                  </div>
               );
             })()}
+
+            {/* Auction Prices Modal */}
+            {showAuctionPricesModal && (
+              <div className="modal-overlay">
+                <div className="modal-content glass-panel" style={{ maxWidth: '350px' }}>
+                   <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                     ⚖️ 현재 적용된 경매장 단가
+                   </h3>
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
+                     {Object.entries(auctionPrices).map(([name, price]) => (
+                       <div key={name} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.4rem' }}>
+                         <span style={{ color: '#cbd5e1' }}>{name}</span>
+                         <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{price.toLocaleString()} G</span>
+                       </div>
+                     ))}
+                   </div>
+                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={() => setShowAuctionPricesModal(false)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
+                   </div>
+                </div>
+              </div>
+            )}
 
             <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>히스토리</h3>
             {pilgrimageHistory.length === 0 ? (
