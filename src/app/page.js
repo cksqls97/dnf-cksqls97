@@ -1816,7 +1816,7 @@ export default function Home() {
                  if (item.name && item.name.trim()) customNames.add(item.name.trim());
                });
              });
-             const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자'];
+             const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자', '피로 회복의 영약'];
              const allItemNames = [...baseItems, ...Array.from(customNames)];
              const res = await fetch('/api/auction', {
                 method: 'POST',
@@ -1889,7 +1889,7 @@ export default function Home() {
             const c = characters.find(char => char.id === id);
             const form = getCharForm(id);
             const fatigue = Number(form.startFatigue || 0);
-            const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + 4 : 0;
+            const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0) : 0;
             
             // 귀속재화 가치 산출
             const sealValue = Number(form.seal || 0) * 5000;
@@ -1919,7 +1919,7 @@ export default function Home() {
 
             // 소모재화 비용 산출
             const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
-            const potionCost = 0; // 영약 가치는 변동/불가로 0 처리
+            const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
             const totalConsumedValue = tokenCost + potionCost;
             
             // 비밀상점 가치 산출 (캐릭터별)
@@ -2130,7 +2130,7 @@ export default function Home() {
                      const rows = selectedChars.map((c, idx) => {
                        const form = getCharForm(c.id);
                     const fatigue = Number(form.startFatigue || 0);
-                    const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + 4 : 0;
+                    const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0) : 0;
                     const isSelected = form.selected;
                     const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: isSelected ? 'rgba(56, 189, 248, 0.08)' : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'), transition: 'background 0.2s' };
                     const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
@@ -2160,7 +2160,8 @@ export default function Home() {
                     const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
                     
                     const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
-                    const totalConsumedValue = tokenCost;
+                    const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
+                    const totalConsumedValue = tokenCost + potionCost;
 
                     // 캐릭터별 비밀상점 가치 산출
                     const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
