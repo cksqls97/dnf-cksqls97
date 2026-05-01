@@ -2794,7 +2794,7 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).seal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'seal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장 (교환 가능)</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능)</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).tradableSeal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'tradableSeal', e.target.value)} />
                 </div>
                 <div>
@@ -2814,11 +2814,11 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).flawlessCrystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCrystal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장 교환권</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).sealVoucher || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucher', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>교환권 상자</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).sealVoucherBox || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucherBox', e.target.value)} />
                 </div>
               </div>
