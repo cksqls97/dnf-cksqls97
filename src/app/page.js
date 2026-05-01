@@ -117,6 +117,7 @@ export default function Home() {
     }
     const draftFatigue = localStorage.getItem('DNF_PILGRIMAGE_GLOBAL_FATIGUE');
     if (draftFatigue) setGlobalStartFatigue(Number(draftFatigue));
+    const draftPrices = localStorage.getItem('DNF_PILGRIMAGE_AUCTION_PRICES');
     if (draftPrices) {
       try {
         const parsed = JSON.parse(draftPrices);
