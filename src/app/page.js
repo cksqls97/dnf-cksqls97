@@ -1781,7 +1781,8 @@ export default function Home() {
           sealVoucher: '', tradableSeal: '', sealVoucherBox: '', memo: '',
           secretTokens: [],
           secretRecipes: [],
-          customItems: []
+          customItems: [],
+          usePotion: false
         };
         
         const updateCharForm = (id, field, value) => {
@@ -1975,7 +1976,7 @@ export default function Home() {
               },
               consumed: {
                 token: runs,
-                potion: 1
+                potion: form.usePotion === true ? 1 : 0
               },
               memo: form.memo || '',
               customItems: form.customItems || [],
@@ -2209,7 +2210,7 @@ export default function Home() {
                         sumTradableSeal += Number(form.tradableSeal || 0);
                         sumSealVoucherBox += Number(form.sealVoucherBox || 0);
                         sumTokens += runs;
-                        sumPotions += 1;
+                        sumPotions += (form.usePotion === true ? 1 : 0);
                         sumBoundValue += finalBoundValue;
                         sumTradableValue += finalTradableValue;
                         sumTotalProfit += totalProfit;
@@ -2236,7 +2237,22 @@ export default function Home() {
                             {/* 13 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
                             
                             {/* 14 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
-                            {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>1</td>
+                            {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>
+                              <button 
+                                onClick={() => updateCharForm(c.id, 'usePotion', !form.usePotion)}
+                                style={{ 
+                                  padding: '0.1rem 0.3rem', 
+                                  fontSize: '0.65rem', 
+                                  background: form.usePotion ? 'rgba(248, 113, 113, 0.2)' : 'rgba(255,255,255,0.05)', 
+                                  border: form.usePotion ? '1px solid rgba(248, 113, 113, 0.4)' : '1px solid rgba(255,255,255,0.1)',
+                                  color: form.usePotion ? '#f87171' : '#64748b',
+                                  borderRadius: '3px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {form.usePotion ? '사용' : '미사용'}
+                              </button>
+                            </td>
                             
                             {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
