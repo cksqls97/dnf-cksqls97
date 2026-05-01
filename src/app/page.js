@@ -117,9 +117,11 @@ export default function Home() {
     }
     const draftFatigue = localStorage.getItem('DNF_PILGRIMAGE_GLOBAL_FATIGUE');
     if (draftFatigue) setGlobalStartFatigue(Number(draftFatigue));
-    const draftPrices = localStorage.getItem('DNF_PILGRIMAGE_AUCTION_PRICES');
     if (draftPrices) {
-      try { setAuctionPrices(JSON.parse(draftPrices)); } catch(e) {}
+      try {
+        const parsed = JSON.parse(draftPrices);
+        setAuctionPrices(parsed);
+      } catch(e) {}
     }
   }, []);
 
@@ -2078,7 +2080,7 @@ export default function Home() {
                       const mMaxGroups = Math.max(Math.ceil(dealersAll.length / 3), buffersAll.length);
                       for (let i = 0; i < mMaxGroups; i++) {
                         if (dealersAll[i * 3]) sortedAll.push(dealersAll[i * 3]);
-                        if (dealersAll[i * 3 + 1]) sortedAll.push(dealersAll[i * 3 + 1]);
+                      if (dealersAll[i * 3 + 1]) sortedAll.push(dealersAll[i * 3 + 1]);
                         if (dealersAll[i * 3 + 2]) sortedAll.push(dealersAll[i * 3 + 2]);
                         if (buffersAll[i]) sortedAll.push(buffersAll[i]);
                       }
@@ -2086,7 +2088,7 @@ export default function Home() {
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
-                           <td colSpan="22" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
+                           <td colSpan="21" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
                          </tr>
                        );
                      }
@@ -2094,8 +2096,8 @@ export default function Home() {
                      let sumFatigue = 0, sumRuns = 0;
                      let sumPureGold = 0, sumSeal = 0, sumCondensedCore = 0, sumCrystal = 0, sumFlawlessCore = 0, sumFlawlessCrystal = 0;
                      let sumSealVoucher = 0, sumTradableSeal = 0, sumSealVoucherBox = 0;
-                     let sumTokens = 0, sumPotions = 0, sumConsumedCube = 0;
-                     let sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0;
+                     let sumTokens = 0, sumPotions = 0;
+                     let sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0, sumProfitExclBound = 0;
 
                      const rows = selectedChars.map((c, idx) => {
                        const form = getCharForm(c.id);
@@ -2160,13 +2162,10 @@ export default function Home() {
                     const finalBoundValue = totalBoundValue - recipeSealCost;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
                     
-                    // sumPureGold는 보정된 값으로 누적해야함 (혹은 기존대로?) -> 총합계도 실제 드랍 골드로 보여주는 게 맞음.
-                    const pureGold = restoredPureGold;
-                    
-                        // 합계 누적
+                    // 합계 누적
                         sumFatigue += fatigue;
                         sumRuns += runs;
-                        sumPureGold += pureGold;
+                        sumPureGold += restoredPureGold;
                         sumSeal += Number(form.seal || 0);
                         sumCondensedCore += Number(form.condensedCore || 0);
                         sumCrystal += Number(form.crystal || 0);
@@ -2180,6 +2179,7 @@ export default function Home() {
                         sumBoundValue += finalBoundValue;
                         sumTradableValue += finalTradableValue;
                         sumTotalProfit += totalProfit;
+                        sumProfitExclBound += (finalTradableValue - totalConsumedValue);
 
                         return (
                           <tr key={c.id} style={rowStyle}>
@@ -2191,7 +2191,7 @@ export default function Home() {
                             {/* 4 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
                               <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', background: 'rgba(74, 222, 128, 0.2)', border: '1px solid rgba(74, 222, 128, 0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
                             </td>
-                            {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{form.pureGold ? Number(form.pureGold).toLocaleString() : '-'}</td>
+                            {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{restoredPureGold ? Number(restoredPureGold).toLocaleString() : '-'}</td>
                             {/* 6 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal ? Number(form.seal).toLocaleString() : '-'}</td>
                             {/* 7 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
                             {/* 8 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
@@ -2204,26 +2204,26 @@ export default function Home() {
                             {/* 14 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
                             {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>1</td>
                             
-                            {/* 17 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
+                            {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
                                 + 증표 {form.secretTokens?.length > 0 ? `(${form.secretTokens.length})` : ''}
                               </button>
                             </td>
-                            {/* 18 */} <td style={{ padding: '0.2rem 0.1rem', verticalAlign: 'middle', minWidth: '80px' }}>
+                            {/* 17 */} <td style={{ padding: '0.2rem 0.1rem', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'recipe' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
                                 + 레시피 {form.secretRecipes?.length > 0 ? `(${form.secretRecipes.length})` : ''}
                               </button>
                             </td>
 
-                            {/* 19 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
-                            {/* 20 */} <td style={{ padding: '0.2rem 0.1rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
-                                                        {/* 21 */} <td 
+                            {/* 18 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
+                            {/* 19 */} <td style={{ padding: '0.2rem 0.1rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
+                            {/* 20 */} <td 
                               style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalBoundValue + finalTradableValue - totalConsumedValue) > 0 ? '#4ade80' : ((finalBoundValue + finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
                               onClick={() => setCalcDetail({
                                 charName: c.base.charName,
                                 items: {
                                   seal: Number(form.seal || 0),
-                                  core: Number(form.core || 0),
+                                  core: Number(form.condensedCore || 0),
                                   crystal: Number(form.crystal || 0),
                                   pureGold: Number(form.pureGold || 0),
                                   flawlessCore: Number(form.flawlessCore || 0),
@@ -2259,13 +2259,13 @@ export default function Home() {
                             >
                               {(finalBoundValue + finalTradableValue - totalConsumedValue) !== 0 ? (finalBoundValue + finalTradableValue - totalConsumedValue).toLocaleString() : '-'}
                             </td>
-                            {/* 22 */} <td 
+                            {/* 21 */} <td 
                               style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalTradableValue - totalConsumedValue) > 0 ? '#38bdf8' : ((finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
                               onClick={() => setCalcDetail({
                                 charName: c.base.charName,
                                 items: {
                                   seal: Number(form.seal || 0),
-                                  core: Number(form.core || 0),
+                                  core: Number(form.condensedCore || 0),
                                   crystal: Number(form.crystal || 0),
                                   pureGold: Number(form.pureGold || 0),
                                   flawlessCore: Number(form.flawlessCore || 0),
@@ -2325,10 +2325,11 @@ export default function Home() {
                             {/* 13 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
                             {/* 14 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
                             {/* 15 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
-                            {/* 17,18 */} <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
-                            {/* 19 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
-                            {/* 20 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
-                            {/* 21 */} <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
+                            {/* 16,17 */} <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
+                            {/* 18 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
+                            {/* 19 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
+                            {/* 20 */} <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
+                            {/* 21 */} <td style={{ padding: '0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : (sumProfitExclBound < 0 ? '#f87171' : '#cbd5e1') }}>{sumProfitExclBound !== 0 ? sumProfitExclBound.toLocaleString() : '-'}</td>
                             
                           </tr>
                         </>
@@ -2520,6 +2521,8 @@ export default function Home() {
                            <tbody>
                              {record.details.map((d, i) => {
                                const profit = d.values?.profit || 0;
+                               const bound = d.values?.bound || 0;
+                               const tradable = d.values?.tradable || 0;
                                
                                return (
                                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
