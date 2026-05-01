@@ -963,7 +963,7 @@ export default function Home() {
                     <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (기록)</th>
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
-                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
+                    <th colSpan="4" style={{ padding: "0.4rem", borderBottom: "1px solid rgba(255,255,255,0.1)", borderLeft: "1px solid rgba(255,255,255,0.1)", color: "#fb923c" }}>가치 산출 (골드)</th>
                     
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.62rem', lineHeight: '1.0', letterSpacing: '-0.02em' }}>
@@ -1038,7 +1038,7 @@ export default function Home() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           {nextDungeon && (
                             <div style={{
-                              fontSize: '0.75rem',
+                              fontSize: '0.71rem',
                               color: isImminent ? '#fef08a' : '#fca5a5',
                               background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(248, 113, 113, 0.08)',
                               padding: '0.2rem 0.4rem',
@@ -1247,7 +1247,7 @@ export default function Home() {
                       if (!c) {
                         return (
                           <tr key={`group-${gIdx}-empty-${mIdx}`}>
-                            <td colSpan="11" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.2rem', background: 'rgba(0,0,0,0.2)' }}>
+                            <td colSpan="11" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.2)' }}>
                               {mIdx < 3 ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
                             </td>
                           </tr>
@@ -1375,7 +1375,7 @@ export default function Home() {
                 ) : null;
               })()}
             </div>
-            <select value={historyFilterChar} onChange={e => setHistoryFilterChar(e.target.value)} style={{ padding: '0.2rem', minWidth: '200px' }}>
+            <select value={historyFilterChar} onChange={e => setHistoryFilterChar(e.target.value)} style={{ padding: '0.2rem 0.1rem', minWidth: '200px' }}>
               <option value="">전체 캐릭터 보기</option>
               {characters.map(c => <option key={c.id} value={c.id}>{c.base.charName} ({c.base.jobGrowName})</option>)}
             </select>
@@ -2110,7 +2110,7 @@ export default function Home() {
                     const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + 4 : 0;
                     const isSelected = form.selected;
                     const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: isSelected ? 'rgba(56, 189, 248, 0.08)' : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'), transition: 'background 0.2s' };
-                    const inputStyle = { width: '55px', padding: '0.2rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
+                    const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
                     const startCube = Number(form.clearCubeStart || 0);
                     const endCube = Number(form.clearCubeEnd || 0);
                     const consumedCube = startCube >= endCube && startCube > 0 ? (startCube - endCube) : 0;
@@ -2195,42 +2195,42 @@ export default function Home() {
 
                         return (
                           <tr key={c.id} style={rowStyle}>
-                            {/* 1 */} <td style={{ padding: '0.2rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
+                            {/* 1 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
                               {c.base.charName} <span style={{fontSize:'0.8rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
                             </td>
-                            {/* 2 */} <td style={{ padding: '0.2rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
-                            {/* 3 */} <td style={{ padding: '0.2rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
-                            {/* 4 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+                            {/* 2 */} <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
+                            {/* 3 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
+                            {/* 4 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
                               <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', background: 'rgba(74, 222, 128, 0.2)', border: '1px solid rgba(74, 222, 128, 0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
                             </td>
-                            {/* 5 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{form.pureGold ? Number(form.pureGold).toLocaleString() : '-'}</td>
-                            {/* 6 */} <td style={{ padding: '0.2rem' }}>{form.seal ? Number(form.seal).toLocaleString() : '-'}</td>
-                            {/* 7 */} <td style={{ padding: '0.2rem' }}>{form.condensedCore ? Number(form.condensedCore).toLocaleString() : '-'}</td>
-                            {/* 8 */} <td style={{ padding: '0.2rem' }}>{form.crystal ? Number(form.crystal).toLocaleString() : '-'}</td>
-                            {/* 9 */} <td style={{ padding: '0.2rem' }}>{form.flawlessCore ? Number(form.flawlessCore).toLocaleString() : '-'}</td>
-                            {/* 10 */} <td style={{ padding: '0.2rem' }}>{form.flawlessCrystal ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
-                            {/* 11 */} <td style={{ padding: '0.2rem' }}>{form.sealVoucher ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
-                            {/* 12 */} <td style={{ padding: '0.2rem' }}>{form.tradableSeal ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
-                            {/* 13 */} <td style={{ padding: '0.2rem' }}>{form.sealVoucherBox ? Number(form.sealVoucherBox).toLocaleString() : '-'}</td>
+                            {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{form.pureGold ? Number(form.pureGold).toLocaleString() : '-'}</td>
+                            {/* 6 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal ? Number(form.seal).toLocaleString() : '-'}</td>
+                            {/* 7 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.condensedCore ? Number(form.condensedCore).toLocaleString() : '-'}</td>
+                            {/* 8 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.crystal ? Number(form.crystal).toLocaleString() : '-'}</td>
+                            {/* 9 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCore ? Number(form.flawlessCore).toLocaleString() : '-'}</td>
+                            {/* 10 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
+                            {/* 11 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
+                            {/* 12 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
+                            {/* 13 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucherBox ? Number(form.sealVoucherBox).toLocaleString() : '-'}</td>
                             
-                            {/* 14 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
-                            {/* 15 */} <td style={{ padding: '0.2rem', color: '#fca5a5' }}>1</td>
-                            {/* 16 */} <td style={{ padding: '0.2rem', color: '#fca5a5' }}>{consumedCube > 0 ? consumedCube.toLocaleString() : "-"}</td>
+                            {/* 14 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
+                            {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>1</td>
+                            {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>{consumedCube > 0 ? consumedCube.toLocaleString() : "-"}</td>
                             
-                            {/* 17 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
+                            {/* 17 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
                                 + 증표 {form.secretTokens?.length > 0 ? `(${form.secretTokens.length})` : ''}
                               </button>
                             </td>
-                            {/* 18 */} <td style={{ padding: '0.2rem', verticalAlign: 'middle', minWidth: '80px' }}>
+                            {/* 18 */} <td style={{ padding: '0.2rem 0.1rem', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'recipe' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
                                 + 레시피 {form.secretRecipes?.length > 0 ? `(${form.secretRecipes.length})` : ''}
                               </button>
                             </td>
 
-                            {/* 19 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
-                            {/* 20 */} <td style={{ padding: '0.2rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
-                            {/* 21 */} <td style={{ padding: '0.2rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
+                            {/* 19 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
+                            {/* 20 */} <td style={{ padding: '0.2rem 0.1rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
+                            {/* 21 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
                             
                           </tr>
                         );
@@ -2707,15 +2707,15 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
                             <div style={{ fontSize: '0.85rem', color: '#a78bfa', fontWeight: 'bold' }}>레시피 #{idx+1}</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                               <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>구매가:</span>
-                              <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.2rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                              <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                               <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 인장:</span>
-                              <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.2rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
+                              <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                               <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>판매가:</span>
-                              <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sellPrice', e.target.value)} style={{ width: '90px', padding: '0.2rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                              <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sellPrice', e.target.value)} style={{ width: '90px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
                             </div>
                             <button onClick={() => removeCharRecipe(activeSecretShopModal.charId, r.id)} style={{ marginLeft: 'auto', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
                          </div>
