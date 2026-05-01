@@ -2062,8 +2062,6 @@ export default function Home() {
                     const finalBoundValue = totalBoundValue - recipeSealCost;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
                     
-                    const totalProfit = totalBoundValue + totalTradableValue - totalConsumedValue;
-                    
                     return (
                       <tr key={c.id} style={rowStyle}>
                         <td style={{ padding: '0.5rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
