@@ -1947,6 +1947,7 @@ export default function Home() {
                     const runs = Math.ceil(fatigue / 8) + 4;
                     const isSelected = form.selected;
                     const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: isSelected ? 'rgba(56, 189, 248, 0.08)' : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'), transition: 'background 0.2s' };
+                    const inputStyle = { width: '55px', padding: '0.3rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
                     const startCube = Number(form.clearCubeStart || 0);
                     const endCube = Number(form.clearCubeEnd || 0);
                     const consumedCube = startCube >= endCube && startCube > 0 ? (startCube - endCube) : 0;
