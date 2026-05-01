@@ -1815,7 +1815,7 @@ export default function Home() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   apiKey, 
-                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '무색 큐브 조각', '순례의 인장 (1회 교환 가능)', '순례의 인장 (1회 교환 가능) 교환권 1개 상자']
+                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '무색 큐브 조각', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자']
                 })
              });
              const data = await res.json();
@@ -1880,14 +1880,14 @@ export default function Home() {
             const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
             const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
             
-            // 교환가능재화 가치 산출 (보정 전)
+            // 교환 가능재화 가치 산출 (보정 전)
             const pureGoldInput = Number(form.pureGold || 0);
             const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
             const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
             
-            // 인장 교환권 및 교환가능 인장 가치 산출
-            const priceTradableSeal = auctionPrices['순례의 인장 (1회 교환 가능)'] || 0;
-            const priceVoucherBox = auctionPrices['순례의 인장 (1회 교환 가능) 교환권 1개 상자'] || 0;
+            // 인장 교환권 및 교환 가능 인장 가치 산출
+            const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
+            const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
             const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
             const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
             const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
@@ -1929,7 +1929,7 @@ export default function Home() {
             // 순 골드 보정 (상점 지출액 복원)
             const restoredPureGold = pureGoldInput + secretShopGoldSpent;
 
-            // 최종 교환가능재화 가치 (보정된 순골드 + 코어/결정체 + 인장류 수익 + 상점 순수익)
+            // 최종 교환 가능재화 가치 (보정된 순골드 + 코어/결정체 + 인장류 수익 + 상점 순수익)
             const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit;
             const finalBoundValue = totalBoundValue - recipeSealCost;
             const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
@@ -2074,9 +2074,9 @@ export default function Home() {
                     <th style={{ padding: '0.2rem 0.1rem' }}>빛나는 조화의<br/>결정체</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>무결점<br/>라이언 코어</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권 1개 상자</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권 1개 상자</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>소모 무큐</th>
@@ -2124,9 +2124,9 @@ export default function Home() {
                     const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
                     const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
                     
-                    // 인장 교환권 및 교환가능 인장 가치 산출
-                    const priceTradableSeal = auctionPrices['순례의 인장 (1회 교환 가능)'] || 0;
-                    const priceVoucherBox = auctionPrices['순례의 인장 (1회 교환 가능) 교환권 1개 상자'] || 0;
+                    // 인장 교환권 및 교환 가능 인장 가치 산출
+                    const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
+                    const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
                     const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
                     const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
                     const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
@@ -2166,7 +2166,7 @@ export default function Home() {
                     // 순 골드 보정 (상점 지출액 복원)
                     const restoredPureGold = pureGoldInput + secretShopGoldSpent;
 
-                    // 최종 교환가능재화 가치
+                    // 최종 교환 가능재화 가치
                     const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit;
                     const finalBoundValue = totalBoundValue - recipeSealCost;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
@@ -2326,9 +2326,9 @@ export default function Home() {
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 라이언 코어</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장 (1회 교환 가능) 교환권</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능) 교환권</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능)</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장 (1회 교환 가능) 교환권 1개 상자</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#f87171' }}>소모 무큐</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>귀속 가치</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>교환 가치</th>
