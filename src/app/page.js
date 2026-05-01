@@ -1846,24 +1846,36 @@ export default function Home() {
             const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
             const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
             
-            // 교환가능재화 가치 산출
-            const pureGold = Number(form.pureGold || 0);
+            // 교환가능재화 가치 산출 (보정 전)
+            const pureGoldInput = Number(form.pureGold || 0);
             const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
             const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
-            const totalTradableValue = pureGold + tradableCoreValue + tradableCrystalValue;
             
+            // 인장 교환권 및 교환가능 인장 가치 산출
+            const priceTradableSeal = auctionPrices['순례의 인장 (1회 교환 가능)'] || 0;
+            const priceVoucherBox = auctionPrices['순례의 인장(1회 교환가능) 교환권 1개 상자'] || 0;
+            const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
+            const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
+            const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
+            const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
+
             // 소모재화 비용 산출
             const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
             const cubeCost = consumedCube * (auctionPrices['무색 큐브 조각'] || 0);
-            const potionCost = 0; // 영약 가치는 변동/불가로 0 처리하거나 나중에 필요시 추가
+            const potionCost = 0; // 영약 가치는 변동/불가로 0 처리
             const totalConsumedValue = tokenCost + cubeCost + potionCost;
             
             // 비밀상점 가치 산출 (캐릭터별)
             const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
             let tokenProfit = 0;
+            let secretShopGoldSpent = 0;
+
             (form.secretTokens || []).forEach(t => {
               const bp = Number(t.buyPrice || 0);
-              if (bp > 0) tokenProfit += (tokenPrice - bp);
+              if (bp > 0) {
+                 secretShopGoldSpent += bp;
+                 tokenProfit += (tokenPrice - bp);
+              }
             });
 
             let recipeProfit = 0;
@@ -1873,13 +1885,18 @@ export default function Home() {
                const seals = Number(r.sealCost || 0);
                const sp = Number(r.sellPrice || 0);
                if (bp > 0 || sp > 0) {
+                 if (bp > 0) secretShopGoldSpent += bp;
                  const sealVal = seals * 5000;
                  recipeSealCost += sealVal;
                  recipeProfit += (sp - bp - sealVal);
                }
             });
 
-            const finalTradableValue = totalTradableValue + tokenProfit + recipeProfit;
+            // 순 골드 보정 (상점 지출액 복원)
+            const restoredPureGold = pureGoldInput + secretShopGoldSpent;
+
+            // 최종 교환가능재화 가치 (보정된 순골드 + 코어/결정체 + 인장류 수익 + 상점 순수익)
+            const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit;
             const finalBoundValue = totalBoundValue - recipeSealCost;
             const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
 
@@ -2066,10 +2083,17 @@ export default function Home() {
                     const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
                     const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
                     
-                    const pureGold = Number(form.pureGold || 0);
+                    const pureGoldInput = Number(form.pureGold || 0);
                     const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
                     const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
-                    const totalTradableValue = pureGold + tradableCoreValue + tradableCrystalValue;
+                    
+                    // 인장 교환권 및 교환가능 인장 가치 산출
+                    const priceTradableSeal = auctionPrices['순례의 인장 (1회 교환 가능)'] || 0;
+                    const priceVoucherBox = auctionPrices['순례의 인장(1회 교환가능) 교환권 1개 상자'] || 0;
+                    const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
+                    const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
+                    const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
+                    const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
                     
                     const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
                     const cubeCost = consumedCube * (auctionPrices['무색 큐브 조각'] || 0);
@@ -2078,9 +2102,14 @@ export default function Home() {
                     // 캐릭터별 비밀상점 가치 산출
                     const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
                     let tokenProfit = 0;
+                    let secretShopGoldSpent = 0;
+                    
                     (form.secretTokens || []).forEach(t => {
                       const bp = Number(t.buyPrice || 0);
-                      if (bp > 0) tokenProfit += (tokenPrice - bp);
+                      if (bp > 0) {
+                         secretShopGoldSpent += bp;
+                         tokenProfit += (tokenPrice - bp);
+                      }
                     });
 
                     let recipeProfit = 0;
@@ -2090,15 +2119,23 @@ export default function Home() {
                        const seals = Number(r.sealCost || 0);
                        const sp = Number(r.sellPrice || 0);
                        if (bp > 0 || sp > 0) {
+                         if (bp > 0) secretShopGoldSpent += bp;
                          const sealVal = seals * 5000;
                          recipeSealCost += sealVal;
                          recipeProfit += (sp - bp - sealVal);
                        }
                     });
 
-                    const finalTradableValue = totalTradableValue + tokenProfit + recipeProfit;
+                    // 순 골드 보정 (상점 지출액 복원)
+                    const restoredPureGold = pureGoldInput + secretShopGoldSpent;
+
+                    // 최종 교환가능재화 가치
+                    const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit;
                     const finalBoundValue = totalBoundValue - recipeSealCost;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
+                    
+                    // sumPureGold는 보정된 값으로 누적해야함 (혹은 기존대로?) -> 총합계도 실제 드랍 골드로 보여주는 게 맞음.
+                    const pureGold = restoredPureGold;
                     
                         // 합계 누적
                         sumFatigue += fatigue;
@@ -2124,7 +2161,7 @@ export default function Home() {
                             <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
                             <td style={{ padding: '0.5rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
                             
-                            <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}><input type="number" style={inputStyle} value={form.pureGold} onChange={e => updateCharForm(c.id, 'pureGold', e.target.value)} /></td>
+                            <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}><input type="number" style={inputStyle} value={form.pureGold} onChange={e => updateCharForm(c.id, 'pureGold', e.target.value)} /></td>
                             <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.seal} onChange={e => updateCharForm(c.id, 'seal', e.target.value)} /></td>
                             <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.condensedCore} onChange={e => updateCharForm(c.id, 'condensedCore', e.target.value)} /></td>
                             <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.crystal} onChange={e => updateCharForm(c.id, 'crystal', e.target.value)} /></td>
@@ -2173,7 +2210,7 @@ export default function Home() {
                             <td style={{ padding: '0.8rem', color: '#e2e8f0' }}>{sumFatigue > 0 ? sumFatigue : '-'}</td>
                             <td style={{ padding: '0.8rem', color: '#fbbf24' }}>{sumRuns > 0 ? sumRuns : '-'}</td>
                             
-                            <td style={{ padding: '0.8rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.8rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title="비밀상점 지출액이 보정된 실제 드랍 골드의 총합">{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem' }}>{sumSeal > 0 ? sumSeal.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem' }}>{sumCondensedCore > 0 ? sumCondensedCore.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem' }}>{sumCrystal > 0 ? sumCrystal.toLocaleString() : '-'}</td>
