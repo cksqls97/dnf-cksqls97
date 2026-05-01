@@ -67,6 +67,27 @@ const APOCALYPSE = [
   { name: '매칭', fame: 73993 }
 ];
 
+const getRole = (c) => {
+  if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
+  const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+  const jobName = c.base?.jobGrowName || c.base?.jobName || '';
+  return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
+};
+
+const getSortedCharacters = (chars) => {
+  const dAll = [...chars].filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
+  const bAll = [...chars].filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+  const sorted = [];
+  const maxG = Math.max(Math.ceil(dAll.length / 3), bAll.length);
+  for (let i = 0; i < maxG; i++) {
+    if (dAll[i * 3]) sorted.push(dAll[i * 3]);
+    if (dAll[i * 3 + 1]) sorted.push(dAll[i * 3 + 1]);
+    if (dAll[i * 3 + 2]) sorted.push(dAll[i * 3 + 2]);
+    if (bAll[i]) sorted.push(bAll[i]);
+  }
+  return sorted;
+};
+
 export default function Home() {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -939,12 +960,6 @@ export default function Home() {
           </div>
         ) : (
           (() => {
-            const getRole = (c) => {
-              if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
-              const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
-              const jobName = c.base?.jobGrowName || c.base?.jobName || '';
-              return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
-            };
             const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
             const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
             const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
@@ -1213,12 +1228,6 @@ export default function Home() {
               </thead>
               <tbody>
                 {(() => {
-                  const getRole = (c) => {
-                    if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
-                    const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
-                    const jobName = c.base?.jobGrowName || c.base?.jobName || '';
-                    return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
-                  };
                   const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
                   const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
                   const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
@@ -1365,7 +1374,7 @@ export default function Home() {
             </div>
             <select value={historyFilterChar} onChange={e => setHistoryFilterChar(e.target.value)} style={{ padding: '0.2rem 0.1rem', minWidth: '200px' }}>
               <option value="">전체 캐릭터 보기</option>
-              {characters.map(c => <option key={c.id} value={c.id}>{c.base.charName} ({c.base.jobGrowName})</option>)}
+              {getSortedCharacters(characters).map(c => <option key={c.id} value={c.id}>{c.base.charName} ({c.base.jobGrowName})</option>)}
             </select>
           </div>
 
@@ -1956,7 +1965,7 @@ export default function Home() {
               acquired: {
                 pureGold: form.pureGold,
                 seal: form.seal,
-                condensedCore: form.condensedCore,
+                                condensedCore: form.condensedCore,
                 crystal: form.crystal,
                 flawlessCore: form.flawlessCore,
                 flawlessCrystal: form.flawlessCrystal,
@@ -2053,7 +2062,7 @@ export default function Home() {
             <div style={{ marginBottom: '1.5rem' }}>
                <h3 style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {characters.map(c => {
+                  {getSortedCharacters(characters).map(c => {
                     const isSelected = getCharForm(c.id).selected;
                     return (
                       <button key={c.id} onClick={() => togglePilgrimageChar(c.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', borderRadius: '4px', border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)', background: isSelected ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.05)', color: isSelected ? '#fff' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}>
@@ -2101,24 +2110,8 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {(() => {
-                     
-                      const getRole = (c) => {
-                        if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
-                        const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
-                        const jobName = c.base?.jobGrowName || c.base?.jobName || '';
-                        return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
-                      };
-                      const dealersAll = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
-                      const buffersAll = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
-                      const sortedAll = [];
-                      const mMaxGroups = Math.max(Math.ceil(dealersAll.length / 3), buffersAll.length);
-                      for (let i = 0; i < mMaxGroups; i++) {
-                        if (dealersAll[i * 3]) sortedAll.push(dealersAll[i * 3]);
-                      if (dealersAll[i * 3 + 1]) sortedAll.push(dealersAll[i * 3 + 1]);
-                        if (dealersAll[i * 3 + 2]) sortedAll.push(dealersAll[i * 3 + 2]);
-                        if (buffersAll[i]) sortedAll.push(buffersAll[i]);
-                      }
-                      const selectedChars = sortedAll.filter(c => getCharForm(c.id).selected);
+                    const sortedAll = getSortedCharacters(characters);
+                    const selectedChars = sortedAll.filter(c => getCharForm(c.id).selected);
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
