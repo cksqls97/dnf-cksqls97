@@ -1026,7 +1026,7 @@ export default function Home() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           {nextDungeon && (
                             <div style={{
-                              fontSize: '0.72rem',
+                              fontSize: '0.7rem',
                               color: isImminent ? '#fef08a' : '#fca5a5',
                               background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(248, 113, 113, 0.08)',
                               padding: '0.2rem 0.4rem',
@@ -1053,7 +1053,7 @@ export default function Home() {
                               </span>
                             ))}
                           </div>
-                          {!nextDungeon && cleared.length === 0 && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>}
+                          {!nextDungeon && cleared.length === 0 && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>-</span>}
                         </div>
                       );
                     })()}
@@ -1069,7 +1069,7 @@ export default function Home() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           {nextRaid && (
                             <div style={{
-                              fontSize: '0.72rem',
+                              fontSize: '0.7rem',
                               color: isImminent ? '#fef08a' : '#c084fc',
                               background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(192, 132, 252, 0.08)',
                               padding: '0.2rem 0.4rem',
@@ -1096,7 +1096,7 @@ export default function Home() {
                               </span>
                             ))}
                           </div>
-                          {!nextRaid && clearedRaids.length === 0 && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>}
+                          {!nextRaid && clearedRaids.length === 0 && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>-</span>}
                         </div>
                       );
                     })()}
@@ -1115,7 +1115,7 @@ export default function Home() {
                       if (state === 0) {
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>-</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>-</span>
                             <div style={{ fontSize: '0.65rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.08)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.25)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
                               {isImminent ? '🔥' : '💀'} 매칭까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
                             </div>
@@ -1124,7 +1124,7 @@ export default function Home() {
                       }
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                          <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
+                          <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
                             💀 {currentLabel}
                           </span>
                           {nextTarget && (
@@ -1137,13 +1137,13 @@ export default function Home() {
                     })()}
                   </td>
                   <td data-label="장비" style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.72rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.equipment.setName}</div>
+                    <div style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.equipment.setName}</div>
                     <div className={getTierClass(c.equipment.rarity)} style={{ fontSize: '0.82rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.equipment.gradeDesc} ({c.equipment.points})
                     </div>
                   </td>
                   <td data-label="서약" style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.72rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.oath.setName}</div>
+                    <div style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.oath.setName}</div>
                     <div className={getTierClass(c.oath.rarity)} style={{ fontSize: '0.82rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.oath.gradeDesc} ({c.oath.points})
                     </div>
@@ -1273,7 +1273,7 @@ export default function Home() {
                         (m.creature || m.creatureArtifact) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.creature && <span style={{ color: '#10b981' }}>{m.creature}</span>}
-                            {m.creatureArtifact && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>[{m.creatureArtifact}]</span>}
+                            {m.creatureArtifact && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>[{m.creatureArtifact}]</span>}
                           </div>
                         ) : dash
                       )}
@@ -1284,7 +1284,7 @@ export default function Home() {
                         (m.buffLevel || m.buffAbyss) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.buffLevel && <span style={{ color: '#fb923c' }}>버프 {String(m.buffLevel).includes('레벨') ? m.buffLevel : `${m.buffLevel}레벨`}</span>}
-                            {m.buffAbyss && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>편린 {String(m.buffAbyss).includes('개') ? m.buffAbyss : `${m.buffAbyss}개`}</span>}
+                            {m.buffAbyss && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>편린 {String(m.buffAbyss).includes('개') ? m.buffAbyss : `${m.buffAbyss}개`}</span>}
                           </div>
                         ) : dash
                       )}
@@ -1293,8 +1293,8 @@ export default function Home() {
                         (m.avatar || m.platEmblem || m.emblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.avatar && <span style={{ color: '#818cf8' }}>{m.avatar}</span>}
-                            {m.platEmblem && <span style={{ color: 'rgba(56,189,248,0.7)', fontSize: '0.75rem' }}>플:{m.platEmblem}</span>}
-                            {m.emblem && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>일:{m.emblem}</span>}
+                            {m.platEmblem && <span style={{ color: 'rgba(56,189,248,0.7)', fontSize: '0.7rem' }}>플:{m.platEmblem}</span>}
+                            {m.emblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>일:{m.emblem}</span>}
                           </div>
                         ) : dash
                       )}
@@ -1303,8 +1303,8 @@ export default function Home() {
                         (m.skinAvatar || m.skinSocket || m.skinEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.skinAvatar && <span style={{ color: '#e879f9' }}>{m.skinAvatar}</span>}
-                            {m.skinSocket && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>소켓: {m.skinSocket}</span>}
-                            {m.skinEmblem && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>[{m.skinEmblem}]</span>}
+                            {m.skinSocket && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>소켓: {m.skinSocket}</span>}
+                            {m.skinEmblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>[{m.skinEmblem}]</span>}
                           </div>
                         ) : dash
                       )}
@@ -1313,8 +1313,8 @@ export default function Home() {
                         (m.weaponAvatar || m.weaponSocket || m.weaponEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.weaponAvatar && <span style={{ color: '#ef4444' }}>{m.weaponAvatar}</span>}
-                            {m.weaponSocket && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>소켓: {m.weaponSocket}</span>}
-                            {m.weaponEmblem && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>[{m.weaponEmblem}]</span>}
+                            {m.weaponSocket && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>소켓: {m.weaponSocket}</span>}
+                            {m.weaponEmblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>[{m.weaponEmblem}]</span>}
                           </div>
                         ) : dash
                       )}
@@ -1480,7 +1480,7 @@ export default function Home() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>명성: <span style={{ color: isImminent ? '#fbbf24' : accentColor, fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
-                {currentBadge && <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>{currentBadge}</span>}
+                {currentBadge && <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>{currentBadge}</span>}
               </div>
               <div style={{
                 background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255, 255, 255, 0.05)',
@@ -1685,11 +1685,11 @@ export default function Home() {
               <h2 style={{ margin: 0 }}>⚔️ 용병단 레벨</h2>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '1rem 1.2rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.3rem' }}>현재 레벨</div>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem' }}>현재 레벨</div>
                   <input type='number' min='1' value={mercLevelInput} onChange={e => setMercLevelInput(e.target.value)} placeholder='예: 6' style={{ width: '80px', padding: '0.4rem 0.6rem', textAlign: 'center' }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.3rem' }}>다음 레벨 목표 포인트</div>
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem' }}>다음 레벨 목표 포인트</div>
                   <input type='text' value={mercTargetInput} onChange={e => setMercTargetInput(e.target.value)} placeholder='예: 30000' style={{ width: '130px', padding: '0.4rem 0.6rem', textAlign: 'center' }} />
                 </div>
                 <button onClick={handleSaveMerc} style={{ padding: '0.4rem 1rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8', borderRadius: '6px', cursor: 'pointer' }}>저장</button>
@@ -1700,7 +1700,7 @@ export default function Home() {
               <div style={{ background: 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(234,179,8,0.1))', border: '1px solid rgba(251,146,60,0.3)', borderRadius: '12px', padding: '1.2rem 2rem', textAlign: 'center', minWidth: '140px' }}>
                 <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.4rem' }}>현재 레벨</div>
                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#fb923c', lineHeight: 1 }}>Lv.{mercLevel}</div>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem' }}>→ Lv.{mercLevel + 1} 도전 중</div>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.3rem' }}>→ Lv.{mercLevel + 1} 도전 중</div>
               </div>
               <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.2rem 1.5rem', minWidth: '260px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -1720,7 +1720,7 @@ export default function Home() {
                     <div style={{ height: '18px', background: 'rgba(255,255,255,0.07)', borderRadius: '9px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
                       <div style={{ height: '100%', width: `${progress}%`, borderRadius: '9px', background: progress >= 100 ? 'linear-gradient(90deg,#22c55e,#16a34a)' : isNearTarget ? 'linear-gradient(90deg,#fbbf24,#f59e0b)' : 'linear-gradient(90deg,#fb923c,#f97316)', transition: 'width 0.6s ease', boxShadow: isNearTarget ? '0 0 10px rgba(251,191,36,0.5)' : '0 0 8px rgba(251,146,60,0.4)' }} />
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.3rem', fontSize: '0.72rem', color: '#64748b' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.3rem', fontSize: '0.7rem', color: '#64748b' }}>
                       <span>Lv.{mercLevel}</span>
                       <span style={{ color: isNearTarget ? '#fbbf24' : '#fb923c', fontWeight: 'bold' }}>{progress.toFixed(1)}%</span>
                       <span>Lv.{mercLevel + 1}</span>
@@ -1745,16 +1745,16 @@ export default function Home() {
                   const relPct = maxPts > 0 ? (pts / maxPts * 100) : 0;
                   return (
                     <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <span style={{ width: '1.4rem', textAlign: 'right', fontSize: '0.75rem', color: '#64748b', flexShrink: 0 }}>{i + 1}</span>
+                      <span style={{ width: '1.4rem', textAlign: 'right', fontSize: '0.7rem', color: '#64748b', flexShrink: 0 }}>{i + 1}</span>
                       <div style={{ width: '130px', flexShrink: 0 }}>
                         <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.base.charName}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{c.base.jobGrowName}</div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{c.base.jobGrowName}</div>
                       </div>
                       <div style={{ flex: 1, height: '10px', background: 'rgba(255,255,255,0.06)', borderRadius: '5px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${relPct}%`, background: 'linear-gradient(90deg,#fb923c,#f97316)', borderRadius: '5px', transition: 'width 0.4s ease' }} />
                       </div>
                       <span style={{ width: '70px', textAlign: 'right', fontWeight: 'bold', color: '#fb923c', fontSize: '0.9rem', flexShrink: 0 }}>{pts.toLocaleString()}</span>
-                      <span style={{ width: '45px', textAlign: 'right', fontSize: '0.75rem', color: '#64748b', flexShrink: 0 }}>{pct.toFixed(1)}%</span>
+                      <span style={{ width: '45px', textAlign: 'right', fontSize: '0.7rem', color: '#64748b', flexShrink: 0 }}>{pct.toFixed(1)}%</span>
                     </div>
                   );
                 })}
@@ -2033,7 +2033,7 @@ export default function Home() {
 
             {/* Main Table */}
             <div style={{ overflowX: 'auto', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>캐릭터</th>
@@ -2046,7 +2046,7 @@ export default function Home() {
                     <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
                     
                   </tr>
-                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem', lineHeight: '1.2' }}>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem', lineHeight: '1.2' }}>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>순례의<br/>인장</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
@@ -2185,12 +2185,12 @@ export default function Home() {
                         return (
                           <tr key={c.id} style={rowStyle}>
                             {/* 1 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
-                              <span style={{ fontSize: '0.75rem' }}>{c.base.charName}</span> <span style={{fontSize:'0.65rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
+                              <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span> <span style={{fontSize:'0.65rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
                             </td>
                             {/* 2 */} <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
                             {/* 3 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
                             {/* 4 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                              <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', background: 'rgba(74, 222, 128, 0.2)', border: '1px solid rgba(74, 222, 128, 0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
+                              <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: 'rgba(74, 222, 128, 0.2)', border: '1px solid rgba(74, 222, 128, 0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
                             </td>
                             {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{restoredPureGold ? Number(restoredPureGold).toLocaleString() : '-'}</td>
                             {/* 6 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal ? Number(form.seal).toLocaleString() : '-'}</td>
@@ -2206,12 +2206,12 @@ export default function Home() {
                             {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>1</td>
                             
                             {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
-                              <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
+                              <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
                                 + 순례의 인장 {form.secretTokens?.length > 0 ? `(${form.secretTokens.length})` : ''}
                               </button>
                             </td>
                             {/* 17 */} <td style={{ padding: '0.2rem 0.1rem', verticalAlign: 'middle', minWidth: '80px' }}>
-                              <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'recipe' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
+                              <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'recipe' })} style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
                                 + 레시피 {form.secretRecipes?.length > 0 ? `(${form.secretRecipes.length})` : ''}
                               </button>
                             </td>
@@ -2448,7 +2448,7 @@ export default function Home() {
                         <span>순수익 (귀속 포함)</span>
                         <span>{calcDetail.final.includingBound.toLocaleString()} G</span>
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.8rem', fontStyle: 'italic', textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.8rem', fontStyle: 'italic', textAlign: 'right' }}>
                         * 순수익(귀속 제외) = 교환 가능 합계 - 소모 합계<br/>
                         * 순수익(귀속 포함) = 귀속 합계 + 교환 가능 합계 - 소모 합계
                       </div>
@@ -2499,7 +2499,7 @@ export default function Home() {
                            [구버전 기록] 캐릭터: {record.chars.join(', ')} / 획득: {record.acquired} / 소모: {record.consumed}
                          </div>
                        ) : (
-                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                            <thead>
                              <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                                <th style={{ padding: '0.2rem 0.1rem', textAlign: 'left' }}>캐릭터</th>
