@@ -2128,6 +2128,9 @@ export default function Home() {
                             <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.crystal} onChange={e => updateCharForm(c.id, 'crystal', e.target.value)} /></td>
                             <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.flawlessCore} onChange={e => updateCharForm(c.id, 'flawlessCore', e.target.value)} /></td>
                             <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.flawlessCrystal} onChange={e => updateCharForm(c.id, 'flawlessCrystal', e.target.value)} /></td>
+                            <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.sealVoucher} onChange={e => updateCharForm(c.id, 'sealVoucher', e.target.value)} /></td>
+                            <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.tradableSeal} onChange={e => updateCharForm(c.id, 'tradableSeal', e.target.value)} /></td>
+                            <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.sealVoucherBox} onChange={e => updateCharForm(c.id, 'sealVoucherBox', e.target.value)} /></td>
                             
                             <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
                             <td style={{ padding: '0.5rem', color: '#fca5a5' }}>1</td>
@@ -2171,6 +2174,9 @@ export default function Home() {
                             <td style={{ padding: '0.8rem' }}>{sumCrystal > 0 ? sumCrystal.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem' }}>{sumFlawlessCore > 0 ? sumFlawlessCore.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.8rem' }}>{sumSealVoucher > 0 ? sumSealVoucher.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.8rem' }}>{sumTradableSeal > 0 ? sumTradableSeal.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.8rem' }}>{sumSealVoucherBox > 0 ? sumSealVoucherBox.toLocaleString() : '-'}</td>
                             
                             <td style={{ padding: '0.8rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
                             <td style={{ padding: '0.8rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
