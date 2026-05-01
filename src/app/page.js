@@ -897,12 +897,12 @@ export default function Home() {
           <button
             className={`tab-btn ${rosterSubTab === 'overview' ? 'active' : ''}`}
             onClick={() => setRosterSubTab('overview')}
-            style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}
+            style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}
           >📋 캐릭터 종합 정보</button>
           <button
             className={`tab-btn ${rosterSubTab === 'items' ? 'active' : ''}`}
             onClick={() => setRosterSubTab('items')}
-            style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}
+            style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}
           >🎽 캐릭터 아이템 현황</button>
         </div>
         {rosterSubTab === 'overview' && (
@@ -1046,7 +1046,7 @@ export default function Home() {
                                 color: '#38bdf8',
                                 padding: '0.1rem 0.3rem',
                                 borderRadius: '3px',
-                                fontSize: '0.65rem',
+                                fontSize: '0.7rem',
                                 border: '1px solid rgba(56,189,248,0.2)'
                               }}>
                                 {dungeon.name}
@@ -1089,7 +1089,7 @@ export default function Home() {
                                 color: '#d8b4fe',
                                 padding: '0.1rem 0.3rem',
                                 borderRadius: '3px',
-                                fontSize: '0.65rem',
+                                fontSize: '0.7rem',
                                 border: '1px solid rgba(192, 132, 252, 0.2)'
                               }}>
                                 {raid.name}
@@ -1116,7 +1116,7 @@ export default function Home() {
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                             <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>-</span>
-                            <div style={{ fontSize: '0.65rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.08)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.25)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
+                            <div style={{ fontSize: '0.7rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.08)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.25)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
                               {isImminent ? '🔥' : '💀'} 매칭까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
                             </div>
                           </div>
@@ -1128,7 +1128,7 @@ export default function Home() {
                             💀 {currentLabel}
                           </span>
                           {nextTarget && (
-                            <div style={{ fontSize: '0.65rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.05)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.2)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
+                            <div style={{ fontSize: '0.7rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.05)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.2)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
                               {isImminent ? '🔥' : '▶'} {nextTarget.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
                             </div>
                           )}
@@ -1138,13 +1138,13 @@ export default function Home() {
                   </td>
                   <td data-label="장비" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.equipment.setName}</div>
-                    <div className={getTierClass(c.equipment.rarity)} style={{ fontSize: '0.82rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
+                    <div className={getTierClass(c.equipment.rarity)} style={{ fontSize: '0.7rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.equipment.gradeDesc} ({c.equipment.points})
                     </div>
                   </td>
                   <td data-label="서약" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.oath.setName}</div>
-                    <div className={getTierClass(c.oath.rarity)} style={{ fontSize: '0.82rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
+                    <div className={getTierClass(c.oath.rarity)} style={{ fontSize: '0.7rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.oath.gradeDesc} ({c.oath.points})
                     </div>
                   </td>
@@ -1164,7 +1164,7 @@ export default function Home() {
                   </td>
                   <td data-label="관리" style={{ textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
-                      <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleDelete(c.id)}>
+                      <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem' }} onClick={() => handleDelete(c.id)}>
                         🗑️
                       </button>
                     </div>
@@ -1188,14 +1188,14 @@ export default function Home() {
       {/* 캐릭터 아이템 현황 서브탭 */}
       {rosterSubTab === 'items' && (
         <section className="glass-panel" style={{ overflowX: 'auto' }}>
-          <h3 style={{ margin: '0 0 1.2rem', fontSize: '1rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: '0.5rem' }}>
+          <h3 style={{ margin: '0 0 1.2rem', fontSize: '0.7rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: '0.5rem' }}>
             🎽 캐릭터 아이템 현황
-            <span style={{ fontSize: '0.78rem', color: '#64748b', marginLeft: '0.6rem', fontWeight: 'normal' }}>수동 입력 정보 기준</span>
+            <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '0.6rem', fontWeight: 'normal' }}>수동 입력 정보 기준</span>
           </h3>
           {characters.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>캐릭터를 먼저 추가해주세요.</div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', color: '#cbd5e1', tableLayout: 'auto', minWidth: '900px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', color: '#cbd5e1', tableLayout: 'auto', minWidth: '900px' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e2e8f0', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>캐릭터명</th>
@@ -1256,7 +1256,7 @@ export default function Home() {
                       {/* 캐릭터명 */}
                       {cell(<span style={{ fontWeight: 'bold', color: '#e2e8f0' }}>{c.base.charName}</span>)}
                       {/* 직업 */}
-                      {cell(<span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>{c.base.jobGrowName}</span>)}
+                      {cell(<span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{c.base.jobGrowName}</span>)}
                       {/* 칭호 */}
                       {cell(m.title ? <span style={{ color: '#38bdf8' }}>{m.title}</span> : dash)}
                       {/* 오라: 종류 + 엠블렘 */}
@@ -1264,7 +1264,7 @@ export default function Home() {
                         (m.aura || m.auraEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.aura && <span style={{ color: '#f472b6' }}>{m.aura}</span>}
-                            {m.auraEmblem && <span style={{ color: '#94a3b8', fontSize: '0.71rem' }}>[{m.auraEmblem}]</span>}
+                            {m.auraEmblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>[{m.auraEmblem}]</span>}
                           </div>
                         ) : dash
                       )}
@@ -1320,7 +1320,7 @@ export default function Home() {
                       )}
                       {/* 수동설정 버튼 */}
                       <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'middle', background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
-                        <button type="button" onClick={() => openManualModal(c)} style={{ padding: '0.35rem 0.65rem', fontSize: '0.8rem', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer' }}>
+                        <button type="button" onClick={() => openManualModal(c)} style={{ padding: '0.35rem 0.65rem', fontSize: '0.7rem', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer' }}>
                           ⚙️
                         </button>
                       </td>
@@ -1371,12 +1371,12 @@ export default function Home() {
 
           {/* 그래프 뷰 모드 토글 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>그래프 기준:</span>
+            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>그래프 기준:</span>
             <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '3px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <button
                 onClick={() => setChartViewMode('event')}
                 style={{
-                  padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                  padding: '0.3rem 0.8rem', fontSize: '0.7rem', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
                   background: chartViewMode === 'event' ? 'rgba(56, 189, 248, 0.25)' : 'transparent',
                   color: chartViewMode === 'event' ? '#38bdf8' : '#94a3b8',
                   fontWeight: chartViewMode === 'event' ? 'bold' : 'normal',
@@ -1386,7 +1386,7 @@ export default function Home() {
               <button
                 onClick={() => setChartViewMode('daily')}
                 style={{
-                  padding: '0.3rem 0.8rem', fontSize: '0.8rem', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                  padding: '0.3rem 0.8rem', fontSize: '0.7rem', borderRadius: '6px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
                   background: chartViewMode === 'daily' ? 'rgba(167, 139, 250, 0.25)' : 'transparent',
                   color: chartViewMode === 'daily' ? '#a78bfa' : '#94a3b8',
                   fontWeight: chartViewMode === 'daily' ? 'bold' : 'normal',
@@ -1429,12 +1429,12 @@ export default function Home() {
                    <div key={log.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.8rem', alignItems: 'center' }}>
                        <div>
-                         <strong style={{ fontSize: '1.15rem', color: '#60a5fa' }}>{log.charName} <span style={{fontSize:'0.85rem', color:'var(--text-muted)'}}>{log.job}</span></strong>
-                         <span style={{ fontSize: '0.85rem', color: '#94a3b8', marginLeft: '0.5rem' }}>🕒 {timeStr}</span>
+                         <strong style={{ fontSize: '1.15rem', color: '#60a5fa' }}>{log.charName} <span style={{fontSize: '0.7rem', color:'var(--text-muted)'}}>{log.job}</span></strong>
+                         <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginLeft: '0.5rem' }}>🕒 {timeStr}</span>
                        </div>
                        <div style={{ display: 'flex', gap: '0.4rem' }}>
-                         <button type="button" onClick={() => openEditLog(log)} style={{ padding: '0.2rem 0.4rem', background: 'rgba(255,255,255,0.1)', fontSize: '0.8rem' }}>✏️ 수정</button>
-                         <button type="button" onClick={() => deleteLog(log.id)} className="danger" style={{ padding: '0.2rem 0.4rem', fontSize: '0.8rem' }}>❌ 삭제</button>
+                         <button type="button" onClick={() => openEditLog(log)} style={{ padding: '0.2rem 0.4rem', background: 'rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>✏️ 수정</button>
+                         <button type="button" onClick={() => deleteLog(log.id)} className="danger" style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}>❌ 삭제</button>
                        </div>
                      </div>
                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
@@ -1476,15 +1476,15 @@ export default function Home() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: isImminent ? '#fef08a' : '#e2e8f0' }}>{c.base.charName}</span>
-                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
+                <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>명성: <span style={{ color: isImminent ? '#fbbf24' : accentColor, fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
+                <div style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>명성: <span style={{ color: isImminent ? '#fbbf24' : accentColor, fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
                 {currentBadge && <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>{currentBadge}</span>}
               </div>
               <div style={{
                 background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                padding: '0.5rem', borderRadius: '6px', fontSize: '1rem',
+                padding: '0.5rem', borderRadius: '6px', fontSize: '0.7rem',
                 color: isImminent ? '#fef08a' : '#cbd5e1', textAlign: 'center', marginTop: 'auto',
                 border: isImminent ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
               }}>
@@ -1505,23 +1505,23 @@ export default function Home() {
               {/* 상급던전 뷰 토글 - 상급던전 탭일 때만 표시 */}
               {imminentSubTab === 'dungeon' && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setDungeonView('byDungeon')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: dungeonView === 'byDungeon' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'byDungeon' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'byDungeon' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 던전별 정렬</button>
-                  <button onClick={() => setDungeonView('overall')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: dungeonView === 'overall' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'overall' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'overall' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
+                  <button onClick={() => setDungeonView('byDungeon')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: dungeonView === 'byDungeon' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'byDungeon' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'byDungeon' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 던전별 정렬</button>
+                  <button onClick={() => setDungeonView('overall')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: dungeonView === 'overall' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'overall' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'overall' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
                 </div>
               )}
               {imminentSubTab === 'apoc' && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setApocView('byTier')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: apocView === 'byTier' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'byTier' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'byTier' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 단계별 정렬</button>
-                  <button onClick={() => setApocView('overall')} style={{ fontSize: '0.82rem', padding: '0.3rem 0.8rem', background: apocView === 'overall' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'overall' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'overall' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
+                  <button onClick={() => setApocView('byTier')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: apocView === 'byTier' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'byTier' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'byTier' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 단계별 정렬</button>
+                  <button onClick={() => setApocView('overall')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: apocView === 'overall' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'overall' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'overall' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
                 </div>
               )}
             </div>
 
             {/* 서브탭 버튼 */}
             <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
-              <button className={`tab-btn ${imminentSubTab === 'dungeon' ? 'active' : ''}`} onClick={() => setImminentSubTab('dungeon')} style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}>🚀 상급던전</button>
-              <button className={`tab-btn ${imminentSubTab === 'raid' ? 'active' : ''}`} onClick={() => setImminentSubTab('raid')} style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}>⚔️ 레이드</button>
-              <button className={`tab-btn ${imminentSubTab === 'apoc' ? 'active' : ''}`} onClick={() => setImminentSubTab('apoc')} style={{ fontSize: '0.9rem', padding: '0.4rem 1.1rem' }}>💀 아포칼립스</button>
+              <button className={`tab-btn ${imminentSubTab === 'dungeon' ? 'active' : ''}`} onClick={() => setImminentSubTab('dungeon')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>🚀 상급던전</button>
+              <button className={`tab-btn ${imminentSubTab === 'raid' ? 'active' : ''}`} onClick={() => setImminentSubTab('raid')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>⚔️ 레이드</button>
+              <button className={`tab-btn ${imminentSubTab === 'apoc' ? 'active' : ''}`} onClick={() => setImminentSubTab('apoc')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>💀 아포칼립스</button>
             </div>
 
             {/* ────────────── 상급던전 탭 ────────────── */}
@@ -1560,12 +1560,12 @@ export default function Home() {
 
                     return (
                       <div key={target.name} style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ borderBottom: '1px solid rgba(147,197,253,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#93c5fd', fontSize: '1rem' }}>
+                        <h3 style={{ borderBottom: '1px solid rgba(147,197,253,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#93c5fd', fontSize: '0.7rem' }}>
                           🚀 {target.name} 진입 목표
-                          <span style={{ marginLeft: '0.6rem', fontSize: '0.8rem', color: '#64748b', fontWeight: 'normal' }}>현재 최고: {currentDungeonName} | 잔여 {eligible.length}명</span>
+                          <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>현재 최고: {currentDungeonName} | 잔여 {eligible.length}명</span>
                         </h3>
                         {eligible.length === 0 ? (
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
                         ) : (
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.8rem' }}>
                             {eligible.map(c => renderCard(c, target, target.fame - c.base.fame, '🚀', '#93c5fd', `현재: ${currentDungeonName}`))}
@@ -1639,12 +1639,12 @@ export default function Home() {
                     ).sort((a, b) => (target.fame - a.base.fame) - (target.fame - b.base.fame));
                     return (
                       <div key={target.name} style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ borderBottom: '1px solid rgba(251,146,60,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#fb923c', fontSize: '1rem' }}>
+                        <h3 style={{ borderBottom: '1px solid rgba(251,146,60,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#fb923c', fontSize: '0.7rem' }}>
                           💀 {target.name} 진입 목표
-                          <span style={{ marginLeft: '0.6rem', fontSize: '0.8rem', color: '#64748b', fontWeight: 'normal' }}>현재: {currentLabel} | 잔여 {eligible.length}명</span>
+                          <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>현재: {currentLabel} | 잔여 {eligible.length}명</span>
                         </h3>
                         {eligible.length === 0 ? (
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
                         ) : (
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.8rem' }}>
                             {eligible.map(c => renderCard(c, target, target.fame - c.base.fame, '💀', '#fb923c', `현재: ${currentLabel}`))}
@@ -1698,19 +1698,19 @@ export default function Home() {
 
             <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
               <div style={{ background: 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(234,179,8,0.1))', border: '1px solid rgba(251,146,60,0.3)', borderRadius: '12px', padding: '1.2rem 2rem', textAlign: 'center', minWidth: '140px' }}>
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.4rem' }}>현재 레벨</div>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.4rem' }}>현재 레벨</div>
                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#fb923c', lineHeight: 1 }}>Lv.{mercLevel}</div>
                 <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.3rem' }}>→ Lv.{mercLevel + 1} 도전 중</div>
               </div>
               <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.2rem 1.5rem', minWidth: '260px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
-                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>서약 총합</span>
+                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>서약 총합</span>
                     <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: isNearTarget ? '#fef08a' : '#e2e8f0', marginLeft: '0.6rem' }}>{totalOath.toLocaleString()}</span>
-                    {hasTarget && <span style={{ fontSize: '0.9rem', color: '#94a3b8', marginLeft: '0.4rem' }}>/ {mercNextLevelTarget.toLocaleString()}</span>}
+                    {hasTarget && <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginLeft: '0.4rem' }}>/ {mercNextLevelTarget.toLocaleString()}</span>}
                   </div>
                   {remaining !== null && (
-                    <div style={{ fontSize: '0.9rem', color: isNearTarget ? '#fef08a' : '#fb923c', fontWeight: isNearTarget ? 'bold' : 'normal' }}>
+                    <div style={{ fontSize: '0.7rem', color: isNearTarget ? '#fef08a' : '#fb923c', fontWeight: isNearTarget ? 'bold' : 'normal' }}>
                       {isNearTarget ? '🔥' : '📈'} {remaining === 0 ? '목표 달성!' : `${remaining.toLocaleString()} 부족`}
                     </div>
                   )}
@@ -1727,13 +1727,13 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-                {!hasTarget && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>우측 상단 설정에서 현재 레벨과 다음 레벨 목표 포인트를 입력하세요.</p>}
+                {!hasTarget && <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>우측 상단 설정에서 현재 레벨과 다음 레벨 목표 포인트를 입력하세요.</p>}
               </div>
             </div>
 
             <div>
-              <h3 style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.5rem' }}>
-                캐릭터별 서약 기여도 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>(등록순 상위 20개)</span>
+              <h3 style={{ margin: '0 0 1rem', fontSize: '0.7rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.5rem' }}>
+                캐릭터별 서약 기여도 <span style={{ fontSize: '0.7rem', color: '#64748b' }}>(등록순 상위 20개)</span>
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {top20.length === 0 ? (
@@ -1747,19 +1747,19 @@ export default function Home() {
                     <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                       <span style={{ width: '1.4rem', textAlign: 'right', fontSize: '0.7rem', color: '#64748b', flexShrink: 0 }}>{i + 1}</span>
                       <div style={{ width: '130px', flexShrink: 0 }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.base.charName}</div>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.7rem', color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.base.charName}</div>
                         <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{c.base.jobGrowName}</div>
                       </div>
                       <div style={{ flex: 1, height: '10px', background: 'rgba(255,255,255,0.06)', borderRadius: '5px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${relPct}%`, background: 'linear-gradient(90deg,#fb923c,#f97316)', borderRadius: '5px', transition: 'width 0.4s ease' }} />
                       </div>
-                      <span style={{ width: '70px', textAlign: 'right', fontWeight: 'bold', color: '#fb923c', fontSize: '0.9rem', flexShrink: 0 }}>{pts.toLocaleString()}</span>
+                      <span style={{ width: '70px', textAlign: 'right', fontWeight: 'bold', color: '#fb923c', fontSize: '0.7rem', flexShrink: 0 }}>{pts.toLocaleString()}</span>
                       <span style={{ width: '45px', textAlign: 'right', fontSize: '0.7rem', color: '#64748b', flexShrink: 0 }}>{pct.toFixed(1)}%</span>
                     </div>
                   );
                 })}
               </div>
-              {characters.length > 20 && <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.8rem', textAlign: 'center' }}>* 등록된 {characters.length}개 캐릭터 중 상위 20개만 계산에 포함됩니다.</p>}
+              {characters.length > 20 && <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.8rem', textAlign: 'center' }}>* 등록된 {characters.length}개 캐릭터 중 상위 20개만 계산에 포함됩니다.</p>}
             </div>
           </section>
         );
@@ -1998,36 +1998,36 @@ export default function Home() {
             
             {/* Global Actions */}
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                 <label style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>일괄 피로도:</label>
-                 <input type="number" value={globalStartFatigue} onChange={e => setGlobalStartFatigue(Number(e.target.value))} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff' }} />
-                 <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
-               </div>
-               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                   <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer' }}>
-                     {isFetchingPrices ? '불러오는 중...' : '단가 새로고침'}
-                   </button>
-                   <button onClick={() => setShowAuctionPricesModal(true)} style={{ padding: '0.5rem 1rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>
-                     단가 확인
-                   </button>
-                 </div>
-                 <button onClick={handleSavePilgrimage} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px' }}>선택 캐릭터 저장</button>
-               </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>일괄 피로도:</label>
+                  <input type="number" value={globalStartFatigue} onChange={e => setGlobalStartFatigue(Number(e.target.value))} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: '0.7rem' }} />
+                  <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
+                </div>
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
+                      {isFetchingPrices ? '불러오는 중...' : '단가 새로고침'}
+                    </button>
+                    <button onClick={() => setShowAuctionPricesModal(true)} style={{ padding: '0.5rem 1rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
+                      단가 확인
+                    </button>
+                  </div>
+                  <button onClick={handleSavePilgrimage} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px', fontSize: '0.7rem' }}>선택 캐릭터 저장</button>
+                </div>
             </div>
 
             {/* Character Selector */}
             <div style={{ marginBottom: '1.5rem' }}>
-               <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
+               <h3 style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                 {characters.map(c => {
+                  {characters.map(c => {
                     const isSelected = getCharForm(c.id).selected;
                     return (
-                      <button key={c.id} onClick={() => togglePilgrimageChar(c.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.8rem', borderRadius: '4px', border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)', background: isSelected ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.05)', color: isSelected ? '#fff' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}>
+                      <button key={c.id} onClick={() => togglePilgrimageChar(c.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', borderRadius: '4px', border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)', background: isSelected ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.05)', color: isSelected ? '#fff' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}>
                         {c.base.charName}
                       </button>
                     );
-                 })}
+                  })}
                </div>
             </div>
 
@@ -2035,35 +2035,35 @@ export default function Home() {
             <div style={{ overflowX: 'auto', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>캐릭터</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>시작 피로도</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>재화 입력</th>
-                    <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (기록)</th>
-                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
-                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
-                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
+                  <tr style={{ background: 'rgba(255,255,255,0.05)', fontSize: '0.7rem' }}>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>캐릭터</th>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>시작 피로도</th>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>재화 입력</th>
+                    <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>획득 재화 (기록)</th>
+                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171', fontSize: '0.7rem' }}>소모 재화</th>
+                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>비밀 상점 구매</th>
+                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가치 산출 (골드)</th>
                     
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem', lineHeight: '1.2' }}>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의<br/>인장</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권 1개 상자</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>응축된<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>빛나는 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표 (단가)</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>레시피 (구매/순례의 인장/판매)</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속<br/>가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>교환<br/>가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순수익<br/>(귀속 포함)</th>
-                    <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8' }}>순수익<br/>(귀속 제외)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>순 골드</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의<br/>인장</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권 1개 상자</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>응축된<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>빛나는 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>닳아버린<br/>순례의 증표</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>피로 회복의<br/>영약</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>닳아버린<br/>순례의 증표 (단가)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>레시피 (구매/순례의 인장/판매)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>귀속<br/>가치</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>교환<br/>가치</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순수익<br/>(귀속 포함)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>순수익<br/>(귀속 제외)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2106,7 +2106,7 @@ export default function Home() {
                     const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + 4 : 0;
                     const isSelected = form.selected;
                     const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: isSelected ? 'rgba(56, 189, 248, 0.08)' : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'), transition: 'background 0.2s' };
-                    const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
+                    const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
                     
                     const sealValue = Number(form.seal || 0) * 5000;
                     const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
@@ -2185,7 +2185,7 @@ export default function Home() {
                         return (
                           <tr key={c.id} style={rowStyle}>
                             {/* 1 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
-                              <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span> <span style={{fontSize:'0.65rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
+                              <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span> <span style={{fontSize: '0.7rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
                             </td>
                             {/* 2 */} <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
                             {/* 3 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
@@ -2359,8 +2359,8 @@ export default function Home() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '1.5rem' }}>
                     {/* Bound Section */}
                     <div>
-                      <h4 style={{ color: '#fb923c', marginBottom: '0.5rem', fontSize: '0.9rem' }}>📦 귀속 가치 (Bound)</h4>
-                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <h4 style={{ color: '#fb923c', marginBottom: '0.5rem', fontSize: '0.7rem' }}>📦 귀속 가치 (Bound)</h4>
+                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                           <span>순례의 인장 ({calcDetail.items.seal}개)</span>
                           <span>{calcDetail.breakdown.seal.toLocaleString()} G</span>
@@ -2382,8 +2382,8 @@ export default function Home() {
 
                     {/* Tradable Section */}
                     <div>
-                      <h4 style={{ color: '#38bdf8', marginBottom: '0.5rem', fontSize: '0.9rem' }}>💰 교환 가능 가치 (Tradable)</h4>
-                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <h4 style={{ color: '#38bdf8', marginBottom: '0.5rem', fontSize: '0.7rem' }}>💰 교환 가능 가치 (Tradable)</h4>
+                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                           <span>순 골드</span>
                           <span>{calcDetail.items.pureGold.toLocaleString()} G</span>
@@ -2425,8 +2425,8 @@ export default function Home() {
 
                     {/* Cost Section */}
                     <div>
-                      <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.9rem' }}>📉 소모 비용 (Costs)</h4>
-                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.7rem' }}>📉 소모 비용 (Costs)</h4>
+                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
                           <span>닳아버린 순례의 증표 소모 ({calcDetail.items.runs}개)</span>
                           <span>-{calcDetail.breakdown.tokenCost.toLocaleString()} G</span>
@@ -2440,11 +2440,11 @@ export default function Home() {
 
                     {/* Final Results */}
                     <div style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>
                         <span>순수익 (귀속 제외)</span>
                         <span>{calcDetail.final.excludingBound.toLocaleString()} G</span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 'bold', color: '#4ade80' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 'bold', color: '#4ade80' }}>
                         <span>순수익 (귀속 포함)</span>
                         <span>{calcDetail.final.includingBound.toLocaleString()} G</span>
                       </div>
@@ -2490,33 +2490,33 @@ export default function Home() {
                 {pilgrimageHistory.map(record => (
                   <div key={record.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
                     <div style={{ background: 'rgba(255,255,255,0.04)', padding: '0.8rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <span style={{ fontSize: '0.95rem', color: '#94a3b8', fontWeight: 'bold' }}>📅 {new Date(record.date).toLocaleString()}</span>
-                      <button className="danger" onClick={() => handleDeletePilgrimage(record.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.8rem' }}>기록 삭제</button>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold' }}>📅 {new Date(record.date).toLocaleString()}</span>
+                      <button className="danger" onClick={() => handleDeletePilgrimage(record.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}>기록 삭제</button>
                     </div>
                     <div style={{ overflowX: 'auto', padding: '1rem' }}>
                        {record.chars ? (
-                         <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                         <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
                            [구버전 기록] 캐릭터: {record.chars.join(', ')} / 획득: {record.acquired} / 소모: {record.consumed}
                          </div>
                        ) : (
                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                            <thead>
-                             <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                               <th style={{ padding: '0.2rem 0.1rem', textAlign: 'left' }}>캐릭터</th>
-                               <th style={{ padding: '0.2rem 0.1rem' }}>피로도(판수)</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순 골드</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능)</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능) 교환권</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>응축된 라이언 코어</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 라이언 코어</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>귀속 가치</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>교환 가치</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>총 수익</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#94a3b8' }}>메모</th>
+                             <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>
+                               <th style={{ padding: '0.2rem 0.1rem', textAlign: 'left', fontSize: '0.7rem' }}>캐릭터</th>
+                               <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>피로도(판수)</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순 골드</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장(1회 교환 가능)</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장(1회 교환 가능) 교환권</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>응축된 라이언 코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>무결점 라이언 코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>빛나는 조화의 결정체</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>무결점 조화의 결정체</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>귀속 가치</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>교환 가치</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>총 수익</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#94a3b8', fontSize: '0.7rem' }}>메모</th>
                              </tr>
                            </thead>
                            <tbody>
@@ -2527,7 +2527,7 @@ export default function Home() {
                                
                                return (
                                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                                   <td style={{ padding: '0.25rem', color: '#e2e8f0', fontWeight: 'bold', textAlign: 'left' }}>{d.charName} <span style={{fontSize:'0.75rem', color:'#64748b', fontWeight:'normal'}}>({d.jobName})</span></td>
+                                   <td style={{ padding: '0.25rem', color: '#e2e8f0', fontWeight: 'bold', textAlign: 'left', fontSize: '0.7rem' }}>{d.charName} <span style={{fontSize: '0.7rem', color:'#64748b', fontWeight:'normal'}}>({d.jobName})</span></td>
                                    <td style={{ padding: '0.4rem' }}>{d.startFatigue} <span style={{ color: '#fbbf24' }}>({d.runs}판)</span></td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.pureGold ? '#fff' : '#64748b' }}>{d.acquired.pureGold ? Number(d.acquired.pureGold).toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.seal ? '#fff' : '#64748b' }}>{d.acquired.seal || '-'}</td>
@@ -2552,18 +2552,18 @@ export default function Home() {
                          <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between' }}>
                              <div style={{ flex: 1, minWidth: '200px' }}>
-                               <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8' }}>비밀상점 정산 내역</h5>
-                               <div style={{ fontSize: '0.85rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                               <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>비밀상점 정산 내역</h5>
+                               <div style={{ fontSize: '0.7rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                                  <div>- 닳아버린 순례의 증표 구매 이득 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
                                  <div>- 레시피 순수익 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
                                  <div>- 레시피 순례의 인장 소모 비용 (귀속 가치 차감): <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
                                </div>
                              </div>
                              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
-                               <h5 style={{ margin: '0 0 0.2rem 0', color: '#94a3b8' }}>이번 순례 총 결산</h5>
-                               <div style={{ fontSize: '0.9rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.bound?.toLocaleString()}</span></div>
-                               <div style={{ fontSize: '0.9rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.tradable?.toLocaleString()}</span></div>
-                               <div style={{ fontSize: '1.05rem', marginTop: '0.3rem' }}>
+                               <h5 style={{ margin: '0 0 0.2rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>이번 순례 총 결산</h5>
+                               <div style={{ fontSize: '0.7rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.bound?.toLocaleString()}</span></div>
+                               <div style={{ fontSize: '0.7rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.tradable?.toLocaleString()}</span></div>
+                               <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>
                                  최종 순수익: <span style={{ color: record.sessionTotals.profit > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{record.sessionTotals.profit?.toLocaleString()}</span>
                                </div>
                              </div>
@@ -2639,7 +2639,7 @@ export default function Home() {
         <div className="modal-overlay">
           <div className="glass-panel modal-content">
             <h2 style={{ marginTop: 0 }}>API 키 설정</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>
               네오플 오픈 API 키를 입력해주세요.<br/>이 키는 브라우저 저장소에만 남으며 매 조회 시 백엔드로 안전하게 전달됩니다.
             </p>
             <input 
@@ -2665,12 +2665,12 @@ export default function Home() {
         <div className="modal-overlay">
           <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>[{manualModalChar.base.charName}] 수동 제원 설정</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>상단 🛠️ 탭에서 구성한 목록에서만 선택 가능합니다.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '1.5rem' }}>상단 🛠️ 탭에서 구성한 목록에서만 선택 가능합니다.</p>
             <div style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-               <h3 style={{ fontSize: '0.95rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>기본 설정</h3>
-               <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>역할군 (로스터 편성에 사용됨)</label>
+               <h3 style={{ fontSize: '0.7rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>기본 설정</h3>
+               <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', color: '#cbd5e1' }}>역할군 (로스터 편성에 사용됨)</label>
                <select 
-                 style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                 style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.7rem' }}
                  value={manualForm.role || 'dealer'}
                  onChange={e => setManualForm({...manualForm, role: e.target.value})}
                >
@@ -2687,22 +2687,22 @@ export default function Home() {
                    labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘', skinAvatar: '피부 아바타', skinSocket: '피부 소켓 여부', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponSocket: '무기 소켓 여부', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
               ].map(group => (
                  <div key={group.title} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <h3 style={{ fontSize: '0.95rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
+                    <h3 style={{ fontSize: '0.7rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
                     {group.keys.map(k => (
                       <div key={k} style={{ marginBottom: '0.8rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
                         {(k === 'buffAbyss' || k === 'buffLevel') ? (
                           <input 
                             type="number"
                             min="0"
-                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.7rem' }}
                             value={manualForm[k] || ''}
                             placeholder="양의 정수 입력"
                             onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
                           />
                         ) : (
                           <select 
-                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem' }}
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.7rem' }}
                             value={manualForm[k] || ''}
                             onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
                           >
@@ -2727,7 +2727,7 @@ export default function Home() {
         <div className="modal-overlay">
           <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>🛠️ 드롭다운 전체 항목 편집</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '1.5rem' }}>
               각 카테고리별로 콤마(,)를 사용해 선택지를 자유롭게 입력하세요. 
             </p>
             <div className="options-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem', marginTop: '1rem' }}>
@@ -2739,18 +2739,18 @@ export default function Home() {
                    labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘 엠블렘 보유 여부', skinAvatar: '피부 아바타', skinSocket: '피부 소켓 여부', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponSocket: '무기 소켓 여부', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
               ].map(group => (
                  <div key={group.title} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <h3 style={{ fontSize: '0.95rem', margin: '0 0 1rem 0', color: '#10b981', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
+                    <h3 style={{ fontSize: '0.7rem', margin: '0 0 1rem 0', color: '#10b981', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
                     {group.keys.map(k => (
                       <div key={k} style={{ marginBottom: '0.8rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
+                        <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
                         {(k === 'buffAbyss' || k === 'buffLevel') ? (
-                          <div style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.6rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.85rem', textAlign: 'center' }}>
+                          <div style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.6rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.7rem', textAlign: 'center' }}>
                             (각 캐릭터 개별 정수 입력)
                           </div>
                         ) : (
                           <textarea 
                             rows={2}
-                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical', fontSize: '0.85rem' }}
+                            style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical', fontSize: '0.7rem' }}
                             value={optionsFormText[k] || ''}
                             placeholder="종결, 가성비, 화려..."
                             onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
@@ -2785,46 +2785,46 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
            </h3>
            <div style={{ marginBottom: '1.5rem', maxHeight: '50vh', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순 골드</label>
-                <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).pureGold || ''} onChange={e => updateCharForm(activeLootModal.charId, 'pureGold', e.target.value)} />
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순 골드</label>
+                <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).pureGold || ''} onChange={e => updateCharForm(activeLootModal.charId, 'pureGold', e.target.value)} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).seal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'seal', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).seal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'seal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능)</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).tradableSeal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'tradableSeal', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능)</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).tradableSeal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'tradableSeal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>응축된 라이언 코어</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).condensedCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'condensedCore', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>응축된 라이언 코어</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).condensedCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'condensedCore', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>무결점 라이언 코어</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).flawlessCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCore', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>무결점 라이언 코어</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).flawlessCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCore', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>빛나는 조화의 결정체</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).crystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'crystal', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>빛나는 조화의 결정체</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).crystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'crystal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>무결점 조화의 결정체</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).flawlessCrystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCrystal', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>무결점 조화의 결정체</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).flawlessCrystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCrystal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).sealVoucher || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucher', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).sealVoucher || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucher', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).sealVoucherBox || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucherBox', e.target.value)} />
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).sealVoucherBox || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucherBox', e.target.value)} />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#94a3b8' }}>기타 메모</label>
-                <input type="text" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).memo || ''} onChange={e => updateCharForm(activeLootModal.charId, 'memo', e.target.value)} placeholder="특이사항 메모 입력" />
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#94a3b8' }}>기타 메모</label>
+                <input type="text" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).memo || ''} onChange={e => updateCharForm(activeLootModal.charId, 'memo', e.target.value)} placeholder="특이사항 메모 입력" />
               </div>
            </div>
            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -2885,12 +2885,12 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
           <div style={{ marginBottom: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
              {activeSecretShopModal.type === 'token' && (
                 <div>
-                   <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 순례의 인장 구매 추가</button>
-                   {(getCharForm(activeSecretShopModal.charId).secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>구매 내역이 없습니다.</div> : (
+                   <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 순례의 인장 구매 추가</button>
+                   {(getCharForm(activeSecretShopModal.charId).secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>구매 내역이 없습니다.</div> : (
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                        {(getCharForm(activeSecretShopModal.charId).secretTokens || []).map((t, idx) => (
                          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>#{idx+1} 단가:</span>
+                            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>#{idx+1} 단가:</span>
                             <input type="number" value={t.buyPrice} onChange={e => updateCharToken(activeSecretShopModal.charId, t.id, e.target.value)} style={{ flex: 1, padding: '0.4rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
                             <button onClick={() => removeCharToken(activeSecretShopModal.charId, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
                          </div>
@@ -2901,22 +2901,22 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
              )}
              {activeSecretShopModal.type === 'recipe' && (
                 <div>
-                   <button onClick={() => addCharRecipe(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 레시피 제작 추가</button>
-                   {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>제작 내역이 없습니다.</div> : (
+                   <button onClick={() => addCharRecipe(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 레시피 제작 추가</button>
+                   {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>제작 내역이 없습니다.</div> : (
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                        {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).map((r, idx) => (
                          <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <div style={{ fontSize: '0.85rem', color: '#a78bfa', fontWeight: 'bold' }}>레시피 #{idx+1}</div>
+                            <div style={{ fontSize: '0.7rem', color: '#a78bfa', fontWeight: 'bold' }}>레시피 #{idx+1}</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>구매가:</span>
+                              <span style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>구매가:</span>
                               <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 순례의 인장:</span>
+                              <span style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>소모 순례의 인장:</span>
                               <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>판매가:</span>
+                              <span style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>판매가:</span>
                               <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sellPrice', e.target.value)} style={{ width: '90px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
                             </div>
                             <button onClick={() => removeCharRecipe(activeSecretShopModal.charId, r.id)} style={{ marginLeft: 'auto', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
