@@ -1845,14 +1845,14 @@ export default function Home() {
             // 비밀상점 가치 산출 (캐릭터별)
             const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
             let tokenProfit = 0;
-            form.secretTokens.forEach(t => {
+            (form.secretTokens || []).forEach(t => {
               const bp = Number(t.buyPrice || 0);
               if (bp > 0) tokenProfit += (tokenPrice - bp);
             });
 
             let recipeProfit = 0;
             let recipeSealCost = 0;
-            form.secretRecipes.forEach(r => {
+            (form.secretRecipes || []).forEach(r => {
                const bp = Number(r.buyPrice || 0);
                const seals = Number(r.sealCost || 0);
                const sp = Number(r.sellPrice || 0);
@@ -2040,14 +2040,14 @@ export default function Home() {
                     // 캐릭터별 비밀상점 가치 산출
                     const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
                     let tokenProfit = 0;
-                    form.secretTokens.forEach(t => {
+                    (form.secretTokens || []).forEach(t => {
                       const bp = Number(t.buyPrice || 0);
                       if (bp > 0) tokenProfit += (tokenPrice - bp);
                     });
 
                     let recipeProfit = 0;
                     let recipeSealCost = 0;
-                    form.secretRecipes.forEach(r => {
+                    (form.secretRecipes || []).forEach(r => {
                        const bp = Number(r.buyPrice || 0);
                        const seals = Number(r.sealCost || 0);
                        const sp = Number(r.sellPrice || 0);
@@ -2090,7 +2090,7 @@ export default function Home() {
                         <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'top', minWidth: '80px' }}>
                           <button onClick={() => addCharToken(c.id)} style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', marginBottom: '0.3rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px' }}>+ 증표</button>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'center' }}>
-                            {form.secretTokens.map(t => (
+                            {(form.secretTokens || []).map(t => (
                                <div key={t.id} style={{ display: 'flex', gap: '0.2rem' }}>
                                  <input type="number" style={{...inputStyle, width: '55px'}} value={t.buyPrice} onChange={e => updateCharToken(c.id, t.id, e.target.value)} placeholder="단가" />
                                  <button onClick={() => removeCharToken(c.id, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>×</button>
@@ -2101,7 +2101,7 @@ export default function Home() {
                         <td style={{ padding: '0.5rem', verticalAlign: 'top', minWidth: '170px' }}>
                           <button onClick={() => addCharRecipe(c.id)} style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', marginBottom: '0.3rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px' }}>+ 레시피</button>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'center' }}>
-                            {form.secretRecipes.map(r => (
+                            {(form.secretRecipes || []).map(r => (
                                <div key={r.id} style={{ display: 'flex', gap: '0.2rem', alignItems: 'center' }}>
                                  <input type="number" style={{...inputStyle, width: '50px'}} value={r.buyPrice} onChange={e => updateCharRecipe(c.id, r.id, 'buyPrice', e.target.value)} placeholder="구매" title="구매가" />
                                  <input type="number" style={{...inputStyle, width: '40px'}} value={r.sealCost} onChange={e => updateCharRecipe(c.id, r.id, 'sealCost', e.target.value)} placeholder="인장" title="소모 인장" />
