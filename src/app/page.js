@@ -103,6 +103,7 @@ export default function Home() {
      '무색 큐브 조각': 0
   });
   const [isFetchingPrices, setIsFetchingPrices] = useState(false);
+  const [secretShopForm, setSecretShopForm] = useState({ tokens: [], recipes: [] });
   
   const chartData = React.useMemo(() => {
     // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
@@ -1780,6 +1781,14 @@ export default function Home() {
            setIsFetchingPrices(false);
         };
 
+        const addSecretToken = () => setSecretShopForm(p => ({ ...p, tokens: [...p.tokens, { id: Date.now(), buyPrice: '' }] }));
+        const updateSecretToken = (id, price) => setSecretShopForm(p => ({ ...p, tokens: p.tokens.map(t => t.id === id ? { ...t, buyPrice: price } : t) }));
+        const removeSecretToken = (id) => setSecretShopForm(p => ({ ...p, tokens: p.tokens.filter(t => t.id !== id) }));
+
+        const addSecretRecipe = () => setSecretShopForm(p => ({ ...p, recipes: [...p.recipes, { id: Date.now(), buyPrice: '', sealCost: '', sellPrice: '' }] }));
+        const updateSecretRecipe = (id, field, value) => setSecretShopForm(p => ({ ...p, recipes: p.recipes.map(r => r.id === id ? { ...r, [field]: value } : r) }));
+        const removeSecretRecipe = (id) => setSecretShopForm(p => ({ ...p, recipes: p.recipes.filter(r => r.id !== id) }));
+
         const handleSavePilgrimage = () => {
           const selectedIds = characters.filter(c => getCharForm(c.id).selected).map(c => c.id);
           if (selectedIds.length === 0) {
@@ -1845,22 +1854,65 @@ export default function Home() {
                 profit: totalProfit
               }
             };
+            };
           });
+
+          let totalBound = recordDetails.reduce((acc, d) => acc + d.values.bound, 0);
+          let totalTradable = recordDetails.reduce((acc, d) => acc + d.values.tradable, 0);
+          const totalConsumed = recordDetails.reduce((acc, d) => acc + d.values.consumed, 0);
+
+          // 비밀상점 증표 차익 (교환 가치에 추가)
+          const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
+          let tokenProfit = 0;
+          secretShopForm.tokens.forEach(t => {
+            const bp = Number(t.buyPrice || 0);
+            if (bp > 0) tokenProfit += (tokenPrice - bp);
+          });
+          totalTradable += tokenProfit;
+
+          // 레시피 차익 (교환 가치 추가, 인장 소모는 귀속 가치 차감)
+          let recipeProfit = 0;
+          let recipeSealCost = 0;
+          secretShopForm.recipes.forEach(r => {
+             const bp = Number(r.buyPrice || 0);
+             const seals = Number(r.sealCost || 0);
+             const sp = Number(r.sellPrice || 0);
+             if (bp > 0 || sp > 0) {
+               const sealVal = seals * 5000;
+               recipeSealCost += sealVal;
+               recipeProfit += (sp - bp - sealVal);
+             }
+          });
+          totalTradable += recipeProfit;
+          totalBound -= recipeSealCost;
+
+          const sessionProfit = totalBound + totalTradable - totalConsumed;
 
           const newRecord = {
             id: Date.now().toString(),
             date: new Date().toISOString(),
-            details: recordDetails
+            details: recordDetails,
+            secretShop: secretShopForm,
+            sessionTotals: {
+              bound: totalBound,
+              tradable: totalTradable,
+              consumed: totalConsumed,
+              profit: sessionProfit,
+              tokenProfit,
+              recipeProfit,
+              recipeSealCost
+            }
           };
           
           const updated = [newRecord, ...pilgrimageHistory];
           setPilgrimageHistory(updated);
           localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(updated));
           
-          // 선택된 캐릭터들 체크 해제
+          // 선택된 캐릭터들 및 비밀상점 폼 초기화
           const resetForm = { ...pilgrimageForm };
           selectedIds.forEach(id => { resetForm[id] = { ...getCharForm(id), selected: false }; });
           setPilgrimageForm(resetForm);
+          setSecretShopForm({ tokens: [], recipes: [] });
           
           if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, optsRef.current, mercRef.current, true, updated);
         };
@@ -2003,6 +2055,68 @@ export default function Home() {
               </table>
             </div>
 
+            {/* Secret Shop Panel */}
+            <div style={{ marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.05rem', color: '#e2e8f0', marginTop: 0, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                🛒 비밀상점 구매 내역
+              </h3>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {/* Tokens */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.8rem' }}>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#cbd5e1' }}>닳아버린 순례의 증표</h4>
+                    <button onClick={addSecretToken} style={{ padding: '0.2rem 0.6rem', fontSize: '0.8rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px' }}>+ 증표 구매 추가</button>
+                  </div>
+                  {secretShopForm.tokens.length === 0 ? (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>구매 내역이 없습니다.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {secretShopForm.tokens.map((t, idx) => (
+                        <div key={t.id} style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.8rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#94a3b8', marginRight: '0.5rem' }}>#{idx+1} 구매가:</span>
+                          <input type="number" value={t.buyPrice} onChange={e => updateSecretToken(t.id, e.target.value)} style={{ width: '80px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', marginRight: '0.5rem' }} placeholder="골드" />
+                          <button onClick={() => removeSecretToken(t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Recipes */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.8rem' }}>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', color: '#cbd5e1' }}>레시피 제작</h4>
+                    <button onClick={addSecretRecipe} style={{ padding: '0.2rem 0.6rem', fontSize: '0.8rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px' }}>+ 레시피 제작 추가</button>
+                  </div>
+                  {secretShopForm.recipes.length === 0 ? (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>제작 내역이 없습니다.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {secretShopForm.recipes.map((r, idx) => (
+                        <div key={r.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 0.8rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)', gap: '1rem' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 'bold' }}>#{idx+1}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>구매가:</span>
+                            <input type="number" value={r.buyPrice} onChange={e => updateSecretRecipe(r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 인장:</span>
+                            <input type="number" value={r.sealCost} onChange={e => updateSecretRecipe(r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>경매장 판매가:</span>
+                            <input type="number" value={r.sellPrice} onChange={e => updateSecretRecipe(r.id, 'sellPrice', e.target.value)} style={{ width: '90px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                          </div>
+                          <button onClick={() => removeSecretRecipe(r.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', marginLeft: 'auto' }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>히스토리</h3>
             {pilgrimageHistory.length === 0 ? (
               <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>아직 등록된 기록이 없습니다.</div>
@@ -2067,6 +2181,28 @@ export default function Home() {
                              })}
                            </tbody>
                          </table>
+                       )}
+                       {record.sessionTotals && (
+                         <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between' }}>
+                             <div style={{ flex: 1, minWidth: '200px' }}>
+                               <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8' }}>비밀상점 정산 내역</h5>
+                               <div style={{ fontSize: '0.85rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                 <div>- 증표 구매 이득 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
+                                 <div>- 레시피 순수익 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
+                                 <div>- 레시피 인장 비용 (귀속 가치 차감): <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
+                               </div>
+                             </div>
+                             <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
+                               <h5 style={{ margin: '0 0 0.2rem 0', color: '#94a3b8' }}>이번 순례 총 결산</h5>
+                               <div style={{ fontSize: '0.9rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.bound?.toLocaleString()}</span></div>
+                               <div style={{ fontSize: '0.9rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.tradable?.toLocaleString()}</span></div>
+                               <div style={{ fontSize: '1.05rem', marginTop: '0.3rem' }}>
+                                 최종 순수익: <span style={{ color: record.sessionTotals.profit > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{record.sessionTotals.profit?.toLocaleString()}</span>
+                               </div>
+                             </div>
+                           </div>
+                         </div>
                        )}
                     </div>
                   </div>
