@@ -2844,9 +2844,7 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
       const data = await res.json();
       if (data.success && data.data[itemName] !== undefined) {
         const price = data.data[itemName];
-        // Update auctionPrices with the custom item price
-        setAuctionPrices(prev => ({ ...prev, [itemName]: price }));
-        // Update the item's price in the form
+        // Update the item's price in the form only (auctionPrices is updated on close)
         const charId = activeLootModal.charId;
         const items = getCharForm(charId).customItems || [];
         updateCharForm(charId, 'customItems', items.map(i => i.id === itemId ? { ...i, price: price } : i));
@@ -2855,6 +2853,21 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
       console.error('Custom item price fetch error:', e);
     }
     setFetchingItemId(null);
+  };
+
+  const handleClose = () => {
+    // Register custom item prices into auctionPrices on close
+    const items = getCharForm(activeLootModal.charId).customItems || [];
+    const newPrices = {};
+    items.forEach(item => {
+      if (item.name && item.name.trim() && Number(item.price || 0) > 0) {
+        newPrices[item.name.trim()] = Number(item.price);
+      }
+    });
+    if (Object.keys(newPrices).length > 0) {
+      setAuctionPrices(prev => ({ ...prev, ...newPrices }));
+    }
+    setActiveLootModal(null);
   };
 
   if (!activeLootModal) return null;
@@ -2953,7 +2966,7 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
               </div>
            </div>
            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-             <button onClick={() => setActiveLootModal(null)} style={{ padding: '0.6rem 1.2rem', background: '#4ade80', color: '#1e293b', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>완료 및 닫기</button>
+             <button onClick={handleClose} style={{ padding: '0.6rem 1.2rem', background: '#4ade80', color: '#1e293b', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>완료 및 닫기</button>
            </div>
        </div>
      </div>
