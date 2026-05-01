@@ -2235,7 +2235,7 @@ export default function Home() {
                                                         {/* 21 */} <td 
                               style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalBoundValue + finalTradableValue - totalConsumedValue) > 0 ? '#4ade80' : ((finalBoundValue + finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
                               onClick={() => setCalcDetail({
-                                charName: char.name,
+                                charName: c.base.charName,
                                 items: {
                                   seal: Number(form.seal || 0),
                                   core: Number(form.core || 0),
@@ -2279,7 +2279,7 @@ export default function Home() {
                             {/* 22 */} <td 
                               style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalTradableValue - totalConsumedValue) > 0 ? '#38bdf8' : ((finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
                               onClick={() => setCalcDetail({
-                                charName: char.name,
+                                charName: c.base.charName,
                                 items: {
                                   seal: Number(form.seal || 0),
                                   core: Number(form.core || 0),
