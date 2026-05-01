@@ -1748,6 +1748,7 @@ export default function Home() {
           selected: false, startFatigue: '', pureGold: '',
           clearCubeStart: '', clearCubeEnd: '', 
           seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
+          sealVoucher: '', tradableSeal: '', sealVoucherBox: '',
           secretTokens: [],
           secretRecipes: []
         };
@@ -1780,7 +1781,7 @@ export default function Home() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   apiKey, 
-                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '무색 큐브 조각']
+                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '무색 큐브 조각', '순례의 인장 (1회 교환 가능)', '순례의 인장(1회 교환가능) 교환권 1개 상자']
                 })
              });
              const data = await res.json();
@@ -2004,7 +2005,7 @@ export default function Home() {
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>캐릭터</th>
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>시작 피로도</th>
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
-                    <th colSpan="6" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (입력)</th>
+                    <th colSpan="9" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (입력)</th>
                     <th colSpan="4" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
                     <th colSpan="3" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
@@ -2033,13 +2034,14 @@ export default function Home() {
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
-                           <td colSpan="18" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
+                           <td colSpan="21" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
                          </tr>
                        );
                      }
 
                      let sumFatigue = 0, sumRuns = 0;
                      let sumPureGold = 0, sumSeal = 0, sumCondensedCore = 0, sumCrystal = 0, sumFlawlessCore = 0, sumFlawlessCrystal = 0;
+                     let sumSealVoucher = 0, sumTradableSeal = 0, sumSealVoucherBox = 0;
                      let sumTokens = 0, sumPotions = 0, sumConsumedCube = 0;
                      let sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0;
 
@@ -2299,6 +2301,9 @@ export default function Home() {
                                <th style={{ padding: '0.4rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
                                <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 라이언 코어</th>
                                <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>인장 교환권</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>교환가능 인장</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>인장 교환권 상자</th>
                                <th style={{ padding: '0.4rem', color: '#f87171' }}>소모 무큐</th>
                                <th style={{ padding: '0.4rem', color: '#fb923c' }}>귀속 가치</th>
                                <th style={{ padding: '0.4rem', color: '#fb923c' }}>교환 가치</th>
@@ -2326,6 +2331,9 @@ export default function Home() {
                                    <td style={{ padding: '0.4rem', color: d.acquired.crystal ? '#fff' : '#64748b' }}>{d.acquired.crystal || '-'}</td>
                                    <td style={{ padding: '0.4rem', color: d.acquired.flawlessCore ? '#fff' : '#64748b' }}>{d.acquired.flawlessCore || '-'}</td>
                                    <td style={{ padding: '0.4rem', color: d.acquired.flawlessCrystal ? '#fff' : '#64748b' }}>{d.acquired.flawlessCrystal || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.sealVoucher ? '#fff' : '#64748b' }}>{d.acquired.sealVoucher || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.tradableSeal ? '#fff' : '#64748b' }}>{d.acquired.tradableSeal || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.sealVoucherBox ? '#fff' : '#64748b' }}>{d.acquired.sealVoucherBox || '-'}</td>
                                    <td style={{ padding: '0.4rem', color: displayCube ? '#fca5a5' : '#64748b' }}>{displayCube > 0 ? displayCube.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.4rem', color: bound > 0 ? '#fb923c' : '#64748b' }}>{bound > 0 ? bound.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.4rem', color: tradable > 0 ? '#fb923c' : '#64748b' }}>{tradable > 0 ? tradable.toLocaleString() : '-'}</td>
