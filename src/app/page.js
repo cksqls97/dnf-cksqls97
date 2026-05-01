@@ -2360,7 +2360,7 @@ export default function Home() {
 
             {/* Secret Shop Modal */}
             
-            <SecretShopModalComponent activeSecretShopModal={activeSecretShopModal} setActiveSecretShopModal={setActiveSecretShopModal} characters={characters} getCharForm={getCharForm} addCharToken={addCharToken} updateCharToken={updateCharToken} removeCharToken={removeCharToken} addCharRecipe={addCharRecipe} updateCharRecipe={updateCharRecipe} removeCharRecipe={removeCharRecipe} />
+            <SecretShopModalComponent activeSecretShopModal={activeSecretShopModal} setActiveSecretShopModal={setActiveSecretShopModal} characters={characters} getCharForm={getCharForm} addCharToken={addCharToken} updateCharToken={updateCharToken} removeCharToken={removeCharToken} addCharRecipe={addCharRecipe} updateCharRecipe={updateCharRecipe} removeCharRecipe={removeCharRecipe} updateCharForm={updateCharForm} />
 
             {/* Auction Prices Modal */}
             
@@ -2876,7 +2876,44 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
   );
 }
 
-function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopModal, characters, getCharForm, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe }) {
+function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopModal, characters, getCharForm, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, updateCharForm }) {
+  useEffect(() => {
+    if (activeSecretShopModal) {
+      const charId = activeSecretShopModal.charId;
+      const type = activeSecretShopModal.type;
+      const form = getCharForm(charId);
+      
+      if (type === 'token') {
+        const tokens = form.secretTokens || [];
+        if (tokens.length === 0) {
+          addCharToken(charId);
+        }
+      } else if (type === 'recipe') {
+        const recipes = form.secretRecipes || [];
+        if (recipes.length === 0) {
+          addCharRecipe(charId);
+        }
+      }
+    }
+  }, [activeSecretShopModal]);
+
+  const handleClose = () => {
+    if (activeSecretShopModal) {
+      const charId = activeSecretShopModal.charId;
+      const type = activeSecretShopModal.type;
+      const form = getCharForm(charId);
+
+      if (type === 'token') {
+        const cleanedTokens = (form.secretTokens || []).filter(t => t.buyPrice !== '');
+        updateCharForm(charId, 'secretTokens', cleanedTokens);
+      } else if (type === 'recipe') {
+        const cleanedRecipes = (form.secretRecipes || []).filter(r => r.buyPrice !== '' || r.sealCost !== '' || r.sellPrice !== '');
+        updateCharForm(charId, 'secretRecipes', cleanedRecipes);
+      }
+    }
+    setActiveSecretShopModal(null);
+  };
+
   if (!activeSecretShopModal) return null;
   const charName = characters.find(c => c.id === activeSecretShopModal.charId)?.base.charName || '알 수 없음';
   
@@ -2932,7 +2969,7 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
              )}
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-             <button onClick={() => setActiveSecretShopModal(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
+             <button onClick={handleClose} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
           </div>
        </div>
     </div>
