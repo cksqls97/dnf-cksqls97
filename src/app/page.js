@@ -956,37 +956,20 @@ export default function Home() {
                     <h3 style={{ marginBottom: '1rem', color: '#38bdf8', fontSize: '1.1rem', paddingLeft: '0.5rem', borderLeft: '3px solid #38bdf8' }}>그룹 {gIdx + 1}</h3>
                     <table style={{ tableLayout: 'fixed', width: '100%' }}>
                       <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>캐릭터</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>시작 피로도</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>재화 입력</th>
-                    <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (기록)</th>
-                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>소모 재화</th>
-                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
-                    <th colSpan="4" style={{ padding: "0.4rem", borderBottom: "1px solid rgba(255,255,255,0.1)", borderLeft: "1px solid rgba(255,255,255,0.1)", color: "#fb923c" }}>가치 산출 (골드)</th>
-                    
-                  </tr>
-                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.62rem', lineHeight: '1.0', letterSpacing: '-0.02em' }}>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>응축된<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>빛나는 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>교환권</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(교환 가능)</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>교환권<br/>상자</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>소모 무큐</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>레시피</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속 가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>교환 가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>총 순수익</th>
-                  </tr>
-                </thead>
+                        <tr>
+                          <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
+                          <th style={{ width: '8%', textAlign: 'center' }}>직업</th>
+                          <th style={{ width: '16%', textAlign: 'center' }}>캐릭터명</th>
+                          <th style={{ width: '6%', textAlign: 'center' }}>명성</th>
+                          <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
+                          <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
+                          <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
+                          <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
+                          <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
+                          <th style={{ width: '7%', textAlign: 'center' }}>던담</th>
+                          <th style={{ width: '7%', textAlign: 'center' }}>관리</th>
+                        </tr>
+                      </thead>
                       <tbody>
                         {group.map((c, mIdx) => {
                           if (!c) {
@@ -1039,7 +1022,7 @@ export default function Home() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           {nextDungeon && (
                             <div style={{
-                              fontSize: '0.71rem',
+                              fontSize: '0.72rem',
                               color: isImminent ? '#fef08a' : '#fca5a5',
                               background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(248, 113, 113, 0.08)',
                               padding: '0.2rem 0.4rem',
@@ -1137,7 +1120,7 @@ export default function Home() {
                       }
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                          <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.71rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
+                          <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
                             💀 {currentLabel}
                           </span>
                           {nextTarget && (
@@ -2091,7 +2074,24 @@ export default function Home() {
                 </thead>
                 <tbody>
                   {(() => {
-                     const selectedChars = characters.filter(c => getCharForm(c.id).selected);
+                     
+                      const getRole = (c) => {
+                        if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
+                        const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+                        const jobName = c.base?.jobGrowName || c.base?.jobName || '';
+                        return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
+                      };
+                      const dealersAll = characters.filter(c => getRole(c) === 'dealer').sort((a,b) => b.base.fame - a.base.fame);
+                      const buffersAll = characters.filter(c => getRole(c) === 'buffer').sort((a,b) => b.base.fame - a.base.fame);
+                      const sortedAll = [];
+                      const mMaxGroups = Math.max(Math.ceil(dealersAll.length / 3), buffersAll.length);
+                      for (let i = 0; i < mMaxGroups; i++) {
+                        if (dealersAll[i * 3]) sortedAll.push(dealersAll[i * 3]);
+                        if (dealersAll[i * 3 + 1]) sortedAll.push(dealersAll[i * 3 + 1]);
+                        if (dealersAll[i * 3 + 2]) sortedAll.push(dealersAll[i * 3 + 2]);
+                        if (buffersAll[i]) sortedAll.push(buffersAll[i]);
+                      }
+                      const selectedChars = sortedAll.filter(c => getCharForm(c.id).selected);
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
