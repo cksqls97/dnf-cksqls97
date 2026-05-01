@@ -98,6 +98,7 @@ export default function Home() {
   const [pilgrimageHistory, setPilgrimageHistory] = useState([]);
     const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
   const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
+    const [calcDetail, setCalcDetail] = useState(null);
   const [activeLootModal, setActiveLootModal] = useState(null);
 
   const [auctionPrices, setAuctionPrices] = useState({
@@ -2231,8 +2232,94 @@ export default function Home() {
 
                             {/* 19 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
                             {/* 20 */} <td style={{ padding: '0.2rem 0.1rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
-                            {/* 21 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalBoundValue + finalTradableValue - totalConsumedValue) > 0 ? '#4ade80' : ((finalBoundValue + finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{(finalBoundValue + finalTradableValue - totalConsumedValue) !== 0 ? (finalBoundValue + finalTradableValue - totalConsumedValue).toLocaleString() : '-'}</td>
-                            {/* 22 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalTradableValue - totalConsumedValue) > 0 ? '#38bdf8' : ((finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{(finalTradableValue - totalConsumedValue) !== 0 ? (finalTradableValue - totalConsumedValue).toLocaleString() : '-'}</td>
+                                                        {/* 21 */} <td 
+                              style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalBoundValue + finalTradableValue - totalConsumedValue) > 0 ? '#4ade80' : ((finalBoundValue + finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
+                              onClick={() => setCalcDetail({
+                                charName: char.name,
+                                items: {
+                                  seal: Number(form.seal || 0),
+                                  core: Number(form.core || 0),
+                                  crystal: Number(form.crystal || 0),
+                                  pureGold: Number(form.pureGold || 0),
+                                  flawlessCore: Number(form.flawlessCore || 0),
+                                  flawlessCrystal: Number(form.flawlessCrystal || 0),
+                                  sealVoucher: Number(form.sealVoucher || 0),
+                                  sealVoucherBox: Number(form.sealVoucherBox || 0),
+                                  tradableSeal: Number(form.tradableSeal || 0),
+                                  runs: runs,
+                                  consumedCube: consumedCube
+                                },
+                                breakdown: {
+                                  seal: sealValue,
+                                  core: boundCoreValue,
+                                  crystal: boundCrystalValue,
+                                  flawlessCore: tradableCoreValue,
+                                  flawlessCrystal: tradableCrystalValue,
+                                  sealVoucher: voucherProfitTotal,
+                                  sealVoucherBox: voucherBoxValue,
+                                  tradableSeal: tradableSealValue,
+                                  recipeProfit: recipeProfit,
+                                  tokenProfit: tokenProfit,
+                                  tokenCost: tokenCost,
+                                  cubeCost: cubeCost
+                                },
+                                totals: {
+                                  bound: finalBoundValue,
+                                  tradable: finalTradableValue,
+                                  consumed: totalConsumedValue
+                                },
+                                final: {
+                                  includingBound: finalBoundValue + finalTradableValue - totalConsumedValue,
+                                  excludingBound: finalTradableValue - totalConsumedValue
+                                }
+                              })}
+                            >
+                              {(finalBoundValue + finalTradableValue - totalConsumedValue) !== 0 ? (finalBoundValue + finalTradableValue - totalConsumedValue).toLocaleString() : '-'}
+                            </td>
+                            {/* 22 */} <td 
+                              style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalTradableValue - totalConsumedValue) > 0 ? '#38bdf8' : ((finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
+                              onClick={() => setCalcDetail({
+                                charName: char.name,
+                                items: {
+                                  seal: Number(form.seal || 0),
+                                  core: Number(form.core || 0),
+                                  crystal: Number(form.crystal || 0),
+                                  pureGold: Number(form.pureGold || 0),
+                                  flawlessCore: Number(form.flawlessCore || 0),
+                                  flawlessCrystal: Number(form.flawlessCrystal || 0),
+                                  sealVoucher: Number(form.sealVoucher || 0),
+                                  sealVoucherBox: Number(form.sealVoucherBox || 0),
+                                  tradableSeal: Number(form.tradableSeal || 0),
+                                  runs: runs,
+                                  consumedCube: consumedCube
+                                },
+                                breakdown: {
+                                  seal: sealValue,
+                                  core: boundCoreValue,
+                                  crystal: boundCrystalValue,
+                                  flawlessCore: tradableCoreValue,
+                                  flawlessCrystal: tradableCrystalValue,
+                                  sealVoucher: voucherProfitTotal,
+                                  sealVoucherBox: voucherBoxValue,
+                                  tradableSeal: tradableSealValue,
+                                  recipeProfit: recipeProfit,
+                                  tokenProfit: tokenProfit,
+                                  tokenCost: tokenCost,
+                                  cubeCost: cubeCost
+                                },
+                                totals: {
+                                  bound: finalBoundValue,
+                                  tradable: finalTradableValue,
+                                  consumed: totalConsumedValue
+                                },
+                                final: {
+                                  includingBound: finalBoundValue + finalTradableValue - totalConsumedValue,
+                                  excludingBound: finalTradableValue - totalConsumedValue
+                                }
+                              })}
+                            >
+                              {(finalTradableValue - totalConsumedValue) !== 0 ? (finalTradableValue - totalConsumedValue).toLocaleString() : '-'}
+                            </td>
                             
                           </tr>
                         );
@@ -2279,6 +2366,123 @@ export default function Home() {
             
             <LootModalComponent activeLootModal={activeLootModal} setActiveLootModal={setActiveLootModal} characters={characters} getCharForm={getCharForm} updateCharForm={updateCharForm} />
             
+            
+            {calcDetail && (
+              <div className="modal-overlay">
+                <div className="modal-content glass-panel" style={{ maxWidth: '600px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
+                  <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
+                    📊 상세 가치 산출 내역 ({calcDetail.charName})
+                  </h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '1.5rem' }}>
+                    {/* Bound Section */}
+                    <div>
+                      <h4 style={{ color: '#fb923c', marginBottom: '0.5rem', fontSize: '0.9rem' }}>📦 귀속 가치 (Bound)</h4>
+                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>순례의 인장 ({calcDetail.items.seal}개)</span>
+                          <span>{calcDetail.breakdown.seal.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>응축된 라이언 코어 ({calcDetail.items.core}개)</span>
+                          <span>{calcDetail.breakdown.core.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
+                          <span>빛나는 조화의 결정체 ({calcDetail.items.crystal}개)</span>
+                          <span>{calcDetail.breakdown.crystal.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#fb923c' }}>
+                          <span>귀속 합계</span>
+                          <span>{calcDetail.totals.bound.toLocaleString()} G</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tradable Section */}
+                    <div>
+                      <h4 style={{ color: '#38bdf8', marginBottom: '0.5rem', fontSize: '0.9rem' }}>💰 교환 가능 가치 (Tradable)</h4>
+                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>순 골드</span>
+                          <span>{calcDetail.items.pureGold.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>무결점 라이언 코어 ({calcDetail.items.flawlessCore}개)</span>
+                          <span>{calcDetail.breakdown.flawlessCore.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>무결점 조화의 결정체 ({calcDetail.items.flawlessCrystal}개)</span>
+                          <span>{calcDetail.breakdown.flawlessCrystal.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>인장 교환권 수익 ({calcDetail.items.sealVoucher}개)</span>
+                          <span>{calcDetail.breakdown.sealVoucher.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>인장 상자 ({calcDetail.items.sealVoucherBox}개)</span>
+                          <span>{calcDetail.breakdown.sealVoucherBox.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>직접 획득 인장(교환가능) ({calcDetail.items.tradableSeal}개)</span>
+                          <span>{calcDetail.breakdown.tradableSeal.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>비밀상점 레시피 수익</span>
+                          <span>{calcDetail.breakdown.recipeProfit.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
+                          <span>증표 단가 이득</span>
+                          <span>{calcDetail.breakdown.tokenProfit.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#38bdf8' }}>
+                          <span>교환 가능 합계</span>
+                          <span>{calcDetail.totals.tradable.toLocaleString()} G</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Cost Section */}
+                    <div>
+                      <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.9rem' }}>📉 소모 비용 (Costs)</h4>
+                      <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                          <span>순례의 증표 소모 ({calcDetail.items.runs * 16}개)</span>
+                          <span>-{calcDetail.breakdown.tokenCost.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
+                          <span>무색 큐브 조각 소모 ({calcDetail.items.consumedCube}개)</span>
+                          <span>-{calcDetail.breakdown.cubeCost.toLocaleString()} G</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#f87171' }}>
+                          <span>소모 합계</span>
+                          <span>-{calcDetail.totals.consumed.toLocaleString()} G</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Final Results */}
+                    <div style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>
+                        <span>순수익 (귀속 제외)</span>
+                        <span>{calcDetail.final.excludingBound.toLocaleString()} G</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 'bold', color: '#4ade80' }}>
+                        <span>순수익 (귀속 포함)</span>
+                        <span>{calcDetail.final.includingBound.toLocaleString()} G</span>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.8rem', fontStyle: 'italic', textAlign: 'right' }}>
+                        * 순수익(귀속 제외) = 교환 가능 합계 - 소모 합계<br/>
+                        * 순수익(귀속 포함) = 귀속 합계 + 교환 가능 합계 - 소모 합계
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button onClick={() => setCalcDetail(null)} style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>확인</button>
+                  </div>
+                </div>
+              </div>
+            )}
             {showAuctionPricesModal && (
               <div className="modal-overlay">
                 <div className="modal-content glass-panel" style={{ maxWidth: '500px', width: '90%' }}>
