@@ -1771,7 +1771,8 @@ export default function Home() {
           seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
           sealVoucher: '', tradableSeal: '', sealVoucherBox: '', memo: '',
           secretTokens: [],
-          secretRecipes: []
+          secretRecipes: [],
+          customItems: []
         };
         
         const updateCharForm = (id, field, value) => {
@@ -1861,7 +1862,16 @@ export default function Home() {
             const sealValue = Number(form.seal || 0) * 5000;
             const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
             const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
-            const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
+            
+            let customBoundValue = 0;
+            let customTradableValue = 0;
+            (form.customItems || []).forEach(item => {
+              const total = Number(item.quantity || 0) * Number(item.price || 0);
+              if (item.isBound) customBoundValue += total;
+              else customTradableValue += total;
+            });
+
+            const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue + customBoundValue;
             
             // 교환 가능재화 가치 산출 (보정 전)
             const pureGoldInput = Number(form.pureGold || 0);
@@ -1911,8 +1921,8 @@ export default function Home() {
             // 순 골드 보정 (상점 지출액 복원)
             const restoredPureGold = pureGoldInput + secretShopGoldSpent;
 
-            // 최종 교환 가능재화 가치 (보정된 순골드 + 코어/결정체 + 인장류 수익 + 상점 순수익)
-            const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit;
+            // 최종 교환 가능재화 가치 (보정된 순골드 + 코어/결정체 + 인장류 수익 + 상점 순수익 + 커스텀)
+            const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit + customTradableValue;
             const finalBoundValue = totalBoundValue - recipeSealCost;
             const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
 
@@ -1938,6 +1948,9 @@ export default function Home() {
                 potion: 1
               },
               memo: form.memo || '',
+              customItems: form.customItems || [],
+              customBoundValue,
+              customTradableValue,
               secretShop: {
                 tokens: form.secretTokens,
                 recipes: form.secretRecipes,
@@ -2111,7 +2124,16 @@ export default function Home() {
                     const sealValue = Number(form.seal || 0) * 5000;
                     const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
                     const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
-                    const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
+                    
+                    let customBoundValue = 0;
+                    let customTradableValue = 0;
+                    (form.customItems || []).forEach(item => {
+                      const total = Number(item.quantity || 0) * Number(item.price || 0);
+                      if (item.isBound) customBoundValue += total;
+                      else customTradableValue += total;
+                    });
+
+                    const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue + customBoundValue;
                     
                     const pureGoldInput = Number(form.pureGold || 0);
                     const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
@@ -2159,7 +2181,7 @@ export default function Home() {
                     const restoredPureGold = pureGoldInput + secretShopGoldSpent;
 
                     // 최종 교환 가능재화 가치
-                    const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit;
+                    const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit + customTradableValue;
                     const finalBoundValue = totalBoundValue - recipeSealCost;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
                     
@@ -2245,7 +2267,10 @@ export default function Home() {
                                   tradableSeal: tradableSealValue,
                                   recipeProfit: recipeProfit,
                                   tokenProfit: tokenProfit,
-                                  tokenCost: tokenCost
+                                  tokenCost: tokenCost,
+                                  secretShopGoldSpent: secretShopGoldSpent,
+                                  customBound: customBoundValue,
+                                  customTradable: customTradableValue
                                 },
                                 totals: {
                                   bound: finalBoundValue,
@@ -2287,7 +2312,10 @@ export default function Home() {
                                   tradableSeal: tradableSealValue,
                                   recipeProfit: recipeProfit,
                                   tokenProfit: tokenProfit,
-                                  tokenCost: tokenCost
+                                  tokenCost: tokenCost,
+                                  secretShopGoldSpent: secretShopGoldSpent,
+                                  customBound: customBoundValue,
+                                  customTradable: customTradableValue
                                 },
                                 totals: {
                                   bound: finalBoundValue,
@@ -2373,6 +2401,12 @@ export default function Home() {
                           <span>빛나는 조화의 결정체 ({calcDetail.items.crystal}개)</span>
                           <span>{calcDetail.breakdown.crystal.toLocaleString()} G</span>
                         </div>
+                        {calcDetail.breakdown.customBound > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                            <span>커스텀 추가 항목 (귀속)</span>
+                            <span>{calcDetail.breakdown.customBound.toLocaleString()} G</span>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#fb923c' }}>
                           <span>귀속 합계</span>
                           <span>{calcDetail.totals.bound.toLocaleString()} G</span>
@@ -2385,9 +2419,15 @@ export default function Home() {
                       <h4 style={{ color: '#38bdf8', marginBottom: '0.5rem', fontSize: '0.7rem' }}>💰 교환 가능 가치 (Tradable)</h4>
                       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>순 골드</span>
+                          <span title="유저 입력값">순 골드 (입력값)</span>
                           <span>{calcDetail.items.pureGold.toLocaleString()} G</span>
                         </div>
+                        {calcDetail.breakdown.secretShopGoldSpent > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                            <span title="비밀상점 구매로 인해 줄어든 순골드 수치를 복구한 값입니다.">비밀상점 지출액 보정</span>
+                            <span>+{calcDetail.breakdown.secretShopGoldSpent.toLocaleString()} G</span>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                           <span>무결점 라이언 코어 ({calcDetail.items.flawlessCore}개)</span>
                           <span>{calcDetail.breakdown.flawlessCore.toLocaleString()} G</span>
@@ -2416,6 +2456,12 @@ export default function Home() {
                           <span>닳아버린 순례의 증표 단가 이득</span>
                           <span>{calcDetail.breakdown.tokenProfit.toLocaleString()} G</span>
                         </div>
+                        {calcDetail.breakdown.customTradable > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
+                            <span>커스텀 추가 항목 (교환)</span>
+                            <span>{calcDetail.breakdown.customTradable.toLocaleString()} G</span>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#38bdf8' }}>
                           <span>교환 가능 합계</span>
                           <span>{calcDetail.totals.tradable.toLocaleString()} G</span>
@@ -2821,6 +2867,42 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                   <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).sealVoucherBox || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucherBox', e.target.value)} />
                 </div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ fontSize: '0.7rem', color: '#60a5fa', fontWeight: 'bold' }}>커스텀 추가 항목</label>
+                  <button onClick={() => {
+                    const items = getCharForm(activeLootModal.charId).customItems || [];
+                    updateCharForm(activeLootModal.charId, 'customItems', [...items, { id: Date.now().toString(), name: '', quantity: '', price: '', isBound: false }]);
+                  }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem', background: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 항목 추가</button>
+                </div>
+                {(getCharForm(activeLootModal.charId).customItems || []).map((item, idx) => (
+                  <div key={item.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.5rem', borderRadius: '4px' }}>
+                    <input type="text" placeholder="이름" style={{ flex: 2, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.name} onChange={e => {
+                      const items = getCharForm(activeLootModal.charId).customItems || [];
+                      updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name: e.target.value } : i));
+                    }} />
+                    <input type="number" placeholder="수량" style={{ flex: 1, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.quantity} onChange={e => {
+                      const items = getCharForm(activeLootModal.charId).customItems || [];
+                      updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, quantity: e.target.value } : i));
+                    }} />
+                    <input type="number" placeholder="단가" style={{ flex: 1.5, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.price} onChange={e => {
+                      const items = getCharForm(activeLootModal.charId).customItems || [];
+                      updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, price: e.target.value } : i));
+                    }} />
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontSize: '0.7rem', color: '#cbd5e1', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      <input type="checkbox" checked={item.isBound} onChange={e => {
+                        const items = getCharForm(activeLootModal.charId).customItems || [];
+                        updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, isBound: e.target.checked } : i));
+                      }} />
+                      귀속
+                    </label>
+                    <button onClick={() => {
+                      const items = getCharForm(activeLootModal.charId).customItems || [];
+                      updateCharForm(activeLootModal.charId, 'customItems', items.filter(i => i.id !== item.id));
+                    }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 0.2rem' }}>×</button>
+                  </div>
+                ))}
               </div>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#94a3b8' }}>기타 메모</label>
