@@ -1815,7 +1815,7 @@ export default function Home() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   apiKey, 
-                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '무색 큐브 조각', '순례의 인장 (1회 교환 가능)', '순례의 인장(1회 교환가능) 교환권 1개 상자']
+                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '무색 큐브 조각', '순례의 인장 (1회 교환 가능)', '순례의 인장 (1회 교환 가능) 교환권 1개 상자']
                 })
              });
              const data = await res.json();
@@ -1887,7 +1887,7 @@ export default function Home() {
             
             // 인장 교환권 및 교환가능 인장 가치 산출
             const priceTradableSeal = auctionPrices['순례의 인장 (1회 교환 가능)'] || 0;
-            const priceVoucherBox = auctionPrices['순례의 인장(1회 교환가능) 교환권 1개 상자'] || 0;
+            const priceVoucherBox = auctionPrices['순례의 인장 (1회 교환 가능) 교환권 1개 상자'] || 0;
             const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
             const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
             const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
@@ -2065,7 +2065,7 @@ export default function Home() {
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>기타 메모</th>
+                    
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem', lineHeight: '1.2' }}>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
@@ -2126,7 +2126,7 @@ export default function Home() {
                     
                     // 인장 교환권 및 교환가능 인장 가치 산출
                     const priceTradableSeal = auctionPrices['순례의 인장 (1회 교환 가능)'] || 0;
-                    const priceVoucherBox = auctionPrices['순례의 인장(1회 교환가능) 교환권 1개 상자'] || 0;
+                    const priceVoucherBox = auctionPrices['순례의 인장 (1회 교환 가능) 교환권 1개 상자'] || 0;
                     const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
                     const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
                     const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
@@ -2279,7 +2279,7 @@ export default function Home() {
             
             {showAuctionPricesModal && (
               <div className="modal-overlay">
-                <div className="modal-content glass-panel" style={{ maxWidth: '350px' }}>
+                <div className="modal-content glass-panel" style={{ maxWidth: '500px', width: '90%' }}>
                    <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                      ⚖️ 현재 적용된 경매장 단가
                    </h3>
@@ -2326,9 +2326,9 @@ export default function Home() {
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 라이언 코어</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장 (1회 교환 가능) 교환권</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능)</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권 1개 상자</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장 (1회 교환 가능) 교환권 1개 상자</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#f87171' }}>소모 무큐</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>귀속 가치</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>교환 가치</th>
