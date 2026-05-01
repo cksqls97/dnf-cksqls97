@@ -96,21 +96,10 @@ export default function Home() {
   const [pilgrimageForm, setPilgrimageForm] = useState({});
   const [globalStartFatigue, setGlobalStartFatigue] = useState('');
   const [pilgrimageHistory, setPilgrimageHistory] = useState([]);
-  const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
+    const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
   const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
+  const [activeLootModal, setActiveLootModal] = useState(null);
 
-  useEffect(() => {
-    const draft = localStorage.getItem('DNF_PILGRIMAGE_FORM_DRAFT');
-    if (draft) {
-      try { setPilgrimageForm(JSON.parse(draft)); } catch(e) {}
-    }
-  }, []);
-
-  useEffect(() => {
-    if (Object.keys(pilgrimageForm).length > 0) {
-      localStorage.setItem('DNF_PILGRIMAGE_FORM_DRAFT', JSON.stringify(pilgrimageForm));
-    }
-  }, [pilgrimageForm]);
   const [auctionPrices, setAuctionPrices] = useState({
      '무결점 라이언 코어': 0,
      '무결점 조화의 결정체': 0,
@@ -118,6 +107,34 @@ export default function Home() {
      '무색 큐브 조각': 0
   });
   const [isFetchingPrices, setIsFetchingPrices] = useState(false);
+
+  useEffect(() => {
+        const draft = localStorage.getItem('DNF_PILGRIMAGE_FORM_DRAFT');
+    if (draft) {
+      try { setPilgrimageForm(JSON.parse(draft)); } catch(e) {}
+    }
+    const draftFatigue = localStorage.getItem('DNF_PILGRIMAGE_GLOBAL_FATIGUE');
+    if (draftFatigue) setGlobalStartFatigue(Number(draftFatigue));
+    const draftPrices = localStorage.getItem('DNF_PILGRIMAGE_AUCTION_PRICES');
+    if (draftPrices) {
+      try { setAuctionPrices(JSON.parse(draftPrices)); } catch(e) {}
+    }
+  }, []);
+
+  useEffect(() => {
+    if (globalStartFatigue !== '') localStorage.setItem('DNF_PILGRIMAGE_GLOBAL_FATIGUE', globalStartFatigue);
+  }, [globalStartFatigue]);
+
+  useEffect(() => {
+    localStorage.setItem('DNF_PILGRIMAGE_AUCTION_PRICES', JSON.stringify(auctionPrices));
+  }, [auctionPrices]);
+
+  useEffect(() => {
+    if (Object.keys(pilgrimageForm).length > 0) {
+      localStorage.setItem('DNF_PILGRIMAGE_FORM_DRAFT', JSON.stringify(pilgrimageForm));
+    }
+  }, [pilgrimageForm]);
+  
   
   const chartData = React.useMemo(() => {
     // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
@@ -1990,7 +2007,7 @@ export default function Home() {
                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                  <div style={{ display: 'flex', gap: '0.5rem' }}>
                    <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer' }}>
-                     {isFetchingPrices ? '불러오는 중...' : '경매장 단가 불러오기'}
+                     {isFetchingPrices ? '불러오는 중...' : '단가 새로고침'}
                    </button>
                    <button onClick={() => setShowAuctionPricesModal(true)} style={{ padding: '0.5rem 1rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>
                      단가 확인
@@ -2023,7 +2040,8 @@ export default function Home() {
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>캐릭터</th>
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>시작 피로도</th>
                     <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
-                    <th colSpan="9" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (입력)</th>
+                    <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>재화 입력</th>
+                    <th colSpan="9" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (기록)</th>
                     <th colSpan="4" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
                     <th colSpan="3" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
@@ -2056,7 +2074,7 @@ export default function Home() {
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
-                           <td colSpan="22" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
+                           <td colSpan="23" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
                          </tr>
                        );
                      }
@@ -2196,7 +2214,9 @@ export default function Home() {
                             <td style={{ padding: '0.5rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.5rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                              <input type="text" style={{ ...inputStyle, width: '120px', textAlign: 'left' }} value={form.memo || ''} onChange={e => updateCharForm(c.id, 'memo', e.target.value)} placeholder="메모 입력" />
+                              <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.3rem 0.6rem', fontSize: '0.7rem', background: form.memo ? 'rgba(56, 189, 248, 0.2)' : 'rgba(148, 163, 184, 0.2)', border: form.memo ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid rgba(148, 163, 184, 0.4)', color: form.memo ? '#38bdf8' : '#94a3b8', borderRadius: '4px', cursor: 'pointer', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={form.memo}>
+                                {form.memo ? form.memo : '+ 메모'}
+                              </button>
                             </td>
                           </tr>
                         );
@@ -2209,7 +2229,7 @@ export default function Home() {
                             <td style={{ padding: '0.8rem', color: '#e2e8f0' }}>총합계 ({selectedChars.length})</td>
                             <td style={{ padding: '0.8rem', color: '#e2e8f0' }}>{sumFatigue > 0 ? sumFatigue : '-'}</td>
                             <td style={{ padding: '0.8rem', color: '#fbbf24' }}>{sumRuns > 0 ? sumRuns : '-'}</td>
-                            
+                            <td style={{ padding: '0.8rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
                             <td style={{ padding: '0.8rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title="비밀상점 지출액이 보정된 실제 드랍 골드의 총합">{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem' }}>{sumSeal > 0 ? sumSeal.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem' }}>{sumCondensedCore > 0 ? sumCondensedCore.toLocaleString() : '-'}</td>
@@ -2239,71 +2259,13 @@ export default function Home() {
             </div>
 
             {/* Secret Shop Modal */}
-            {activeSecretShopModal && (() => {
-              const m = activeSecretShopModal;
-              const charName = characters.find(c => c.id === m.charId)?.base.charName || '알 수 없음';
-              const form = getCharForm(m.charId);
-              
-              return (
-                 <div className="modal-overlay">
-                    <div className="modal-content glass-panel" style={{ maxWidth: m.type === 'token' ? '400px' : '500px' }}>
-                       <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                         🛒 {charName} - {m.type === 'token' ? '비밀상점 증표 구매' : '비밀상점 레시피 제작'}
-                       </h3>
-                       <div style={{ marginBottom: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
-                          {m.type === 'token' && (
-                             <div>
-                                <button onClick={() => addCharToken(m.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 증표 구매 추가</button>
-                                {(form.secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>구매 내역이 없습니다.</div> : (
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                    {(form.secretTokens || []).map((t, idx) => (
-                                      <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                         <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>#{idx+1} 단가:</span>
-                                         <input type="number" value={t.buyPrice} onChange={e => updateCharToken(m.charId, t.id, e.target.value)} style={{ flex: 1, padding: '0.4rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
-                                         <button onClick={() => removeCharToken(m.charId, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                             </div>
-                          )}
-                          {m.type === 'recipe' && (
-                             <div>
-                                <button onClick={() => addCharRecipe(m.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 레시피 제작 추가</button>
-                                {(form.secretRecipes || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>제작 내역이 없습니다.</div> : (
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                    {(form.secretRecipes || []).map((r, idx) => (
-                                      <div key={r.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                         <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 'bold' }}>#{idx+1}</span>
-                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                           <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>구매가:</span>
-                                           <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(m.charId, r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
-                                         </div>
-                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                           <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 인장:</span>
-                                           <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(m.charId, r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
-                                         </div>
-                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                           <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>판매가:</span>
-                                           <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(m.charId, r.id, 'sellPrice', e.target.value)} style={{ width: '90px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
-                                         </div>
-                                         <button onClick={() => removeCharRecipe(m.charId, r.id)} style={{ marginLeft: 'auto', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                             </div>
-                          )}
-                       </div>
-                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <button onClick={() => setActiveSecretShopModal(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
-                       </div>
-                    </div>
-                 </div>
-              );
-            })()}
+            
+            <SecretShopModalComponent activeSecretShopModal={activeSecretShopModal} setActiveSecretShopModal={setActiveSecretShopModal} characters={characters} getCharForm={getCharForm} addCharToken={addCharToken} updateCharToken={updateCharToken} removeCharToken={removeCharToken} addCharRecipe={addCharRecipe} updateCharRecipe={updateCharRecipe} removeCharRecipe={removeCharRecipe} />
 
             {/* Auction Prices Modal */}
+            
+            <LootModalComponent activeLootModal={activeLootModal} setActiveLootModal={setActiveLootModal} characters={characters} getCharForm={getCharForm} updateCharForm={updateCharForm} />
+            
             {showAuctionPricesModal && (
               <div className="modal-overlay">
                 <div className="modal-content glass-panel" style={{ maxWidth: '350px' }}>
@@ -2618,6 +2580,144 @@ export default function Home() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+
+function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, updateCharForm, characters }) {
+  if (!activeLootModal) return null;
+  const charName = characters.find(c => c.id === activeLootModal.charId)?.base.charName || '알 수 없음';
+  
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+       <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px', minWidth: '400px', maxWidth: '500px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+           <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#4ade80' }}>
+             📦 {charName} - 재화 및 메모 입력
+           </h3>
+           <div style={{ marginBottom: '1.5rem', maxHeight: '50vh', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순 골드</label>
+                <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).pureGold || ''} onChange={e => updateCharForm(activeLootModal.charId, 'pureGold', e.target.value)} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>순례의 인장</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).seal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'seal', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>교환가능 인장</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).tradableSeal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'tradableSeal', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>응축된 라이언 코어</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).condensedCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'condensedCore', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>무결점 라이언 코어</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).flawlessCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCore', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>빛나는 조화의 결정체</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).crystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'crystal', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>무결점 조화의 결정체</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).flawlessCrystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCrystal', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>인장 교환권</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).sealVoucher || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucher', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#cbd5e1' }}>인장 교환권 상자</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).sealVoucherBox || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucherBox', e.target.value)} />
+                </div>
+              </div>
+              <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '0.5rem 0' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#fca5a5' }}>시작 무큐</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).clearCubeStart || ''} onChange={e => updateCharForm(activeLootModal.charId, 'clearCubeStart', e.target.value)} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#fca5a5' }}>종료 무큐</label>
+                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).clearCubeEnd || ''} onChange={e => updateCharForm(activeLootModal.charId, 'clearCubeEnd', e.target.value)} />
+                </div>
+              </div>
+              <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '0.5rem 0' }} />
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#94a3b8' }}>기타 메모</label>
+                <input type="text" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).memo || ''} onChange={e => updateCharForm(activeLootModal.charId, 'memo', e.target.value)} placeholder="특이사항 메모 입력" />
+              </div>
+           </div>
+           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+             <button onClick={() => setActiveLootModal(null)} style={{ padding: '0.6rem 1.2rem', background: '#4ade80', color: '#1e293b', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>완료 및 닫기</button>
+           </div>
+       </div>
+     </div>
+  );
+}
+
+function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopModal, characters, getCharForm, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe }) {
+  if (!activeSecretShopModal) return null;
+  const charName = characters.find(c => c.id === activeSecretShopModal.charId)?.base.charName || '알 수 없음';
+  
+  return (
+    <div className="modal-overlay">
+       <div className="modal-content glass-panel" style={{ maxWidth: activeSecretShopModal.type === 'token' ? '400px' : '500px' }}>
+          <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🛒 {charName} - {activeSecretShopModal.type === 'token' ? '비밀상점 증표 구매' : '비밀상점 레시피 제작'}
+          </h3>
+          <div style={{ marginBottom: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
+             {activeSecretShopModal.type === 'token' && (
+                <div>
+                   <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 증표 구매 추가</button>
+                   {(getCharForm(activeSecretShopModal.charId).secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>구매 내역이 없습니다.</div> : (
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                       {(getCharForm(activeSecretShopModal.charId).secretTokens || []).map((t, idx) => (
+                         <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>#{idx+1} 단가:</span>
+                            <input type="number" value={t.buyPrice} onChange={e => updateCharToken(activeSecretShopModal.charId, t.id, e.target.value)} style={{ flex: 1, padding: '0.4rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                            <button onClick={() => removeCharToken(activeSecretShopModal.charId, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                </div>
+             )}
+             {activeSecretShopModal.type === 'recipe' && (
+                <div>
+                   <button onClick={() => addCharRecipe(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 레시피 제작 추가</button>
+                   {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>제작 내역이 없습니다.</div> : (
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                       {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).map((r, idx) => (
+                         <div key={r.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.8rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <div style={{ fontSize: '0.85rem', color: '#a78bfa', fontWeight: 'bold' }}>레시피 #{idx+1}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>구매가:</span>
+                              <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 인장:</span>
+                              <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>판매가:</span>
+                              <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sellPrice', e.target.value)} style={{ width: '90px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                            </div>
+                            <button onClick={() => removeCharRecipe(activeSecretShopModal.charId, r.id)} style={{ marginLeft: 'auto', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                </div>
+             )}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+             <button onClick={() => setActiveSecretShopModal(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
+          </div>
+       </div>
     </div>
   );
 }
