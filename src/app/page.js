@@ -2198,7 +2198,7 @@ export default function Home() {
                         return (
                           <tr key={c.id} style={rowStyle}>
                             {/* 1 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
-                              {c.base.charName} <span style={{fontSize:'0.8rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
+                              <span style={{ fontSize: '0.75rem' }}>{c.base.charName}</span> <span style={{fontSize:'0.65rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
                             </td>
                             {/* 2 */} <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
                             {/* 3 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
