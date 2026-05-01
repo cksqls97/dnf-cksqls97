@@ -2062,7 +2062,7 @@ export default function Home() {
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>재화 입력</th>
                     <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (기록)</th>
-                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
+                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>기타 메모</th>
@@ -2079,8 +2079,7 @@ export default function Home() {
                     <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권 1개 상자</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>시작 무큐</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>종료 무큐</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>소모 무큐</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>레시피 (구매/인장/판매)</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속<br/>가치</th>
@@ -2216,11 +2215,7 @@ export default function Home() {
                             
                             {/* 14 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
                             {/* 15 */} <td style={{ padding: '0.2rem', color: '#fca5a5' }}>1</td>
-                            {/* 16 */} <td style={{ padding: '0.2rem', verticalAlign: 'top' }}>{form.clearCubeStart ? Number(form.clearCubeStart).toLocaleString() : '-'}</td>
-                            {/* 17 */} <td style={{ padding: '0.2rem', verticalAlign: 'top' }}>
-                               {form.clearCubeEnd ? Number(form.clearCubeEnd).toLocaleString() : '-'}
-                               {consumedCube > 0 && <div style={{ fontSize: '0.7rem', color: '#fca5a5', marginTop: '0.2rem' }}>소모: {consumedCube.toLocaleString()}</div>}
-                            </td>
+                            {/* 16 */} <td style={{ padding: '0.2rem', color: '#fca5a5' }}>{consumedCube > 0 ? consumedCube.toLocaleString() : "-"}</td>
                             
                             {/* 17 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
@@ -2234,9 +2229,9 @@ export default function Home() {
                             </td>
 
                             {/* 19 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
-                            {/* 19 */} <td style={{ padding: '0.2rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
-                            {/* 20 */} <td style={{ padding: '0.2rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
-                            {/* 21 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+                            {/* 20 */} <td style={{ padding: '0.2rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
+                            {/* 21 */} <td style={{ padding: '0.2rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
+                            {/* 22 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
                               <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: form.memo ? 'rgba(56, 189, 248, 0.2)' : 'rgba(148, 163, 184, 0.2)', border: form.memo ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid rgba(148, 163, 184, 0.4)', color: form.memo ? '#38bdf8' : '#94a3b8', borderRadius: '4px', cursor: 'pointer', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={form.memo}>
                                 {form.memo ? form.memo : '+ 메모'}
                               </button>
@@ -2264,11 +2259,11 @@ export default function Home() {
                             {/* 13 */} <td style={{ padding: '0.5rem' }}>{sumSealVoucherBox > 0 ? sumSealVoucherBox.toLocaleString() : '-'}</td>
                             {/* 14 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
                             {/* 15 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
-                            {/* 16 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumConsumedCube > 0 ? sumConsumedCube.toLocaleString() : "-"}</td>
+                            {/* 16 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumConsumedCube > 0 ? sumConsumedCube.toLocaleString() : '-'}</td>
                             {/* 17,18 */} <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
-                            {/* 20 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
-                            {/* 21 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
-                            {/* 22 */} <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
+                            {/* 19 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
+                            {/* 20 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
+                            {/* 21 */} <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
                             {/* 22 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
                           </tr>
                         </>
