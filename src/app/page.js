@@ -964,7 +964,7 @@ export default function Home() {
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>기타 메모</th>
+                    
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.62rem', lineHeight: '1.0', letterSpacing: '-0.02em' }}>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
@@ -1038,7 +1038,7 @@ export default function Home() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           {nextDungeon && (
                             <div style={{
-                              fontSize: '0.72rem',
+                              fontSize: '0.75rem',
                               color: isImminent ? '#fef08a' : '#fca5a5',
                               background: isImminent ? 'rgba(234, 179, 8, 0.15)' : 'rgba(248, 113, 113, 0.08)',
                               padding: '0.2rem 0.4rem',
@@ -2093,7 +2093,7 @@ export default function Home() {
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
-                           <td colSpan="22" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
+                           <td colSpan="21" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
                          </tr>
                        );
                      }
@@ -2231,11 +2231,7 @@ export default function Home() {
                             {/* 19 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
                             {/* 20 */} <td style={{ padding: '0.2rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
                             {/* 21 */} <td style={{ padding: '0.2rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
-                            {/* 22 */} <td style={{ padding: '0.2rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                              <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: form.memo ? 'rgba(56, 189, 248, 0.2)' : 'rgba(148, 163, 184, 0.2)', border: form.memo ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid rgba(148, 163, 184, 0.4)', color: form.memo ? '#38bdf8' : '#94a3b8', borderRadius: '4px', cursor: 'pointer', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={form.memo}>
-                                {form.memo ? form.memo : '+ 메모'}
-                              </button>
-                            </td>
+                            
                           </tr>
                         );
                      });
@@ -2264,7 +2260,7 @@ export default function Home() {
                             {/* 19 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
                             {/* 20 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
                             {/* 21 */} <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
-                            {/* 22 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
+                            
                           </tr>
                         </>
                      );
