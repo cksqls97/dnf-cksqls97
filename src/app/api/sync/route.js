@@ -31,7 +31,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { apiKey, characters, historyLogs, customOptions, merc, clientUpdateAt, forceOverride } = body;
+    const { apiKey, characters, historyLogs, customOptions, merc, pilgrimage, clientUpdateAt, forceOverride } = body;
     if (!apiKey) return NextResponse.json({ success: false, error: "Missing API Key" }, { status: 400 });
     
     // 기존 데이터 버전 확인
@@ -51,6 +51,7 @@ export async function POST(request) {
     if (historyLogs !== undefined) payload.historyLogs = historyLogs;
     if (customOptions !== undefined) payload.customOptions = customOptions;
     if (merc !== undefined) payload.merc = merc;
+    if (pilgrimage !== undefined) payload.pilgrimage = pilgrimage;
     
     // 새 버전(타임스탬프) 부여
     const newUpdateAt = Date.now();

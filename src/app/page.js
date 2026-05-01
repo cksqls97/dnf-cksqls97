@@ -93,6 +93,11 @@ export default function Home() {
   const [dungeonView, setDungeonView] = useState('byDungeon'); // 'overall' | 'byDungeon'
   const [apocView, setApocView] = useState('byTier'); // 'overall' | 'byTier'
   
+  const [pilgrimageSelectedChars, setPilgrimageSelectedChars] = useState([]);
+  const [pilgrimageStartFatigue, setPilgrimageStartFatigue] = useState(156);
+  const [pilgrimageAcquired, setPilgrimageAcquired] = useState('');
+  const [pilgrimageConsumed, setPilgrimageConsumed] = useState('');
+  const [pilgrimageHistory, setPilgrimageHistory] = useState([]);
   
   const chartData = React.useMemo(() => {
     // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
@@ -372,6 +377,9 @@ export default function Home() {
   const mercRef = React.useRef({ level: mercLevel, target: mercNextLevelTarget });
   useEffect(() => { mercRef.current = { level: mercLevel, target: mercNextLevelTarget }; }, [mercLevel, mercNextLevelTarget]);
   
+  const pilgrimageRef = React.useRef(pilgrimageHistory);
+  useEffect(() => { pilgrimageRef.current = pilgrimageHistory; }, [pilgrimageHistory]);
+  
   // 클라우드 버전 관리를 위한 Ref (다중 탭 덮어쓰기 원천 차단용)
   const lastCloudUpdateAtRef = React.useRef(0);
 
@@ -380,9 +388,10 @@ export default function Home() {
   useEffect(() => { optsRef.current = customOptions; }, [customOptions]);
 
   // --- 클라우드 동기화 엔진 ---
-  const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts, updatedMerc, forceOverride = false) => {
+  const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts, updatedMerc, forceOverride = false, updatedPilgrimage = null) => {
     if(!key) return;
     try {
+      const pilgrimageData = updatedPilgrimage || pilgrimageRef.current;
       const res = await fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -392,6 +401,7 @@ export default function Home() {
           historyLogs: updatedLogs,
           customOptions: updatedOpts,
           merc: updatedMerc,
+          pilgrimage: pilgrimageData,
           clientUpdateAt: lastCloudUpdateAtRef.current,
           forceOverride
         })
@@ -450,6 +460,11 @@ export default function Home() {
          if (cData.customOptions) {
             setCustomOptions(cData.customOptions);
             localStorage.setItem('DNF_OPTIONS', JSON.stringify(cData.customOptions));
+            modified = true;
+         }
+         if (cData.pilgrimage) {
+            setPilgrimageHistory(cData.pilgrimage);
+            localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(cData.pilgrimage));
             modified = true;
          }
          
@@ -538,6 +553,13 @@ export default function Home() {
         if (m.target) setMercNextLevelTarget(m.target);
         if (m.level) setMercLevelInput(String(m.level));
         if (m.target) setMercTargetInput(String(m.target));
+      } catch(e) {}
+    }
+    
+    const savedPilgrimage = localStorage.getItem('DNF_PILGRIMAGE_HISTORY');
+    if (savedPilgrimage) {
+      try {
+        setPilgrimageHistory(JSON.parse(savedPilgrimage));
       } catch(e) {}
     }
     
@@ -818,11 +840,12 @@ export default function Home() {
         </div>
       </header>
 
-      <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
+      <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
          <button className={`tab-btn ${activeTab === 'roster' ? 'active' : ''}`} onClick={() => setActiveTab('roster')}>👥 캐릭터 로스터</button>
          <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>📜 성장 일지 기록</button>
          <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>🎯 다음 던전 목표 현황</button>
          <button className={`tab-btn ${activeTab === 'merc' ? 'active' : ''}`} onClick={() => setActiveTab('merc')}>⚔️ 용병단 레벨</button>
+         <button className={`tab-btn ${activeTab === 'pilgrimage' ? 'active' : ''}`} onClick={() => setActiveTab('pilgrimage')}>✨ 광휘의 순례</button>
       </div>
 
       {activeTab === 'roster' && (
@@ -1696,6 +1719,123 @@ export default function Home() {
               </div>
               {characters.length > 20 && <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.8rem', textAlign: 'center' }}>* 등록된 {characters.length}개 캐릭터 중 상위 20개만 계산에 포함됩니다.</p>}
             </div>
+          </section>
+        );
+      })()}
+
+      {activeTab === 'pilgrimage' && (() => {
+        const togglePilgrimageChar = (charId) => {
+          setPilgrimageSelectedChars(prev => 
+            prev.includes(charId) ? prev.filter(id => id !== charId) : [...prev, charId]
+          );
+        };
+
+        const handleSavePilgrimage = () => {
+          if (pilgrimageSelectedChars.length === 0) {
+            alert('돌 캐릭터를 하나 이상 선택해주세요.');
+            return;
+          }
+          const newRecord = {
+            id: Date.now().toString(),
+            date: new Date().toISOString(),
+            chars: pilgrimageSelectedChars.map(id => {
+              const c = characters.find(char => char.id === id);
+              return c ? c.base.charName : '알 수 없음';
+            }),
+            startFatigue: pilgrimageStartFatigue,
+            acquired: pilgrimageAcquired,
+            consumed: pilgrimageConsumed
+          };
+          const updated = [newRecord, ...pilgrimageHistory];
+          setPilgrimageHistory(updated);
+          localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(updated));
+          
+          // Reset form fields
+          setPilgrimageSelectedChars([]);
+          setPilgrimageAcquired('');
+          setPilgrimageConsumed('');
+          
+          if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, optsRef.current, mercRef.current, true, updated);
+        };
+
+        const handleDeletePilgrimage = (id) => {
+          if (!window.confirm("이 기록을 삭제하시겠습니까?")) return;
+          const updated = pilgrimageHistory.filter(r => r.id !== id);
+          setPilgrimageHistory(updated);
+          localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(updated));
+          
+          if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, optsRef.current, mercRef.current, true, updated);
+        };
+
+        return (
+          <section className='glass-panel' style={{ minHeight: '60vh' }}>
+            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>✨ 광휘의 순례 기록표 (초안)</h2>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 style={{ fontSize: '1rem', color: '#93c5fd', marginTop: 0, marginBottom: '1rem', borderBottom: '1px solid rgba(147,197,253,0.2)', paddingBottom: '0.5rem' }}>1. 캐릭터 선택</h3>
+                <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {characters.length === 0 ? (
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>등록된 캐릭터가 없습니다.</div>
+                  ) : (
+                    characters.map(c => (
+                      <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.3rem', borderRadius: '4px', background: pilgrimageSelectedChars.includes(c.id) ? 'rgba(56, 189, 248, 0.1)' : 'transparent' }}>
+                        <input type="checkbox" checked={pilgrimageSelectedChars.includes(c.id)} onChange={() => togglePilgrimageChar(c.id)} />
+                        <span style={{ color: '#e2e8f0', fontWeight: pilgrimageSelectedChars.includes(c.id) ? 'bold' : 'normal' }}>{c.base.charName}</span>
+                        <span style={{ color: '#64748b', fontSize: '0.8rem' }}>({c.base.jobGrowName})</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 style={{ fontSize: '1rem', color: '#93c5fd', marginTop: 0, marginBottom: '0.5rem', borderBottom: '1px solid rgba(147,197,253,0.2)', paddingBottom: '0.5rem' }}>2. 상세 정보 입력</h3>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '0.3rem' }}>시작 피로도</label>
+                  <input type="number" value={pilgrimageStartFatigue} onChange={e => setPilgrimageStartFatigue(Number(e.target.value))} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff' }} />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '0.3rem' }}>획득 재화 (예: 조화의 큐브 2개)</label>
+                  <input type="text" value={pilgrimageAcquired} onChange={e => setPilgrimageAcquired(e.target.value)} placeholder="획득한 재화를 입력하세요" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff' }} />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '0.3rem' }}>소모 재화</label>
+                  <input type="text" value={pilgrimageConsumed} onChange={e => setPilgrimageConsumed(e.target.value)} placeholder="소모한 재화를 입력하세요" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff' }} />
+                </div>
+                
+                <button onClick={handleSavePilgrimage} style={{ marginTop: 'auto', padding: '0.6rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>기록 저장하기</button>
+              </div>
+            </div>
+
+            <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>히스토리</h3>
+            {pilgrimageHistory.length === 0 ? (
+              <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>아직 등록된 기록이 없습니다.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                {pilgrimageHistory.map(record => (
+                  <div key={record.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.3rem' }}>
+                        {new Date(record.date).toLocaleString()}
+                      </div>
+                      <div style={{ fontWeight: 'bold', color: '#e2e8f0', marginBottom: '0.3rem' }}>
+                        참여 캐릭터: <span style={{ color: '#38bdf8', fontWeight: 'normal' }}>{record.chars.join(', ')}</span>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#cbd5e1', display: 'flex', gap: '1rem' }}>
+                        <span>시작 피로도: <strong style={{ color: '#fff' }}>{record.startFatigue}</strong></span>
+                        {record.acquired && <span>획득: <strong style={{ color: '#4ade80' }}>{record.acquired}</strong></span>}
+                        {record.consumed && <span>소모: <strong style={{ color: '#f87171' }}>{record.consumed}</strong></span>}
+                      </div>
+                    </div>
+                    <button className="danger" onClick={() => handleDeletePilgrimage(record.id)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>삭제</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         );
       })()}
