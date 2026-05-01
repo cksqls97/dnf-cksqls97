@@ -94,8 +94,22 @@ export default function Home() {
   const [apocView, setApocView] = useState('byTier'); // 'overall' | 'byTier'
   
   const [pilgrimageForm, setPilgrimageForm] = useState({});
-  const [globalStartFatigue, setGlobalStartFatigue] = useState(156);
+  const [globalStartFatigue, setGlobalStartFatigue] = useState('');
   const [pilgrimageHistory, setPilgrimageHistory] = useState([]);
+  const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
+
+  useEffect(() => {
+    const draft = localStorage.getItem('DNF_PILGRIMAGE_FORM_DRAFT');
+    if (draft) {
+      try { setPilgrimageForm(JSON.parse(draft)); } catch(e) {}
+    }
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(pilgrimageForm).length > 0) {
+      localStorage.setItem('DNF_PILGRIMAGE_FORM_DRAFT', JSON.stringify(pilgrimageForm));
+    }
+  }, [pilgrimageForm]);
   const [auctionPrices, setAuctionPrices] = useState({
      '무결점 라이언 코어': 0,
      '무결점 조화의 결정체': 0,
@@ -1730,7 +1744,7 @@ export default function Home() {
 
       {activeTab === 'pilgrimage' && (() => {
         const getCharForm = (id) => pilgrimageForm[id] || { 
-          selected: false, startFatigue: 156, pureGold: '',
+          selected: false, startFatigue: '', pureGold: '',
           clearCubeStart: '', clearCubeEnd: '', 
           seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
           secretTokens: [],
@@ -1818,7 +1832,7 @@ export default function Home() {
             const c = characters.find(char => char.id === id);
             const form = getCharForm(id);
             const fatigue = Number(form.startFatigue || 0);
-            const runs = Math.ceil(fatigue / 8) + 4;
+            const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + 4 : 0;
             
             const startCube = Number(form.clearCubeStart || 0);
             const endCube = Number(form.clearCubeEnd || 0);
@@ -2015,7 +2029,7 @@ export default function Home() {
                   ) : characters.filter(c => getCharForm(c.id).selected).map((c, idx) => {
                     const form = getCharForm(c.id);
                     const fatigue = Number(form.startFatigue || 0);
-                    const runs = Math.ceil(fatigue / 8) + 4;
+                    const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + 4 : 0;
                     const isSelected = form.selected;
                     const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: isSelected ? 'rgba(56, 189, 248, 0.08)' : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'), transition: 'background 0.2s' };
                     const inputStyle = { width: '55px', padding: '0.3rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
@@ -2087,29 +2101,15 @@ export default function Home() {
                           {consumedCube > 0 && <div style={{ fontSize: '0.7rem', color: '#fca5a5', marginTop: '0.2rem' }}>소모: {consumedCube.toLocaleString()}</div>}
                         </td>
                         
-                        <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'top', minWidth: '80px' }}>
-                          <button onClick={() => addCharToken(c.id)} style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', marginBottom: '0.3rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px' }}>+ 증표</button>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'center' }}>
-                            {(form.secretTokens || []).map(t => (
-                               <div key={t.id} style={{ display: 'flex', gap: '0.2rem' }}>
-                                 <input type="number" style={{...inputStyle, width: '55px'}} value={t.buyPrice} onChange={e => updateCharToken(c.id, t.id, e.target.value)} placeholder="단가" />
-                                 <button onClick={() => removeCharToken(c.id, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>×</button>
-                               </div>
-                            ))}
-                          </div>
+                        <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
+                          <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
+                            + 증표 {form.secretTokens?.length > 0 ? `(${form.secretTokens.length})` : ''}
+                          </button>
                         </td>
-                        <td style={{ padding: '0.5rem', verticalAlign: 'top', minWidth: '170px' }}>
-                          <button onClick={() => addCharRecipe(c.id)} style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', marginBottom: '0.3rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px' }}>+ 레시피</button>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'center' }}>
-                            {(form.secretRecipes || []).map(r => (
-                               <div key={r.id} style={{ display: 'flex', gap: '0.2rem', alignItems: 'center' }}>
-                                 <input type="number" style={{...inputStyle, width: '50px'}} value={r.buyPrice} onChange={e => updateCharRecipe(c.id, r.id, 'buyPrice', e.target.value)} placeholder="구매" title="구매가" />
-                                 <input type="number" style={{...inputStyle, width: '40px'}} value={r.sealCost} onChange={e => updateCharRecipe(c.id, r.id, 'sealCost', e.target.value)} placeholder="인장" title="소모 인장" />
-                                 <input type="number" style={{...inputStyle, width: '55px'}} value={r.sellPrice} onChange={e => updateCharRecipe(c.id, r.id, 'sellPrice', e.target.value)} placeholder="판매" title="경매장 판매가" />
-                                 <button onClick={() => removeCharRecipe(c.id, r.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>×</button>
-                               </div>
-                            ))}
-                          </div>
+                        <td style={{ padding: '0.5rem', verticalAlign: 'middle', minWidth: '80px' }}>
+                          <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'recipe' })} style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
+                            + 레시피 {form.secretRecipes?.length > 0 ? `(${form.secretRecipes.length})` : ''}
+                          </button>
                         </td>
 
                         <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
@@ -2121,6 +2121,71 @@ export default function Home() {
                 </tbody>
               </table>
             </div>
+
+            {/* Secret Shop Modal */}
+            {activeSecretShopModal && (() => {
+              const m = activeSecretShopModal;
+              const charName = characters.find(c => c.id === m.charId)?.base.charName || '알 수 없음';
+              const form = getCharForm(m.charId);
+              
+              return (
+                 <div className="modal-overlay">
+                    <div className="modal-content glass-panel" style={{ maxWidth: m.type === 'token' ? '400px' : '500px' }}>
+                       <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                         🛒 {charName} - {m.type === 'token' ? '비밀상점 증표 구매' : '비밀상점 레시피 제작'}
+                       </h3>
+                       <div style={{ marginBottom: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
+                          {m.type === 'token' && (
+                             <div>
+                                <button onClick={() => addCharToken(m.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 증표 구매 추가</button>
+                                {(form.secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>구매 내역이 없습니다.</div> : (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    {(form.secretTokens || []).map((t, idx) => (
+                                      <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                         <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>#{idx+1} 단가:</span>
+                                         <input type="number" value={t.buyPrice} onChange={e => updateCharToken(m.charId, t.id, e.target.value)} style={{ flex: 1, padding: '0.4rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                                         <button onClick={() => removeCharToken(m.charId, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                             </div>
+                          )}
+                          {m.type === 'recipe' && (
+                             <div>
+                                <button onClick={() => addCharRecipe(m.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 레시피 제작 추가</button>
+                                {(form.secretRecipes || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>제작 내역이 없습니다.</div> : (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    {(form.secretRecipes || []).map((r, idx) => (
+                                      <div key={r.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.6rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                         <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 'bold' }}>#{idx+1}</span>
+                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                           <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>구매가:</span>
+                                           <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(m.charId, r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                                         </div>
+                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                           <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 인장:</span>
+                                           <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(m.charId, r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
+                                         </div>
+                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                           <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>판매가:</span>
+                                           <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(m.charId, r.id, 'sellPrice', e.target.value)} style={{ width: '90px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
+                                         </div>
+                                         <button onClick={() => removeCharRecipe(m.charId, r.id)} style={{ marginLeft: 'auto', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}>×</button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                             </div>
+                          )}
+                       </div>
+                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <button onClick={() => setActiveSecretShopModal(null)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
+                       </div>
+                    </div>
+                 </div>
+              );
+            })()}
 
             <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>히스토리</h3>
             {pilgrimageHistory.length === 0 ? (
