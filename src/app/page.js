@@ -966,25 +966,25 @@ export default function Home() {
                     <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>기타 메모</th>
                   </tr>
-                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.68rem', lineHeight: '1.1' }}>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
-                    <th style={{ padding: '0.4rem' }}>순례의 인장</th>
-                    <th style={{ padding: '0.4rem' }}>응축된<br/>라이언 코어</th>
-                    <th style={{ padding: '0.4rem' }}>빛나는 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.4rem' }}>무결점<br/>라이언 코어</th>
-                    <th style={{ padding: '0.4rem' }}>무결점 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>교환권</th>
-                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>(교환 가능)</th>
-                    <th style={{ padding: '0.4rem' }}>교환권<br/>상자</th>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
-                    <th style={{ padding: '0.4rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.4rem' }}>시작 무큐</th>
-                    <th style={{ padding: '0.4rem' }}>종료 무큐</th>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
-                    <th style={{ padding: '0.4rem' }}>레시피</th>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속 가치</th>
-                    <th style={{ padding: '0.4rem' }}>교환 가치</th>
-                    <th style={{ padding: '0.4rem' }}>총 순수익</th>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.62rem', lineHeight: '1.0', letterSpacing: '-0.02em' }}>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>응축된<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>빛나는 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>교환권</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(교환 가능)</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>교환권<br/>상자</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>시작 무큐</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>종료 무큐</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>레시피</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속 가치</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>교환 가치</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>총 순수익</th>
                   </tr>
                 </thead>
                       <tbody>
@@ -2069,24 +2069,24 @@ export default function Home() {
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>기타 메모</th>
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem', lineHeight: '1.2' }}>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
-                    <th style={{ padding: '0.4rem' }}>순례의<br/>인장</th>
-                    <th style={{ padding: '0.4rem' }}>응축된<br/>라이언 코어</th>
-                    <th style={{ padding: '0.4rem' }}>빛나는 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.4rem' }}>무결점<br/>라이언 코어</th>
-                    <th style={{ padding: '0.4rem' }}>무결점 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권</th>
-                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
-                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권 1개 상자</th>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
-                    <th style={{ padding: '0.4rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.4rem' }}>시작 무큐</th>
-                    <th style={{ padding: '0.4rem' }}>종료 무큐</th>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
-                    <th style={{ padding: '0.4rem' }}>레시피 (구매/인장/판매)</th>
-                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속<br/>가치</th>
-                    <th style={{ padding: '0.4rem' }}>교환<br/>가치</th>
-                    <th style={{ padding: '0.4rem' }}>총 순수익</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의<br/>인장</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>응축된<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>빛나는 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권 1개 상자</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>시작 무큐</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>종료 무큐</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>레시피 (구매/인장/판매)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속<br/>가치</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>교환<br/>가치</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>총 순수익</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2328,22 +2328,22 @@ export default function Home() {
                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.72rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                            <thead>
                              <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                               <th style={{ padding: '0.4rem', textAlign: 'left' }}>캐릭터</th>
-                               <th style={{ padding: '0.4rem' }}>피로도(판수)</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순 골드</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>응축된 라이언 코어</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 라이언 코어</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능)</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권 1개 상자</th>
-                               <th style={{ padding: '0.4rem', color: '#f87171' }}>소모 무큐</th>
-                               <th style={{ padding: '0.4rem', color: '#fb923c' }}>귀속 가치</th>
-                               <th style={{ padding: '0.4rem', color: '#fb923c' }}>교환 가치</th>
-                               <th style={{ padding: '0.4rem', color: '#fb923c' }}>총 수익</th>
-                               <th style={{ padding: '0.4rem', color: '#94a3b8' }}>메모</th>
+                               <th style={{ padding: '0.2rem 0.1rem', textAlign: 'left' }}>캐릭터</th>
+                               <th style={{ padding: '0.2rem 0.1rem' }}>피로도(판수)</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순 골드</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>응축된 라이언 코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 라이언 코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능)</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권 1개 상자</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#f87171' }}>소모 무큐</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>귀속 가치</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>교환 가치</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>총 수익</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#94a3b8' }}>메모</th>
                              </tr>
                            </thead>
                            <tbody>
