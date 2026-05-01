@@ -1798,17 +1798,40 @@ export default function Home() {
            if (!apiKey) { alert("API 키가 필요합니다."); return; }
            setIsFetchingPrices(true);
            try {
+             // Collect custom item names from all characters
+             const customNames = new Set();
+             characters.forEach(c => {
+               const form = getCharForm(c.id);
+               (form.customItems || []).forEach(item => {
+                 if (item.name && item.name.trim()) customNames.add(item.name.trim());
+               });
+             });
+             const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자'];
+             const allItemNames = [...baseItems, ...Array.from(customNames)];
              const res = await fetch('/api/auction', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  apiKey, 
-                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자']
-                })
+                body: JSON.stringify({ apiKey, itemNames: allItemNames })
              });
              const data = await res.json();
              if (data.success) {
-                setAuctionPrices(data.data);
+                setAuctionPrices(prev => ({ ...prev, ...data.data }));
+                // Update custom item prices in all character forms
+                const updatedForm = { ...pilgrimageForm };
+                characters.forEach(c => {
+                  const form = getCharForm(c.id);
+                  const items = form.customItems || [];
+                  if (items.length > 0) {
+                    const updatedItems = items.map(item => {
+                      if (item.name && data.data[item.name] !== undefined) {
+                        return { ...item, price: data.data[item.name] };
+                      }
+                      return item;
+                    });
+                    updatedForm[c.id] = { ...form, customItems: updatedItems };
+                  }
+                });
+                setPilgrimageForm(updatedForm);
                 alert("경매장 시세를 성공적으로 불러왔습니다!");
              } else {
                 alert("불러오기 실패: " + data.error);
@@ -1863,15 +1886,13 @@ export default function Home() {
             const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
             const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
             
-            let customBoundValue = 0;
             let customTradableValue = 0;
             (form.customItems || []).forEach(item => {
-              const total = Number(item.quantity || 0) * Number(item.price || 0);
-              if (item.isBound) customBoundValue += total;
-              else customTradableValue += total;
+              const price = Number(item.price || 0) || (auctionPrices[item.name] || 0);
+              customTradableValue += Number(item.quantity || 0) * price;
             });
 
-            const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue + customBoundValue;
+            const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
             
             // 교환 가능재화 가치 산출 (보정 전)
             const pureGoldInput = Number(form.pureGold || 0);
@@ -1949,7 +1970,6 @@ export default function Home() {
               },
               memo: form.memo || '',
               customItems: form.customItems || [],
-              customBoundValue,
               customTradableValue,
               secretShop: {
                 tokens: form.secretTokens,
@@ -2125,15 +2145,13 @@ export default function Home() {
                     const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
                     const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
                     
-                    let customBoundValue = 0;
                     let customTradableValue = 0;
                     (form.customItems || []).forEach(item => {
-                      const total = Number(item.quantity || 0) * Number(item.price || 0);
-                      if (item.isBound) customBoundValue += total;
-                      else customTradableValue += total;
+                      const price = Number(item.price || 0) || (auctionPrices[item.name] || 0);
+                      customTradableValue += Number(item.quantity || 0) * price;
                     });
 
-                    const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue + customBoundValue;
+                    const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
                     
                     const pureGoldInput = Number(form.pureGold || 0);
                     const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
@@ -2269,7 +2287,6 @@ export default function Home() {
                                   tokenProfit: tokenProfit,
                                   tokenCost: tokenCost,
                                   secretShopGoldSpent: secretShopGoldSpent,
-                                  customBound: customBoundValue,
                                   customTradable: customTradableValue
                                 },
                                 totals: {
@@ -2314,7 +2331,6 @@ export default function Home() {
                                   tokenProfit: tokenProfit,
                                   tokenCost: tokenCost,
                                   secretShopGoldSpent: secretShopGoldSpent,
-                                  customBound: customBoundValue,
                                   customTradable: customTradableValue
                                 },
                                 totals: {
@@ -2374,7 +2390,7 @@ export default function Home() {
 
             {/* Auction Prices Modal */}
             
-            <LootModalComponent activeLootModal={activeLootModal} setActiveLootModal={setActiveLootModal} characters={characters} getCharForm={getCharForm} updateCharForm={updateCharForm} />
+            <LootModalComponent activeLootModal={activeLootModal} setActiveLootModal={setActiveLootModal} characters={characters} getCharForm={getCharForm} updateCharForm={updateCharForm} apiKey={apiKey} auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} />
             
             
             {calcDetail && (
@@ -2401,12 +2417,6 @@ export default function Home() {
                           <span>빛나는 조화의 결정체 ({calcDetail.items.crystal}개)</span>
                           <span>{calcDetail.breakdown.crystal.toLocaleString()} G</span>
                         </div>
-                        {calcDetail.breakdown.customBound > 0 && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                            <span>커스텀 추가 항목 (귀속)</span>
-                            <span>{calcDetail.breakdown.customBound.toLocaleString()} G</span>
-                          </div>
-                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#fb923c' }}>
                           <span>귀속 합계</span>
                           <span>{calcDetail.totals.bound.toLocaleString()} G</span>
@@ -2819,7 +2829,34 @@ export default function Home() {
 }
 
 
-function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, updateCharForm, characters }) {
+function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, updateCharForm, characters, apiKey, auctionPrices, setAuctionPrices }) {
+  const [fetchingItemId, setFetchingItemId] = useState(null);
+
+  const fetchCustomItemPrice = async (itemName, itemId) => {
+    if (!itemName || !apiKey) return;
+    setFetchingItemId(itemId);
+    try {
+      const res = await fetch('/api/auction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey, itemNames: [itemName] })
+      });
+      const data = await res.json();
+      if (data.success && data.data[itemName] !== undefined) {
+        const price = data.data[itemName];
+        // Update auctionPrices with the custom item price
+        setAuctionPrices(prev => ({ ...prev, [itemName]: price }));
+        // Update the item's price in the form
+        const charId = activeLootModal.charId;
+        const items = getCharForm(charId).customItems || [];
+        updateCharForm(charId, 'customItems', items.map(i => i.id === itemId ? { ...i, price: price } : i));
+      }
+    } catch (e) {
+      console.error('Custom item price fetch error:', e);
+    }
+    setFetchingItemId(null);
+  };
+
   if (!activeLootModal) return null;
   const charName = characters.find(c => c.id === activeLootModal.charId)?.base.charName || '알 수 없음';
   
@@ -2870,37 +2907,43 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
               </div>
               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <label style={{ fontSize: '0.7rem', color: '#60a5fa', fontWeight: 'bold' }}>커스텀 추가 항목</label>
+                  <label style={{ fontSize: '0.7rem', color: '#60a5fa', fontWeight: 'bold' }}>커스텀 추가 항목 (교환 가능)</label>
                   <button onClick={() => {
                     const items = getCharForm(activeLootModal.charId).customItems || [];
-                    updateCharForm(activeLootModal.charId, 'customItems', [...items, { id: Date.now().toString(), name: '', quantity: '', price: '', isBound: false }]);
+                    updateCharForm(activeLootModal.charId, 'customItems', [...items, { id: Date.now().toString(), name: '', quantity: '', price: 0, isBound: false }]);
                   }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem', background: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 항목 추가</button>
                 </div>
-                {(getCharForm(activeLootModal.charId).customItems || []).map((item, idx) => (
-                  <div key={item.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.5rem', borderRadius: '4px' }}>
-                    <input type="text" placeholder="이름" style={{ flex: 2, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.name} onChange={e => {
-                      const items = getCharForm(activeLootModal.charId).customItems || [];
-                      updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name: e.target.value } : i));
-                    }} />
-                    <input type="number" placeholder="수량" style={{ flex: 1, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.quantity} onChange={e => {
-                      const items = getCharForm(activeLootModal.charId).customItems || [];
-                      updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, quantity: e.target.value } : i));
-                    }} />
-                    <input type="number" placeholder="단가" style={{ flex: 1.5, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.price} onChange={e => {
-                      const items = getCharForm(activeLootModal.charId).customItems || [];
-                      updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, price: e.target.value } : i));
-                    }} />
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontSize: '0.7rem', color: '#cbd5e1', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                      <input type="checkbox" checked={item.isBound} onChange={e => {
+                {(getCharForm(activeLootModal.charId).customItems || []).length === 0 && (
+                  <div style={{ fontSize: '0.65rem', color: '#64748b', textAlign: 'center', padding: '0.5rem' }}>항목이 없습니다. 위 버튼으로 추가하세요.</div>
+                )}
+                {(getCharForm(activeLootModal.charId).customItems || []).map((item) => (
+                  <div key={item.id} style={{ marginBottom: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.6rem', borderRadius: '6px' }}>
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginBottom: '0.4rem' }}>
+                      <input type="text" placeholder="아이템 이름 입력" style={{ flex: 1, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.name} onChange={e => {
                         const items = getCharForm(activeLootModal.charId).customItems || [];
-                        updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, isBound: e.target.checked } : i));
+                        updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name: e.target.value } : i));
+                      }} onBlur={e => {
+                        if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id);
                       }} />
-                      귀속
-                    </label>
-                    <button onClick={() => {
-                      const items = getCharForm(activeLootModal.charId).customItems || [];
-                      updateCharForm(activeLootModal.charId, 'customItems', items.filter(i => i.id !== item.id));
-                    }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 0.2rem' }}>×</button>
+                      <input type="number" placeholder="수량" style={{ width: '60px', padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', textAlign: 'center' }} value={item.quantity} onChange={e => {
+                        const items = getCharForm(activeLootModal.charId).customItems || [];
+                        updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, quantity: e.target.value } : i));
+                      }} />
+                      <button onClick={() => {
+                        const items = getCharForm(activeLootModal.charId).customItems || [];
+                        updateCharForm(activeLootModal.charId, 'customItems', items.filter(i => i.id !== item.id));
+                      }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 0.3rem', flexShrink: 0 }}>×</button>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: '#94a3b8', paddingLeft: '0.2rem' }}>
+                      {fetchingItemId === item.id ? (
+                        <span style={{ color: '#fbbf24' }}>⏳ 단가 조회 중...</span>
+                      ) : (
+                        <span>단가: <span style={{ color: Number(item.price || 0) > 0 ? '#fbbf24' : '#64748b', fontWeight: 'bold' }}>{Number(item.price || 0) > 0 ? `${Number(item.price).toLocaleString()} G` : '미조회'}</span></span>
+                      )}
+                      {item.name && Number(item.quantity || 0) > 0 && Number(item.price || 0) > 0 && (
+                        <span style={{ color: '#4ade80' }}>= {(Number(item.quantity) * Number(item.price)).toLocaleString()} G</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -2916,6 +2959,7 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
      </div>
   );
 }
+
 
 function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopModal, characters, getCharForm, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, updateCharForm }) {
   useEffect(() => {
