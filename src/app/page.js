@@ -105,7 +105,8 @@ export default function Home() {
      '무결점 라이언 코어': 0,
      '무결점 조화의 결정체': 0,
      '닳아버린 순례의 증표': 0,
-     '무색 큐브 조각': 0
+     '순례의 인장(1회 교환 가능)': 0,
+     '순례의 인장(1회 교환 가능) 교환권 1개 상자': 0
   });
   const [isFetchingPrices, setIsFetchingPrices] = useState(false);
 
@@ -1764,7 +1765,6 @@ export default function Home() {
       {activeTab === 'pilgrimage' && (() => {
         const getCharForm = (id) => pilgrimageForm[id] || { 
           selected: false, startFatigue: '', pureGold: '',
-          clearCubeStart: '', clearCubeEnd: '', 
           seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
           sealVoucher: '', tradableSeal: '', sealVoucherBox: '', memo: '',
           secretTokens: [],
@@ -1799,7 +1799,7 @@ export default function Home() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   apiKey, 
-                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '무색 큐브 조각', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자']
+                  itemNames: ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자']
                 })
              });
              const data = await res.json();
@@ -1854,10 +1854,6 @@ export default function Home() {
             const fatigue = Number(form.startFatigue || 0);
             const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + 4 : 0;
             
-            const startCube = Number(form.clearCubeStart || 0);
-            const endCube = Number(form.clearCubeEnd || 0);
-            const consumedCube = startCube >= endCube && startCube > 0 ? (startCube - endCube) : 0;
-            
             // 귀속재화 가치 산출
             const sealValue = Number(form.seal || 0) * 5000;
             const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
@@ -1879,9 +1875,8 @@ export default function Home() {
 
             // 소모재화 비용 산출
             const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
-            const cubeCost = consumedCube * (auctionPrices['무색 큐브 조각'] || 0);
             const potionCost = 0; // 영약 가치는 변동/불가로 0 처리
-            const totalConsumedValue = tokenCost + cubeCost + potionCost;
+            const totalConsumedValue = tokenCost + potionCost;
             
             // 비밀상점 가치 산출 (캐릭터별)
             const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
@@ -1937,10 +1932,7 @@ export default function Home() {
               },
               consumed: {
                 token: runs,
-                potion: 1,
-                clearCubeStart: form.clearCubeStart,
-                clearCubeEnd: form.clearCubeEnd,
-                consumedCube: consumedCube
+                potion: 1
               },
               memo: form.memo || '',
               secretShop: {
@@ -2046,7 +2038,7 @@ export default function Home() {
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>재화 입력</th>
                     <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (기록)</th>
-                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
+                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
                     <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
                     
@@ -2054,16 +2046,15 @@ export default function Home() {
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem', lineHeight: '1.2' }}>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>순례의<br/>인장</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>응축된<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>빛나는 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권 1개 상자</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>응축된<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점<br/>라이언 코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>빛나는 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>소모 무큐</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>레시피 (구매/인장/판매)</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속<br/>가치</th>
@@ -2113,9 +2104,6 @@ export default function Home() {
                     const isSelected = form.selected;
                     const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: isSelected ? 'rgba(56, 189, 248, 0.08)' : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'), transition: 'background 0.2s' };
                     const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
-                    const startCube = Number(form.clearCubeStart || 0);
-                    const endCube = Number(form.clearCubeEnd || 0);
-                    const consumedCube = startCube >= endCube && startCube > 0 ? (startCube - endCube) : 0;
                     
                     const sealValue = Number(form.seal || 0) * 5000;
                     const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
@@ -2135,8 +2123,7 @@ export default function Home() {
                     const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
                     
                     const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
-                    const cubeCost = consumedCube * (auctionPrices['무색 큐브 조각'] || 0);
-                    const totalConsumedValue = tokenCost + cubeCost;
+                    const totalConsumedValue = tokenCost;
 
                     // 캐릭터별 비밀상점 가치 산출
                     const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
@@ -2190,7 +2177,6 @@ export default function Home() {
                         sumSealVoucherBox += Number(form.sealVoucherBox || 0);
                         sumTokens += runs;
                         sumPotions += 1;
-                        sumConsumedCube += consumedCube;
                         sumBoundValue += finalBoundValue;
                         sumTradableValue += finalTradableValue;
                         sumTotalProfit += totalProfit;
@@ -2207,17 +2193,16 @@ export default function Home() {
                             </td>
                             {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{form.pureGold ? Number(form.pureGold).toLocaleString() : '-'}</td>
                             {/* 6 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal ? Number(form.seal).toLocaleString() : '-'}</td>
-                            {/* 7 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.condensedCore ? Number(form.condensedCore).toLocaleString() : '-'}</td>
-                            {/* 8 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.crystal ? Number(form.crystal).toLocaleString() : '-'}</td>
-                            {/* 9 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCore ? Number(form.flawlessCore).toLocaleString() : '-'}</td>
-                            {/* 10 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
-                            {/* 11 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
-                            {/* 12 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
-                            {/* 13 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucherBox ? Number(form.sealVoucherBox).toLocaleString() : '-'}</td>
+                            {/* 7 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
+                            {/* 8 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
+                            {/* 9 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucherBox ? Number(form.sealVoucherBox).toLocaleString() : '-'}</td>
+                            {/* 10 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.condensedCore ? Number(form.condensedCore).toLocaleString() : '-'}</td>
+                            {/* 11 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCore ? Number(form.flawlessCore).toLocaleString() : '-'}</td>
+                            {/* 12 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.crystal ? Number(form.crystal).toLocaleString() : '-'}</td>
+                            {/* 13 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
                             
                             {/* 14 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
                             {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>1</td>
-                            {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>{consumedCube > 0 ? consumedCube.toLocaleString() : "-"}</td>
                             
                             {/* 17 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
@@ -2246,8 +2231,7 @@ export default function Home() {
                                   sealVoucher: Number(form.sealVoucher || 0),
                                   sealVoucherBox: Number(form.sealVoucherBox || 0),
                                   tradableSeal: Number(form.tradableSeal || 0),
-                                  runs: runs,
-                                  consumedCube: consumedCube
+                                  runs: runs
                                 },
                                 breakdown: {
                                   seal: sealValue,
@@ -2260,8 +2244,7 @@ export default function Home() {
                                   tradableSeal: tradableSealValue,
                                   recipeProfit: recipeProfit,
                                   tokenProfit: tokenProfit,
-                                  tokenCost: tokenCost,
-                                  cubeCost: cubeCost
+                                  tokenCost: tokenCost
                                 },
                                 totals: {
                                   bound: finalBoundValue,
@@ -2290,8 +2273,7 @@ export default function Home() {
                                   sealVoucher: Number(form.sealVoucher || 0),
                                   sealVoucherBox: Number(form.sealVoucherBox || 0),
                                   tradableSeal: Number(form.tradableSeal || 0),
-                                  runs: runs,
-                                  consumedCube: consumedCube
+                                  runs: runs
                                 },
                                 breakdown: {
                                   seal: sealValue,
@@ -2304,8 +2286,7 @@ export default function Home() {
                                   tradableSeal: tradableSealValue,
                                   recipeProfit: recipeProfit,
                                   tokenProfit: tokenProfit,
-                                  tokenCost: tokenCost,
-                                  cubeCost: cubeCost
+                                  tokenCost: tokenCost
                                 },
                                 totals: {
                                   bound: finalBoundValue,
@@ -2335,16 +2316,15 @@ export default function Home() {
                             {/* 4 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
                             {/* 5 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title="비밀상점 지출액이 보정된 실제 드랍 골드의 총합">{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
                             {/* 6 */} <td style={{ padding: '0.5rem' }}>{sumSeal > 0 ? sumSeal.toLocaleString() : '-'}</td>
-                            {/* 7 */} <td style={{ padding: '0.5rem' }}>{sumCondensedCore > 0 ? sumCondensedCore.toLocaleString() : '-'}</td>
-                            {/* 8 */} <td style={{ padding: '0.5rem' }}>{sumCrystal > 0 ? sumCrystal.toLocaleString() : '-'}</td>
-                            {/* 9 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCore > 0 ? sumFlawlessCore.toLocaleString() : '-'}</td>
-                            {/* 10 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
-                            {/* 11 */} <td style={{ padding: '0.5rem' }}>{sumSealVoucher > 0 ? sumSealVoucher.toLocaleString() : '-'}</td>
-                            {/* 12 */} <td style={{ padding: '0.5rem' }}>{sumTradableSeal > 0 ? sumTradableSeal.toLocaleString() : '-'}</td>
-                            {/* 13 */} <td style={{ padding: '0.5rem' }}>{sumSealVoucherBox > 0 ? sumSealVoucherBox.toLocaleString() : '-'}</td>
+                            {/* 7 */} <td style={{ padding: '0.5rem' }}>{sumTradableSeal > 0 ? sumTradableSeal.toLocaleString() : '-'}</td>
+                            {/* 8 */} <td style={{ padding: '0.5rem' }}>{sumSealVoucher > 0 ? sumSealVoucher.toLocaleString() : '-'}</td>
+                            {/* 9 */} <td style={{ padding: '0.5rem' }}>{sumSealVoucherBox > 0 ? sumSealVoucherBox.toLocaleString() : '-'}</td>
+                            {/* 10 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumCondensedCore > 0 ? sumCondensedCore.toLocaleString() : '-'}</td>
+                            {/* 11 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCore > 0 ? sumFlawlessCore.toLocaleString() : '-'}</td>
+                            {/* 12 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumCrystal > 0 ? sumCrystal.toLocaleString() : '-'}</td>
+                            {/* 13 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
                             {/* 14 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
                             {/* 15 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
-                            {/* 16 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumConsumedCube > 0 ? sumConsumedCube.toLocaleString() : '-'}</td>
                             {/* 17,18 */} <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
                             {/* 19 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
                             {/* 20 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
@@ -2445,13 +2425,9 @@ export default function Home() {
                     <div>
                       <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.9rem' }}>📉 소모 비용 (Costs)</h4>
                       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
                           <span>순례의 증표 소모 ({calcDetail.items.runs * 16}개)</span>
                           <span>-{calcDetail.breakdown.tokenCost.toLocaleString()} G</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                          <span>무색 큐브 조각 소모 ({calcDetail.items.consumedCube}개)</span>
-                          <span>-{calcDetail.breakdown.cubeCost.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#f87171' }}>
                           <span>소모 합계</span>
@@ -2528,14 +2504,13 @@ export default function Home() {
                                <th style={{ padding: '0.2rem 0.1rem' }}>피로도(판수)</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순 골드</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>응축된 라이언 코어</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 라이언 코어</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능) 교환권</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능)</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능) 교환권</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#f87171' }}>소모 무큐</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>응축된 라이언 코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 라이언 코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>귀속 가치</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>교환 가치</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c' }}>총 수익</th>
@@ -2544,13 +2519,6 @@ export default function Home() {
                            </thead>
                            <tbody>
                              {record.details.map((d, i) => {
-                               // 이전 기록(clearCube) 방식 호환
-                               const oldClearCube = d.consumed.clearCube ? (Number(d.consumed.clearCube) * d.runs) : 0;
-                               const newConsumedCube = d.consumed.consumedCube || 0;
-                               const displayCube = newConsumedCube > 0 ? newConsumedCube : oldClearCube;
-                               
-                               const bound = d.values?.bound || 0;
-                               const tradable = d.values?.tradable || 0;
                                const profit = d.values?.profit || 0;
                                
                                return (
@@ -2559,14 +2527,13 @@ export default function Home() {
                                    <td style={{ padding: '0.4rem' }}>{d.startFatigue} <span style={{ color: '#fbbf24' }}>({d.runs}판)</span></td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.pureGold ? '#fff' : '#64748b' }}>{d.acquired.pureGold ? Number(d.acquired.pureGold).toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.seal ? '#fff' : '#64748b' }}>{d.acquired.seal || '-'}</td>
-                                   <td style={{ padding: '0.25rem', color: d.acquired.condensedCore ? '#fff' : '#64748b' }}>{d.acquired.condensedCore || '-'}</td>
-                                   <td style={{ padding: '0.25rem', color: d.acquired.crystal ? '#fff' : '#64748b' }}>{d.acquired.crystal || '-'}</td>
-                                   <td style={{ padding: '0.25rem', color: d.acquired.flawlessCore ? '#fff' : '#64748b' }}>{d.acquired.flawlessCore || '-'}</td>
-                                   <td style={{ padding: '0.25rem', color: d.acquired.flawlessCrystal ? '#fff' : '#64748b' }}>{d.acquired.flawlessCrystal || '-'}</td>
-                                   <td style={{ padding: '0.25rem', color: d.acquired.sealVoucher ? '#fff' : '#64748b' }}>{d.acquired.sealVoucher || '-'}</td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.tradableSeal ? '#fff' : '#64748b' }}>{d.acquired.tradableSeal || '-'}</td>
-                                   <td style={{ padding: '0.25rem', color: d.acquired.sealVoucherBox ? '#fff' : '#64748b' }}>{d.acquired.sealVoucherBox || '-'}</td>
-                                   <td style={{ padding: '0.25rem', color: displayCube ? '#fca5a5' : '#64748b' }}>{displayCube > 0 ? displayCube.toLocaleString() : '-'}</td>
+                                   <td style={{ padding: '0.25rem', color: d.acquired.sealVoucher ? '#fff' : '#64748b' }}>{d.acquired.sealVoucher || '-'}</td>
+                                   <td style={{ padding: '0.25rem', color: Number(d.acquired.sealVoucherBox || 0) > 0 ? '#fff' : '#64748b' }}>{d.acquired.sealVoucherBox || '-'}</td>
+                                   <td style={{ padding: '0.25rem', color: d.acquired.condensedCore ? '#fff' : '#64748b' }}>{d.acquired.condensedCore || '-'}</td>
+                                   <td style={{ padding: '0.25rem', color: d.acquired.flawlessCore ? '#fff' : '#64748b' }}>{d.acquired.flawlessCore || '-'}</td>
+                                   <td style={{ padding: '0.25rem', color: d.acquired.crystal ? '#fff' : '#64748b' }}>{d.acquired.crystal || '-'}</td>
+                                   <td style={{ padding: '0.25rem', color: d.acquired.flawlessCrystal ? '#fff' : '#64748b' }}>{d.acquired.flawlessCrystal || '-'}</td>
                                    <td style={{ padding: '0.25rem', color: bound > 0 ? '#fb923c' : '#64748b' }}>{bound > 0 ? bound.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', color: tradable > 0 ? '#fb923c' : '#64748b' }}>{tradable > 0 ? tradable.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', fontWeight: 'bold', color: profit > 0 ? '#4ade80' : (profit < 0 ? '#f87171' : '#64748b') }}>{profit !== 0 ? profit.toLocaleString() : '-'}</td>
@@ -2797,8 +2764,7 @@ export default function Home() {
           </div>
         </div>
       )}
-    </div>
-  );
+   );
 }
 
 
@@ -2851,18 +2817,6 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).sealVoucherBox || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucherBox', e.target.value)} />
                 </div>
               </div>
-              <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '0.5rem 0' }} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#fca5a5' }}>시작 무큐</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).clearCubeStart || ''} onChange={e => updateCharForm(activeLootModal.charId, 'clearCubeStart', e.target.value)} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#fca5a5' }}>종료 무큐</label>
-                  <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).clearCubeEnd || ''} onChange={e => updateCharForm(activeLootModal.charId, 'clearCubeEnd', e.target.value)} />
-                </div>
-              </div>
-              <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '0.5rem 0' }} />
               <div>
                 <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: '#94a3b8' }}>기타 메모</label>
                 <input type="text" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.9rem' }} value={getCharForm(activeLootModal.charId).memo || ''} onChange={e => updateCharForm(activeLootModal.charId, 'memo', e.target.value)} placeholder="특이사항 메모 입력" />
