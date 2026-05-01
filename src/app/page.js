@@ -93,10 +93,9 @@ export default function Home() {
   const [dungeonView, setDungeonView] = useState('byDungeon'); // 'overall' | 'byDungeon'
   const [apocView, setApocView] = useState('byTier'); // 'overall' | 'byTier'
   
-  const [pilgrimageSelectedChars, setPilgrimageSelectedChars] = useState([]);
-  const [pilgrimageStartFatigue, setPilgrimageStartFatigue] = useState(156);
-  const [pilgrimageAcquired, setPilgrimageAcquired] = useState('');
-  const [pilgrimageConsumed, setPilgrimageConsumed] = useState('');
+  const [pilgrimageForm, setPilgrimageForm] = useState({});
+  const [globalStartFatigue, setGlobalStartFatigue] = useState(156);
+  const [globalClearCube, setGlobalClearCube] = useState('');
   const [pilgrimageHistory, setPilgrimageHistory] = useState([]);
   
   const chartData = React.useMemo(() => {
@@ -1724,36 +1723,82 @@ export default function Home() {
       })()}
 
       {activeTab === 'pilgrimage' && (() => {
-        const togglePilgrimageChar = (charId) => {
-          setPilgrimageSelectedChars(prev => 
-            prev.includes(charId) ? prev.filter(id => id !== charId) : [...prev, charId]
-          );
+        const getCharForm = (id) => pilgrimageForm[id] || { selected: false, startFatigue: 156, clearCube: '', seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '' };
+        
+        const updateCharForm = (id, field, value) => {
+          setPilgrimageForm(prev => ({
+            ...prev,
+            [id]: { ...getCharForm(id), [field]: value }
+          }));
+        };
+
+        const togglePilgrimageChar = (id) => {
+          updateCharForm(id, 'selected', !getCharForm(id).selected);
+        };
+
+        const applyGlobalFatigue = () => {
+          const updated = { ...pilgrimageForm };
+          characters.forEach(c => {
+             updated[c.id] = { ...getCharForm(c.id), startFatigue: globalStartFatigue };
+          });
+          setPilgrimageForm(updated);
+        };
+        
+        const applyGlobalClearCube = () => {
+          const updated = { ...pilgrimageForm };
+          characters.forEach(c => {
+             updated[c.id] = { ...getCharForm(c.id), clearCube: globalClearCube };
+          });
+          setPilgrimageForm(updated);
         };
 
         const handleSavePilgrimage = () => {
-          if (pilgrimageSelectedChars.length === 0) {
+          const selectedIds = characters.filter(c => getCharForm(c.id).selected).map(c => c.id);
+          if (selectedIds.length === 0) {
             alert('돌 캐릭터를 하나 이상 선택해주세요.');
             return;
           }
+          
+          const recordDetails = selectedIds.map(id => {
+            const c = characters.find(char => char.id === id);
+            const form = getCharForm(id);
+            const fatigue = Number(form.startFatigue || 0);
+            const runs = Math.ceil(fatigue / 8) + 4;
+            return {
+              charId: id,
+              charName: c ? c.base.charName : '알 수 없음',
+              jobName: c ? c.base.jobGrowName : '',
+              startFatigue: form.startFatigue,
+              runs,
+              acquired: {
+                seal: form.seal,
+                condensedCore: form.condensedCore,
+                crystal: form.crystal,
+                flawlessCore: form.flawlessCore,
+                flawlessCrystal: form.flawlessCrystal
+              },
+              consumed: {
+                token: runs,
+                potion: 1,
+                clearCube: form.clearCube
+              }
+            };
+          });
+
           const newRecord = {
             id: Date.now().toString(),
             date: new Date().toISOString(),
-            chars: pilgrimageSelectedChars.map(id => {
-              const c = characters.find(char => char.id === id);
-              return c ? c.base.charName : '알 수 없음';
-            }),
-            startFatigue: pilgrimageStartFatigue,
-            acquired: pilgrimageAcquired,
-            consumed: pilgrimageConsumed
+            details: recordDetails
           };
+          
           const updated = [newRecord, ...pilgrimageHistory];
           setPilgrimageHistory(updated);
           localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(updated));
           
-          // Reset form fields
-          setPilgrimageSelectedChars([]);
-          setPilgrimageAcquired('');
-          setPilgrimageConsumed('');
+          // 선택된 캐릭터들 체크 해제
+          const resetForm = { ...pilgrimageForm };
+          selectedIds.forEach(id => { resetForm[id] = { ...getCharForm(id), selected: false }; });
+          setPilgrimageForm(resetForm);
           
           if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, optsRef.current, mercRef.current, true, updated);
         };
@@ -1769,69 +1814,142 @@ export default function Home() {
 
         return (
           <section className='glass-panel' style={{ minHeight: '60vh' }}>
-            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>✨ 광휘의 순례 기록표 (초안)</h2>
+            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>✨ 광휘의 순례 기록표</h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
-              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h3 style={{ fontSize: '1rem', color: '#93c5fd', marginTop: 0, marginBottom: '1rem', borderBottom: '1px solid rgba(147,197,253,0.2)', paddingBottom: '0.5rem' }}>1. 캐릭터 선택</h3>
-                <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {characters.length === 0 ? (
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>등록된 캐릭터가 없습니다.</div>
-                  ) : (
-                    characters.map(c => (
-                      <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.3rem', borderRadius: '4px', background: pilgrimageSelectedChars.includes(c.id) ? 'rgba(56, 189, 248, 0.1)' : 'transparent' }}>
-                        <input type="checkbox" checked={pilgrimageSelectedChars.includes(c.id)} onChange={() => togglePilgrimageChar(c.id)} />
-                        <span style={{ color: '#e2e8f0', fontWeight: pilgrimageSelectedChars.includes(c.id) ? 'bold' : 'normal' }}>{c.base.charName}</span>
-                        <span style={{ color: '#64748b', fontSize: '0.8rem' }}>({c.base.jobGrowName})</span>
-                      </label>
-                    ))
-                  )}
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h3 style={{ fontSize: '1rem', color: '#93c5fd', marginTop: 0, marginBottom: '0.5rem', borderBottom: '1px solid rgba(147,197,253,0.2)', paddingBottom: '0.5rem' }}>2. 상세 정보 입력</h3>
-                
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '0.3rem' }}>시작 피로도</label>
-                  <input type="number" value={pilgrimageStartFatigue} onChange={e => setPilgrimageStartFatigue(Number(e.target.value))} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff' }} />
-                </div>
-                
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '0.3rem' }}>획득 재화 (예: 조화의 큐브 2개)</label>
-                  <input type="text" value={pilgrimageAcquired} onChange={e => setPilgrimageAcquired(e.target.value)} placeholder="획득한 재화를 입력하세요" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff' }} />
-                </div>
+            {/* Global Actions */}
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                 <label style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>일괄 피로도:</label>
+                 <input type="number" value={globalStartFatigue} onChange={e => setGlobalStartFatigue(Number(e.target.value))} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff' }} />
+                 <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
+               </div>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                 <label style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>일괄 무큐(판당):</label>
+                 <input type="number" value={globalClearCube} onChange={e => setGlobalClearCube(e.target.value)} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff' }} />
+                 <button onClick={applyGlobalClearCube} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
+               </div>
+               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                 <button onClick={handleSavePilgrimage} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold' }}>선택 캐릭터 저장</button>
+               </div>
+            </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '0.3rem' }}>소모 재화</label>
-                  <input type="text" value={pilgrimageConsumed} onChange={e => setPilgrimageConsumed(e.target.value)} placeholder="소모한 재화를 입력하세요" style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.3)', color: '#fff' }} />
-                </div>
-                
-                <button onClick={handleSavePilgrimage} style={{ marginTop: 'auto', padding: '0.6rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>기록 저장하기</button>
-              </div>
+            {/* Main Table */}
+            <div style={{ overflowX: 'auto', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
+                    <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>선택</th>
+                    <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>캐릭터</th>
+                    <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>시작 피로도</th>
+                    <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24' }}>예상 판수</th>
+                    <th colSpan="5" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80' }}>획득 재화 (입력)</th>
+                    <th colSpan="3" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
+                  </tr>
+                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.8rem' }}>
+                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순례의 인장</th>
+                    <th style={{ padding: '0.4rem' }}>응축 라이언</th>
+                    <th style={{ padding: '0.4rem' }}>빛조결</th>
+                    <th style={{ padding: '0.4rem' }}>무결 응축</th>
+                    <th style={{ padding: '0.4rem' }}>무결 빛조결</th>
+                    <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순례의 증표</th>
+                    <th style={{ padding: '0.4rem' }}>피로도 영약</th>
+                    <th style={{ padding: '0.4rem' }}>무색 큐브(판당)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {characters.length === 0 ? (
+                    <tr>
+                      <td colSpan="12" style={{ padding: '2rem', color: 'var(--text-muted)' }}>등록된 캐릭터가 없습니다.</td>
+                    </tr>
+                  ) : characters.map((c, idx) => {
+                    const form = getCharForm(c.id);
+                    const fatigue = Number(form.startFatigue || 0);
+                    const runs = Math.ceil(fatigue / 8) + 4;
+                    const isSelected = form.selected;
+                    const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: isSelected ? 'rgba(56, 189, 248, 0.08)' : (idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'), transition: 'background 0.2s' };
+                    const inputStyle = { width: '55px', padding: '0.3rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
+                    
+                    return (
+                      <tr key={c.id} style={rowStyle}>
+                        <td style={{ padding: '0.5rem' }}>
+                          <input type="checkbox" checked={isSelected} onChange={() => togglePilgrimageChar(c.id)} style={{ transform: 'scale(1.2)', cursor: 'pointer' }} />
+                        </td>
+                        <td style={{ padding: '0.5rem', fontWeight: isSelected ? 'bold' : 'normal', color: isSelected ? '#38bdf8' : '#e2e8f0', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)}>
+                          {c.base.charName}
+                        </td>
+                        <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
+                        <td style={{ padding: '0.5rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
+                        
+                        <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}><input type="number" style={inputStyle} value={form.seal} onChange={e => updateCharForm(c.id, 'seal', e.target.value)} /></td>
+                        <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.condensedCore} onChange={e => updateCharForm(c.id, 'condensedCore', e.target.value)} /></td>
+                        <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.crystal} onChange={e => updateCharForm(c.id, 'crystal', e.target.value)} /></td>
+                        <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.flawlessCore} onChange={e => updateCharForm(c.id, 'flawlessCore', e.target.value)} /></td>
+                        <td style={{ padding: '0.5rem' }}><input type="number" style={inputStyle} value={form.flawlessCrystal} onChange={e => updateCharForm(c.id, 'flawlessCrystal', e.target.value)} /></td>
+                        
+                        <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
+                        <td style={{ padding: '0.5rem', color: '#fca5a5' }}>1</td>
+                        <td style={{ padding: '0.5rem' }}><input type="number" style={{ ...inputStyle, width: '65px' }} value={form.clearCube} onChange={e => updateCharForm(c.id, 'clearCube', e.target.value)} placeholder="0" /></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
             <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>히스토리</h3>
             {pilgrimageHistory.length === 0 ? (
               <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>아직 등록된 기록이 없습니다.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {pilgrimageHistory.map(record => (
-                  <div key={record.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.3rem' }}>
-                        {new Date(record.date).toLocaleString()}
-                      </div>
-                      <div style={{ fontWeight: 'bold', color: '#e2e8f0', marginBottom: '0.3rem' }}>
-                        참여 캐릭터: <span style={{ color: '#38bdf8', fontWeight: 'normal' }}>{record.chars.join(', ')}</span>
-                      </div>
-                      <div style={{ fontSize: '0.9rem', color: '#cbd5e1', display: 'flex', gap: '1rem' }}>
-                        <span>시작 피로도: <strong style={{ color: '#fff' }}>{record.startFatigue}</strong></span>
-                        {record.acquired && <span>획득: <strong style={{ color: '#4ade80' }}>{record.acquired}</strong></span>}
-                        {record.consumed && <span>소모: <strong style={{ color: '#f87171' }}>{record.consumed}</strong></span>}
-                      </div>
+                  <div key={record.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.04)', padding: '0.8rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span style={{ fontSize: '0.95rem', color: '#94a3b8', fontWeight: 'bold' }}>📅 {new Date(record.date).toLocaleString()}</span>
+                      <button className="danger" onClick={() => handleDeletePilgrimage(record.id)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>기록 삭제</button>
                     </div>
-                    <button className="danger" onClick={() => handleDeletePilgrimage(record.id)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>삭제</button>
+                    <div style={{ overflowX: 'auto', padding: '1rem' }}>
+                       {record.chars ? (
+                         <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                           [구버전 기록] 캐릭터: {record.chars.join(', ')} / 획득: {record.acquired} / 소모: {record.consumed}
+                         </div>
+                       ) : (
+                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                           <thead>
+                             <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                               <th style={{ padding: '0.4rem', textAlign: 'left' }}>캐릭터</th>
+                               <th style={{ padding: '0.4rem' }}>피로도(판수)</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>인장</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>응축라이언</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>빛조결</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결응축</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결빛조결</th>
+                               <th style={{ padding: '0.4rem', color: '#f87171' }}>증표</th>
+                               <th style={{ padding: '0.4rem', color: '#f87171' }}>영약</th>
+                               <th style={{ padding: '0.4rem', color: '#f87171' }}>총 무큐 소모</th>
+                             </tr>
+                           </thead>
+                           <tbody>
+                             {record.details.map((d, i) => {
+                               const totalClearCube = d.consumed.clearCube ? (Number(d.consumed.clearCube) * d.runs) : 0;
+                               return (
+                                 <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                   <td style={{ padding: '0.4rem', color: '#e2e8f0', fontWeight: 'bold', textAlign: 'left' }}>{d.charName} <span style={{fontSize:'0.75rem', color:'#64748b', fontWeight:'normal'}}>({d.jobName})</span></td>
+                                   <td style={{ padding: '0.4rem' }}>{d.startFatigue} <span style={{ color: '#fbbf24' }}>({d.runs}판)</span></td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.seal ? '#fff' : '#64748b' }}>{d.acquired.seal || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.condensedCore ? '#fff' : '#64748b' }}>{d.acquired.condensedCore || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.crystal ? '#fff' : '#64748b' }}>{d.acquired.crystal || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.flawlessCore ? '#fff' : '#64748b' }}>{d.acquired.flawlessCore || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: d.acquired.flawlessCrystal ? '#fff' : '#64748b' }}>{d.acquired.flawlessCrystal || '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: '#fca5a5' }}>{d.consumed.token}</td>
+                                   <td style={{ padding: '0.4rem', color: '#fca5a5' }}>{d.consumed.potion}</td>
+                                   <td style={{ padding: '0.4rem', color: d.consumed.clearCube ? '#fca5a5' : '#64748b' }}>{totalClearCube > 0 ? `${totalClearCube.toLocaleString()}` : '-'}</td>
+                                 </tr>
+                               );
+                             })}
+                           </tbody>
+                         </table>
+                       )}
+                    </div>
                   </div>
                 ))}
               </div>
