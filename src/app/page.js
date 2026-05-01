@@ -2058,8 +2058,8 @@ export default function Home() {
                     <th style={{ padding: '0.2rem 0.1rem' }}>무결점 조화의<br/>결정체</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>증표 (단가)</th>
-                    <th style={{ padding: '0.2rem 0.1rem' }}>레시피 (구매/인장/판매)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표 (단가)</th>
+                    <th style={{ padding: '0.2rem 0.1rem' }}>레시피 (구매/순례의 인장/판매)</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>귀속<br/>가치</th>
                     <th style={{ padding: '0.2rem 0.1rem' }}>교환<br/>가치</th>
                     <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80' }}>순수익<br/>(귀속 포함)</th>
@@ -2207,7 +2207,7 @@ export default function Home() {
                             
                             {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle', minWidth: '80px' }}>
                               <button onClick={() => setActiveSecretShopModal({ charId: c.id, type: 'token' })} style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer' }}>
-                                + 증표 {form.secretTokens?.length > 0 ? `(${form.secretTokens.length})` : ''}
+                                + 순례의 인장 {form.secretTokens?.length > 0 ? `(${form.secretTokens.length})` : ''}
                               </button>
                             </td>
                             {/* 17 */} <td style={{ padding: '0.2rem 0.1rem', verticalAlign: 'middle', minWidth: '80px' }}>
@@ -2397,15 +2397,15 @@ export default function Home() {
                           <span>{calcDetail.breakdown.flawlessCrystal.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>인장 교환권 수익 ({calcDetail.items.sealVoucher}개)</span>
+                          <span>순례의 인장(1회 교환 가능) 교환권 수익 ({calcDetail.items.sealVoucher}개)</span>
                           <span>{calcDetail.breakdown.sealVoucher.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>인장 상자 ({calcDetail.items.sealVoucherBox}개)</span>
+                          <span>순례의 인장(1회 교환 가능) 교환권 1개 상자 ({calcDetail.items.sealVoucherBox}개)</span>
                           <span>{calcDetail.breakdown.sealVoucherBox.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>직접 획득 인장(교환가능) ({calcDetail.items.tradableSeal}개)</span>
+                          <span>순례의 인장(1회 교환 가능) ({calcDetail.items.tradableSeal}개)</span>
                           <span>{calcDetail.breakdown.tradableSeal.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
@@ -2413,7 +2413,7 @@ export default function Home() {
                           <span>{calcDetail.breakdown.recipeProfit.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                          <span>증표 단가 이득</span>
+                          <span>닳아버린 순례의 증표 단가 이득</span>
                           <span>{calcDetail.breakdown.tokenProfit.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#38bdf8' }}>
@@ -2428,7 +2428,7 @@ export default function Home() {
                       <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.9rem' }}>📉 소모 비용 (Costs)</h4>
                       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                          <span>순례의 증표 소모 ({calcDetail.items.runs}개)</span>
+                          <span>닳아버린 순례의 증표 소모 ({calcDetail.items.runs}개)</span>
                           <span>-{calcDetail.breakdown.tokenCost.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#f87171' }}>
@@ -2554,9 +2554,9 @@ export default function Home() {
                              <div style={{ flex: 1, minWidth: '200px' }}>
                                <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8' }}>비밀상점 정산 내역</h5>
                                <div style={{ fontSize: '0.85rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                 <div>- 증표 구매 이득 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
+                                 <div>- 닳아버린 순례의 증표 구매 이득 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
                                  <div>- 레시피 순수익 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
-                                 <div>- 레시피 인장 비용 (귀속 가치 차감): <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
+                                 <div>- 레시피 순례의 인장 소모 비용 (귀속 가치 차감): <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
                                </div>
                              </div>
                              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
@@ -2880,12 +2880,12 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
     <div className="modal-overlay">
        <div className="modal-content glass-panel" style={{ maxWidth: activeSecretShopModal.type === 'token' ? '400px' : '500px' }}>
           <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            🛒 {charName} - {activeSecretShopModal.type === 'token' ? '비밀상점 증표 구매' : '비밀상점 레시피 제작'}
+            🛒 {charName} - {activeSecretShopModal.type === 'token' ? '비밀상점 순례의 인장 구매' : '비밀상점 레시피 제작'}
           </h3>
           <div style={{ marginBottom: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
              {activeSecretShopModal.type === 'token' && (
                 <div>
-                   <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 증표 구매 추가</button>
+                   <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 순례의 인장 구매 추가</button>
                    {(getCharForm(activeSecretShopModal.charId).secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>구매 내역이 없습니다.</div> : (
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                        {(getCharForm(activeSecretShopModal.charId).secretTokens || []).map((t, idx) => (
@@ -2912,7 +2912,7 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
                               <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="골드" />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 인장:</span>
+                              <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>소모 순례의 인장:</span>
                               <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sealCost', e.target.value)} style={{ width: '60px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} placeholder="개수" />
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
