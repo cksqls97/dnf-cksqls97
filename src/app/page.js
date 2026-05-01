@@ -2428,7 +2428,7 @@ export default function Home() {
                       <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.9rem' }}>📉 소모 비용 (Costs)</h4>
                       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.85rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                          <span>순례의 증표 소모 ({calcDetail.items.runs * 16}개)</span>
+                          <span>순례의 증표 소모 ({calcDetail.items.runs}개)</span>
                           <span>-{calcDetail.breakdown.tokenCost.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#f87171' }}>
