@@ -1885,11 +1885,6 @@ export default function Home() {
                  <input type="number" value={globalStartFatigue} onChange={e => setGlobalStartFatigue(Number(e.target.value))} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff' }} />
                  <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
                </div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                 <label style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>일괄 무큐(판당):</label>
-                 <input type="number" value={globalClearCube} onChange={e => setGlobalClearCube(e.target.value)} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff' }} />
-                 <button onClick={applyGlobalClearCube} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
-               </div>
                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                  <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer' }}>
                    {isFetchingPrices ? '불러오는 중...' : '경매장 단가 불러오기'}
