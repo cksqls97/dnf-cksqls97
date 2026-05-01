@@ -1748,7 +1748,7 @@ export default function Home() {
           selected: false, startFatigue: '', pureGold: '',
           clearCubeStart: '', clearCubeEnd: '', 
           seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
-          sealVoucher: '', tradableSeal: '', sealVoucherBox: '',
+          sealVoucher: '', tradableSeal: '', sealVoucherBox: '', memo: '',
           secretTokens: [],
           secretRecipes: []
         };
@@ -1904,6 +1904,7 @@ export default function Home() {
                 clearCubeEnd: form.clearCubeEnd,
                 consumedCube: consumedCube
               },
+              memo: form.memo || '',
               secretShop: {
                 tokens: form.secretTokens,
                 recipes: form.secretRecipes,
@@ -2009,6 +2010,7 @@ export default function Home() {
                     <th colSpan="4" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171' }}>소모 재화</th>
                     <th colSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa' }}>비밀 상점 구매</th>
                     <th colSpan="3" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>가치 산출 (골드)</th>
+                    <th rowSpan="2" style={{ padding: '0.6rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}>기타 메모</th>
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem', lineHeight: '1.2' }}>
                     <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>순 골드</th>
@@ -2037,7 +2039,7 @@ export default function Home() {
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
-                           <td colSpan="21" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
+                           <td colSpan="22" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
                          </tr>
                        );
                      }
@@ -2156,6 +2158,9 @@ export default function Home() {
                             <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.5rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.5rem', fontWeight: 'bold', color: totalProfit > 0 ? '#4ade80' : (totalProfit < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle' }}>{totalProfit !== 0 ? totalProfit.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+                              <input type="text" style={{ ...inputStyle, width: '120px', textAlign: 'left' }} value={form.memo || ''} onChange={e => updateCharForm(c.id, 'memo', e.target.value)} placeholder="메모 입력" />
+                            </td>
                           </tr>
                         );
                      });
@@ -2187,6 +2192,7 @@ export default function Home() {
                             <td style={{ padding: '0.8rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.8rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.8rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
                           </tr>
                         </>
                      );
@@ -2317,6 +2323,7 @@ export default function Home() {
                                <th style={{ padding: '0.4rem', color: '#fb923c' }}>귀속 가치</th>
                                <th style={{ padding: '0.4rem', color: '#fb923c' }}>교환 가치</th>
                                <th style={{ padding: '0.4rem', color: '#fb923c' }}>총 수익</th>
+                               <th style={{ padding: '0.4rem', color: '#94a3b8' }}>메모</th>
                              </tr>
                            </thead>
                            <tbody>
@@ -2347,6 +2354,7 @@ export default function Home() {
                                    <td style={{ padding: '0.4rem', color: bound > 0 ? '#fb923c' : '#64748b' }}>{bound > 0 ? bound.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.4rem', color: tradable > 0 ? '#fb923c' : '#64748b' }}>{tradable > 0 ? tradable.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.4rem', fontWeight: 'bold', color: profit > 0 ? '#4ade80' : (profit < 0 ? '#f87171' : '#64748b') }}>{profit !== 0 ? profit.toLocaleString() : '-'}</td>
+                                   <td style={{ padding: '0.4rem', color: '#cbd5e1', textAlign: 'left', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={d.memo || ''}>{d.memo || '-'}</td>
                                  </tr>
                                );
                              })}
