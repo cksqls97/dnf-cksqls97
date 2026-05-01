@@ -2390,7 +2390,7 @@ export default function Home() {
 
             {/* Auction Prices Modal */}
             
-            <LootModalComponent activeLootModal={activeLootModal} setActiveLootModal={setActiveLootModal} characters={characters} getCharForm={getCharForm} updateCharForm={updateCharForm} apiKey={apiKey} auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} />
+            <LootModalComponent activeLootModal={activeLootModal ? { ...activeLootModal, _pilgrimageHistory: pilgrimageHistory } : null} setActiveLootModal={setActiveLootModal} characters={characters} getCharForm={getCharForm} updateCharForm={updateCharForm} apiKey={apiKey} auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} />
             
             
             {calcDetail && (
@@ -2850,6 +2850,34 @@ export default function Home() {
 
 function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, updateCharForm, characters, apiKey, auctionPrices, setAuctionPrices }) {
   const [fetchingItemId, setFetchingItemId] = useState(null);
+  const [focusedItemId, setFocusedItemId] = useState(null);
+
+  // Collect all custom item names from all characters and history, count frequency
+  const getSuggestions = () => {
+    const freq = {};
+    // From current form
+    characters.forEach(c => {
+      const form = getCharForm(c.id);
+      (form.customItems || []).forEach(item => {
+        if (item.name && item.name.trim()) {
+          const n = item.name.trim();
+          freq[n] = (freq[n] || 0) + 1;
+        }
+      });
+    });
+    // From history
+    (activeLootModal._pilgrimageHistory || []).forEach(record => {
+      (record.details || []).forEach(d => {
+        (d.customItems || []).forEach(item => {
+          if (item.name && item.name.trim()) {
+            const n = item.name.trim();
+            freq[n] = (freq[n] || 0) + 1;
+          }
+        });
+      });
+    });
+    return Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([name]) => name);
+  };
 
   const fetchCustomItemPrice = async (itemName, itemId) => {
     if (!itemName || !apiKey) return;
@@ -2951,12 +2979,34 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                 {(getCharForm(activeLootModal.charId).customItems || []).map((item) => (
                   <div key={item.id} style={{ marginBottom: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.6rem', borderRadius: '6px' }}>
                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginBottom: '0.4rem' }}>
-                      <input type="text" placeholder="아이템 이름 입력" style={{ flex: 1, padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' }} value={item.name} onChange={e => {
-                        const items = getCharForm(activeLootModal.charId).customItems || [];
-                        updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name: e.target.value } : i));
-                      }} onBlur={e => {
-                        if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id);
-                      }} />
+                      <div style={{ flex: 1, position: 'relative' }}>
+                        <input type="text" placeholder="아이템 이름 입력" style={{ width: '100%', padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', boxSizing: 'border-box' }} value={item.name} onChange={e => {
+                          const items = getCharForm(activeLootModal.charId).customItems || [];
+                          updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name: e.target.value } : i));
+                        }} onFocus={() => setFocusedItemId(item.id)} onBlur={e => {
+                          setTimeout(() => setFocusedItemId(null), 150);
+                          if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id);
+                        }} />
+                        {focusedItemId === item.id && (() => {
+                          const all = getSuggestions().filter(s => s !== item.name && (!item.name || s.toLowerCase().includes(item.name.toLowerCase())));
+                          if (all.length === 0) return null;
+                          return (
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#1e293b', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', maxHeight: '120px', overflowY: 'auto', marginTop: '2px' }}>
+                              {all.map(name => (
+                                <div key={name} style={{ padding: '0.3rem 0.5rem', fontSize: '0.65rem', color: '#cbd5e1', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }} onMouseDown={() => {
+                                  const items = getCharForm(activeLootModal.charId).customItems || [];
+                                  updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name } : i));
+                                  setFocusedItemId(null);
+                                  fetchCustomItemPrice(name, item.id);
+                                }}
+                                onMouseEnter={e => e.target.style.background = 'rgba(96,165,250,0.2)'}
+                                onMouseLeave={e => e.target.style.background = 'transparent'}
+                                >{name}</div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
                       <input type="number" placeholder="수량" style={{ width: '60px', padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', textAlign: 'center' }} value={item.quantity} onChange={e => {
                         const items = getCharForm(activeLootModal.charId).customItems || [];
                         updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, quantity: e.target.value } : i));
