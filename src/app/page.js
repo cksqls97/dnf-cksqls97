@@ -1992,6 +1992,7 @@ export default function Home() {
                 bound: finalBoundValue,
                 tradable: finalTradableValue,
                 consumed: totalConsumedValue,
+                potionCost: potionCost,
                 profit: totalProfit
               }
             };
@@ -2606,9 +2607,16 @@ export default function Home() {
                            </thead>
                            <tbody>
                              {record.details.map((d, i) => {
-                               const profit = d.values?.profit || 0;
-                               const bound = d.values?.bound || 0;
-                               const tradable = d.values?.tradable || 0;
+                               let profit = d.values?.profit || 0;
+                               let bound = d.values?.bound || 0;
+                               let tradable = d.values?.tradable || 0;
+                               
+                               // 구버전 기록 보정: 영약 소모 비용이 누락된 경우 현재 단가로 차감
+                               if (d.consumed?.potion > 0 && d.values?.potionCost === undefined) {
+                                 const pPrice = auctionPrices['피로 회복의 영약'] || 0;
+                                 tradable -= pPrice;
+                                 profit -= pPrice;
+                               }
                                
                                return (
                                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
@@ -2646,11 +2654,30 @@ export default function Home() {
                              </div>
                              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
                                <h5 style={{ margin: '0 0 0.2rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>이번 순례 총 결산</h5>
-                               <div style={{ fontSize: '0.7rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.bound?.toLocaleString()}</span></div>
-                               <div style={{ fontSize: '0.7rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{record.sessionTotals.tradable?.toLocaleString()}</span></div>
-                               <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>
-                                 최종 순수익: <span style={{ color: record.sessionTotals.profit > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{record.sessionTotals.profit?.toLocaleString()}</span>
-                               </div>
+                               {(() => {
+                                 let bSum = record.sessionTotals.bound || 0;
+                                 let tSum = record.sessionTotals.tradable || 0;
+                                 let pSum = record.sessionTotals.profit || 0;
+                                 
+                                 // 구버전 기록 보정 (세션 합계)
+                                 record.details.forEach(d => {
+                                   if (d.consumed?.potion > 0 && d.values?.potionCost === undefined) {
+                                      const pPrice = auctionPrices['피로 회복의 영약'] || 0;
+                                      tSum -= pPrice;
+                                      pSum -= pPrice;
+                                   }
+                                 });
+
+                                 return (
+                                   <>
+                                     <div style={{ fontSize: '0.7rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{bSum.toLocaleString()}</span></div>
+                                     <div style={{ fontSize: '0.7rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{tSum.toLocaleString()}</span></div>
+                                     <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>
+                                       최종 순수익: <span style={{ color: pSum > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{pSum.toLocaleString()}</span>
+                                     </div>
+                                   </>
+                                 );
+                               })()}
                              </div>
                            </div>
                          </div>
