@@ -2017,6 +2017,9 @@ export default function Home() {
                     <th style={{ padding: '0.4rem' }}>빛나는 조화의<br/>결정체</th>
                     <th style={{ padding: '0.4rem' }}>무결점<br/>라이언 코어</th>
                     <th style={{ padding: '0.4rem' }}>무결점 조화의<br/>결정체</th>
+                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권</th>
+                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
+                    <th style={{ padding: '0.4rem' }}>순례의 인장<br/>(1회 교환가능)<br/>교환권 1개 상자</th>
                     <th style={{ padding: '0.4rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>닳아버린<br/>순례의 증표</th>
                     <th style={{ padding: '0.4rem' }}>피로 회복의<br/>영약</th>
                     <th style={{ padding: '0.4rem' }}>시작 무큐</th>
@@ -2301,9 +2304,9 @@ export default function Home() {
                                <th style={{ padding: '0.4rem', color: '#4ade80' }}>빛나는 조화의 결정체</th>
                                <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 라이언 코어</th>
                                <th style={{ padding: '0.4rem', color: '#4ade80' }}>무결점 조화의 결정체</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>인장 교환권</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>교환가능 인장</th>
-                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>인장 교환권 상자</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장(1회 교환 가능)</th>
+                               <th style={{ padding: '0.4rem', color: '#4ade80' }}>순례의 인장(1회 교환가능) 교환권 1개 상자</th>
                                <th style={{ padding: '0.4rem', color: '#f87171' }}>소모 무큐</th>
                                <th style={{ padding: '0.4rem', color: '#fb923c' }}>귀속 가치</th>
                                <th style={{ padding: '0.4rem', color: '#fb923c' }}>교환 가치</th>
