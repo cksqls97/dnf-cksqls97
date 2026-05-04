@@ -2161,8 +2161,24 @@ export default function Home() {
                      let sumTokens = 0, sumPotions = 0;
                      let sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0, sumProfitExclBound = 0;
 
-                     const rows = selectedChars.map((c, idx) => {
-                       const form = getCharForm(c.id);
+                    let countWithData = 0;
+                    const rows = selectedChars.map((c, idx) => {
+                      const form = getCharForm(c.id);
+                      
+                      // Check if any loot data is entered (excluding secret shop)
+                      const hasLootData = (
+                        (form.pureGold && form.pureGold !== '') ||
+                        (form.seal && form.seal !== '') ||
+                        (form.condensedCore && form.condensedCore !== '') ||
+                        (form.crystal && form.crystal !== '') ||
+                        (form.flawlessCore && form.flawlessCore !== '') ||
+                        (form.flawlessCrystal && form.flawlessCrystal !== '') ||
+                        (form.sealVoucher && form.sealVoucher !== '') ||
+                        (form.sealVoucherBox && form.sealVoucherBox !== '') ||
+                        (form.tradableSeal && form.tradableSeal !== '') ||
+                        (form.customItems && form.customItems.length > 0)
+                      );
+
                     const fatigue = Number(form.startFatigue || 0);
                     const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0) : 0;
                     const isSelected = form.selected;
@@ -2210,7 +2226,7 @@ export default function Home() {
                       }
                     });
 
-                                        let recipeProfit = 0;
+                    let recipeProfit = 0;
                     let recipeSealCost = 0;
                     let recipeSoulCrystalCost = 0;
                     let recipeGiftRewardValue = 0;
@@ -2255,7 +2271,9 @@ export default function Home() {
                     const finalBoundValue = totalBoundValue - recipeSealCost;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
                     
-                    // 합계 누적
+                    // 합계 누적 (입력 데이터가 있을 경우에만 포함)
+                    if (hasLootData) {
+                        countWithData++;
                         sumFatigue += fatigue;
                         sumRuns += runs;
                         sumPureGold += restoredPureGold;
@@ -2273,6 +2291,7 @@ export default function Home() {
                         sumTradableValue += finalTradableValue;
                         sumTotalProfit += totalProfit;
                         sumProfitExclBound += (finalTradableValue - totalConsumedValue);
+                    }
 
                         return (
                           <tr key={c.id} style={rowStyle}>
@@ -2326,8 +2345,8 @@ export default function Home() {
                             {/* 18 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalBoundValue > 0 ? finalBoundValue.toLocaleString() : '-'}</td>
                             {/* 19 */} <td style={{ padding: '0.2rem 0.1rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{finalTradableValue > 0 ? finalTradableValue.toLocaleString() : '-'}</td>
                             {/* 20 */} <td 
-                              style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalBoundValue + finalTradableValue - totalConsumedValue) > 0 ? '#4ade80' : ((finalBoundValue + finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
-                              onClick={() => setCalcDetail({
+                              style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: hasLootData ? ((finalBoundValue + finalTradableValue - totalConsumedValue) > 0 ? '#4ade80' : ((finalBoundValue + finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1')) : '#94a3b8', verticalAlign: 'middle', cursor: hasLootData ? 'pointer' : 'default', textDecoration: hasLootData ? 'underline' : 'none' }}
+                              onClick={() => hasLootData && setCalcDetail({
                                 charName: c.base.charName,
                                 items: {
                                   seal: Number(form.seal || 0),
@@ -2369,11 +2388,11 @@ export default function Home() {
                                 }
                               })}
                             >
-                              {(finalBoundValue + finalTradableValue - totalConsumedValue) !== 0 ? (finalBoundValue + finalTradableValue - totalConsumedValue).toLocaleString() : '-'}
+                              {hasLootData ? ((finalBoundValue + finalTradableValue - totalConsumedValue) !== 0 ? (finalBoundValue + finalTradableValue - totalConsumedValue).toLocaleString() : '-') : '-'}
                             </td>
                             {/* 21 */} <td 
-                              style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: (finalTradableValue - totalConsumedValue) > 0 ? '#38bdf8' : ((finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1'), verticalAlign: 'middle', cursor: 'pointer', textDecoration: 'underline' }}
-                              onClick={() => setCalcDetail({
+                              style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: hasLootData ? ((finalTradableValue - totalConsumedValue) > 0 ? '#38bdf8' : ((finalTradableValue - totalConsumedValue) < 0 ? '#f87171' : '#cbd5e1')) : '#94a3b8', verticalAlign: 'middle', cursor: hasLootData ? 'pointer' : 'default', textDecoration: hasLootData ? 'underline' : 'none' }}
+                              onClick={() => hasLootData && setCalcDetail({
                                 charName: c.base.charName,
                                 items: {
                                   seal: Number(form.seal || 0),
@@ -2415,7 +2434,7 @@ export default function Home() {
                                 }
                               })}
                             >
-                              {(finalTradableValue - totalConsumedValue) !== 0 ? (finalTradableValue - totalConsumedValue).toLocaleString() : '-'}
+                              {hasLootData ? ((finalTradableValue - totalConsumedValue) !== 0 ? (finalTradableValue - totalConsumedValue).toLocaleString() : '-') : '-'}
                             </td>
                             
                           </tr>
@@ -2426,7 +2445,7 @@ export default function Home() {
                         <>
                           {rows}
                           <tr style={{ background: 'rgba(255,255,255,0.05)', fontWeight: 'bold', borderTop: '2px solid rgba(255,255,255,0.2)' }}>
-                            {/* 1 */} <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>총합계 ({selectedChars.length})</td>
+                            {/* 1 */} <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>총합계 ({countWithData})</td>
                             {/* 2 */} <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>{sumFatigue > 0 ? sumFatigue : '-'}</td>
                             {/* 3 */} <td style={{ padding: '0.5rem', color: '#fbbf24' }}>{sumRuns > 0 ? sumRuns : '-'}</td>
                             {/* 4 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
@@ -2448,28 +2467,28 @@ export default function Home() {
                             {/* 21 */} <td style={{ padding: '0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : (sumProfitExclBound < 0 ? '#f87171' : '#cbd5e1') }}>{sumProfitExclBound !== 0 ? sumProfitExclBound.toLocaleString() : '-'}</td>
                             
                           </tr>
-                           <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.65rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                             <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>평균 (캐릭터당)</td>
-                             <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{Math.round(sumFatigue / selectedChars.length) || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{Math.round(sumRuns / selectedChars.length) || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
-                             <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{Math.round(sumPureGold / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumSeal / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumTradableSeal / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumSealVoucher / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumSealVoucherBox / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{Math.round(sumCondensedCore / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumFlawlessCore / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{Math.round(sumCrystal / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumFlawlessCrystal / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{Math.round(sumTokens / selectedChars.length) || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumPotions / selectedChars.length) || '-'}</td>
-                             <td colSpan="2" style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>-</td>
-                             <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{Math.round(sumBoundValue / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem' }}>{Math.round(sumTradableValue / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : '#f87171' }}>{Math.round(sumTotalProfit / selectedChars.length).toLocaleString() || '-'}</td>
-                             <td style={{ padding: '0.3rem 0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : '#f87171' }}>{Math.round(sumProfitExclBound / selectedChars.length).toLocaleString() || '-'}</td>
-                           </tr>
+                            <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.65rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                              <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>평균 (캐릭터당)</td>
+                              <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumFatigue / countWithData) : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumRuns / countWithData) : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
+                              <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumPureGold / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumSeal / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumTradableSeal / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumSealVoucher / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumSealVoucherBox / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumCondensedCore / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumFlawlessCore / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumCrystal / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumFlawlessCrystal / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumTokens / countWithData) : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumPotions / countWithData) : '-'}</td>
+                              <td colSpan="2" style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>-</td>
+                              <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumBoundValue / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumTradableValue / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : '#f87171' }}>{countWithData > 0 ? Math.round(sumTotalProfit / countWithData).toLocaleString() : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : '#f87171' }}>{countWithData > 0 ? Math.round(sumProfitExclBound / countWithData).toLocaleString() : '-'}</td>
+                            </tr>
                         </>
                      );
                   })()}
