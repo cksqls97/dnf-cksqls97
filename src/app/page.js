@@ -2019,9 +2019,20 @@ export default function Home() {
           setPilgrimageHistory(updated);
           localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(updated));
           
-          // 선택된 캐릭터들 초기화
+          // 선택된 캐릭터들 초기화 (데이터 리셋 및 선택 해제)
           const resetForm = { ...pilgrimageForm };
-          selectedIds.forEach(id => { resetForm[id] = { ...getCharForm(id), selected: false }; });
+          selectedIds.forEach(id => {
+            resetForm[id] = {
+              selected: false, 
+              startFatigue: '', pureGold: '',
+              seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
+              sealVoucher: '', tradableSeal: '', sealVoucherBox: '', memo: '',
+              secretTokens: [],
+              secretRecipes: [],
+              customItems: [],
+              usePotion: false
+            };
+          });
           setPilgrimageForm(resetForm);
           
           if (apiKey) syncUpCloudData(apiKey, charsRef.current, logsRef.current, optsRef.current, mercRef.current, true, updated);
