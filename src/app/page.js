@@ -3244,8 +3244,21 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 {/* 인장 구매 섹션 */}
                 <div>
-                   <h4 style={{ fontSize: '0.75rem', color: '#38bdf8', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>🔹 순례의 인장 (증표 구매)</h4>
-                   <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', marginBottom: '1rem', cursor: 'pointer' }}>+ 구매 내역 추가</button>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                     <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 구매 내역 추가</button>
+                     <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginLeft: '0.5rem' }}>
+                       <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>빠른 추가:</span>
+                       {[90000, 100000, 110000].map(price => (
+                         <button 
+                           key={price}
+                           onClick={() => addCharToken(activeSecretShopModal.charId, String(price))}
+                           style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', cursor: 'pointer' }}
+                         >
+                           {price / 10000}만
+                         </button>
+                       ))}
+                     </div>
+                   </div>
                    {(getCharForm(activeSecretShopModal.charId).secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>구매 내역이 없습니다.</div> : (
                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                        {(getCharForm(activeSecretShopModal.charId).secretTokens || []).map((t, idx) => (
