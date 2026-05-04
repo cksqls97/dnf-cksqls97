@@ -1937,6 +1937,9 @@ export default function Home() {
 
             let recipeProfit = 0;
             let recipeSealCost = 0;
+            let recipeSoulCrystalCost = 0;
+            let recipeGiftRewardValue = 0;
+            
             (form.secretRecipes || []).forEach(r => {
                const bp = Number(r.buyPrice || 0);
                if (r.type === 'shinyGift') {
@@ -1944,6 +1947,8 @@ export default function Home() {
                   const rewardVal = 5 * (auctionPrices['닳아버린 순례의 증표'] || 0);
                   if (bp > 0 || matPrice > 0) {
                      secretShopGoldSpent += bp;
+                     recipeSoulCrystalCost += matPrice;
+                     recipeGiftRewardValue += rewardVal;
                      recipeProfit += (rewardVal - bp - matPrice);
                   }
                } else if (r.type === 'brilliantGift') {
@@ -1951,6 +1956,8 @@ export default function Home() {
                   const rewardVal = 20 * (auctionPrices['닳아버린 순례의 증표'] || 0);
                   if (bp > 0 || matPrice > 0) {
                      secretShopGoldSpent += bp;
+                     recipeSoulCrystalCost += matPrice;
+                     recipeGiftRewardValue += rewardVal;
                      recipeProfit += (rewardVal - bp - matPrice);
                   }
                } else {
@@ -2325,7 +2332,9 @@ export default function Home() {
                                   tokenProfit: tokenProfit,
                                   tokenCost: tokenCost,
                                   secretShopGoldSpent: secretShopGoldSpent,
-                                  customTradable: customTradableValue
+                                  customTradable: customTradableValue,
+                                  recipeSoulCrystalCost: recipeSoulCrystalCost,
+                                  recipeGiftRewardValue: recipeGiftRewardValue
                                 },
                                 totals: {
                                   bound: finalBoundValue,
@@ -2369,7 +2378,9 @@ export default function Home() {
                                   tokenProfit: tokenProfit,
                                   tokenCost: tokenCost,
                                   secretShopGoldSpent: secretShopGoldSpent,
-                                  customTradable: customTradableValue
+                                  customTradable: customTradableValue,
+                                  recipeSoulCrystalCost: recipeSoulCrystalCost,
+                                  recipeGiftRewardValue: recipeGiftRewardValue
                                 },
                                 totals: {
                                   bound: finalBoundValue,
@@ -2498,8 +2509,20 @@ export default function Home() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                           <span>비밀상점 레시피 수익</span>
-                          <span>{calcDetail.breakdown.recipeProfit.toLocaleString()} G</span>
-                        </div>
+                                          <span>{calcDetail.breakdown.recipeProfit.toLocaleString()} G</span>
+                                        </div>
+                                        {(calcDetail.breakdown.recipeSoulCrystalCost > 0 || calcDetail.breakdown.recipeGiftRewardValue > 0) && (
+                                          <div style={{ padding: '0.4rem', background: 'rgba(0,0,0,0.15)', borderRadius: '4px', marginTop: '0.2rem', marginBottom: '0.5rem', fontSize: '0.65rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                                              <span>ㄴ 답례품 소울 결정 소모</span>
+                                              <span>-{calcDetail.breakdown.recipeSoulCrystalCost.toLocaleString()} G</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
+                                              <span>ㄴ 답례품 증표 보상 가치</span>
+                                              <span>+{calcDetail.breakdown.recipeGiftRewardValue.toLocaleString()} G</span>
+                                            </div>
+                                          </div>
+                                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
                           <span>닳아버린 순례의 증표 단가 이득</span>
                           <span>{calcDetail.breakdown.tokenProfit.toLocaleString()} G</span>
@@ -2556,7 +2579,7 @@ export default function Home() {
               </div>
             )}
             {showAuctionPricesModal && (() => {
-              const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자'];
+              const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자', '피로 회복의 영약', '레전더리 소울 결정', '에픽 소울 결정'];
               return (
               <div className="modal-overlay">
                 <div className="modal-content glass-panel" style={{ maxWidth: '500px', width: '90%' }}>
