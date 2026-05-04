@@ -2096,7 +2096,7 @@ export default function Home() {
 
             {/* Character Selector */}
             <div style={{ marginBottom: '1.5rem' }}>
-               <h3 style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
+<h3 style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {getSortedCharacters(characters).map(c => {
                     const isSelected = getCharForm(c.id).selected;
@@ -2119,8 +2119,7 @@ export default function Home() {
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>재화 입력</th>
                     <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>획득 재화 (기록)</th>
-                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171', fontSize: '0.7rem' }}>소모 재화</th>
-                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>비밀 상점 구매</th>
+                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171', fontSize: '0.7rem' }}>소모 재화</th>
                     <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가치 산출 (골드)</th>
                     
                   </tr>
@@ -2136,7 +2135,8 @@ export default function Home() {
                     <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점 조화의<br/>결정체</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>닳아버린<br/>순례의 증표</th>
                     <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>피로 회복의<br/>영약</th>
-                    <th colSpan="2" style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>특별상점 (증표 구매 / 레시피 제작)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>특별상점<br/>지출</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>특별상점<br/>관리</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>귀속<br/>가치</th>
                     <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>교환<br/>가치</th>
                     <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순수익<br/>(귀속 포함)</th>
@@ -2155,17 +2155,16 @@ export default function Home() {
                        );
                      }
 
+                     let countWithData = 0;
                      let sumFatigue = 0, sumRuns = 0;
                      let sumPureGold = 0, sumSeal = 0, sumCondensedCore = 0, sumCrystal = 0, sumFlawlessCore = 0, sumFlawlessCrystal = 0;
                      let sumSealVoucher = 0, sumTradableSeal = 0, sumSealVoucherBox = 0;
-                     let sumTokens = 0, sumPotions = 0;
+                     let sumTokens = 0, sumPotions = 0, sumSecretShopSpent = 0;
                      let sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0, sumProfitExclBound = 0;
 
-                    let countWithData = 0;
                     const rows = selectedChars.map((c, idx) => {
                       const form = getCharForm(c.id);
                       
-                      // Check if any loot data is entered (excluding secret shop)
                       const hasLootData = (
                         (form.pureGold && form.pureGold !== '') ||
                         (form.seal && form.seal !== '') ||
@@ -2176,7 +2175,9 @@ export default function Home() {
                         (form.sealVoucher && form.sealVoucher !== '') ||
                         (form.sealVoucherBox && form.sealVoucherBox !== '') ||
                         (form.tradableSeal && form.tradableSeal !== '') ||
-                        (form.customItems && form.customItems.length > 0)
+                        (form.customItems && form.customItems.length > 0) ||
+                        (form.secretTokens && form.secretTokens.length > 0) ||
+                        (form.secretRecipes && form.secretRecipes.length > 0)
                       );
 
                     const fatigue = Number(form.startFatigue || 0);
@@ -2201,7 +2202,6 @@ export default function Home() {
                     const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
                     const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
                     
-                    // 인장 교환권 및 교환 가능 인장 가치 산출
                     const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
                     const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
                     const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
@@ -2211,26 +2211,22 @@ export default function Home() {
                     
                     const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
                     const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
-                    const totalConsumedValue = tokenCost + potionCost;
 
-                    // 캐릭터별 비밀상점 가치 산출
                     const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
-                    let tokenProfit = 0;
                     let secretShopGoldSpent = 0;
+                    let secretShopRewardValue = 0;
+                    let secretShopCostValue = 0;
+                    let recipeSealCostValue = 0;
                     
                     (form.secretTokens || []).forEach(t => {
                       const bp = Number(t.buyPrice || 0);
                       if (bp > 0) {
                          secretShopGoldSpent += bp;
-                         tokenProfit += (tokenPrice - bp);
+                         secretShopCostValue += bp;
+                         secretShopRewardValue += tokenPrice;
                       }
                     });
 
-                    let recipeProfit = 0;
-                    let recipeSealCost = 0;
-                    let recipeSoulCrystalCost = 0;
-                    let recipeGiftRewardValue = 0;
-                    
                     (form.secretRecipes || []).forEach(r => {
                        const bp = Number(r.buyPrice || 0);
                        if (r.type === 'shinyGift') {
@@ -2238,18 +2234,16 @@ export default function Home() {
                           const rewardVal = 5 * (auctionPrices['닳아버린 순례의 증표'] || 0);
                           if (bp > 0 || matPrice > 0) {
                              secretShopGoldSpent += bp;
-                             recipeSoulCrystalCost += matPrice;
-                             recipeGiftRewardValue += rewardVal;
-                             recipeProfit += (rewardVal - bp - matPrice);
+                             secretShopCostValue += (bp + matPrice);
+                             secretShopRewardValue += rewardVal;
                           }
                        } else if (r.type === 'brilliantGift') {
                           const matPrice = auctionPrices['에픽 소울 결정'] || 0;
                           const rewardVal = 20 * (auctionPrices['닳아버린 순례의 증표'] || 0);
                           if (bp > 0 || matPrice > 0) {
                              secretShopGoldSpent += bp;
-                             recipeSoulCrystalCost += matPrice;
-                             recipeGiftRewardValue += rewardVal;
-                             recipeProfit += (rewardVal - bp - matPrice);
+                             secretShopCostValue += (bp + matPrice);
+                             secretShopRewardValue += rewardVal;
                           }
                        } else {
                           const seals = Number(r.sealCost || 0);
@@ -2257,18 +2251,19 @@ export default function Home() {
                           if (bp > 0 || sp > 0) {
                             if (bp > 0) secretShopGoldSpent += bp;
                             const sealVal = seals * 5000;
-                            recipeSealCost += sealVal;
-                            recipeProfit += (sp - bp - sealVal);
+                            recipeSealCostValue += sealVal;
+                            secretShopCostValue += (bp + sealVal);
+                            secretShopRewardValue += sp;
                           }
                        }
                     });
 
-                    // 순 골드 보정 (상점 지출액 복원)
+                    const totalConsumedValue = tokenCost + potionCost + secretShopCostValue;
                     const restoredPureGold = pureGoldInput + secretShopGoldSpent;
 
                     // 최종 교환 가능재화 가치
-                    const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit + customTradableValue;
-                    const finalBoundValue = totalBoundValue - recipeSealCost;
+                    const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + secretShopRewardValue + customTradableValue;
+                    const finalBoundValue = totalBoundValue - recipeSealCostValue;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
                     
                     // 합계 누적 (입력 데이터가 있을 경우에만 포함)
@@ -2313,7 +2308,7 @@ export default function Home() {
                             {/* 12 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.crystal ? Number(form.crystal).toLocaleString() : '-'}</td>
                             {/* 13 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
                             
-                            {/* 14 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs}</td>
+                            {/* 14 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs > 0 ? runs : '-'}</td>
                             {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>
                               <button 
                                 onClick={() => updateCharForm(c.id, 'usePotion', !form.usePotion)}
@@ -2330,6 +2325,7 @@ export default function Home() {
                                 {form.usePotion ? '사용' : '미사용'}
                               </button>
                             </td>
+                            {/* 15.1 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>{secretShopGoldSpent > 0 ? secretShopGoldSpent.toLocaleString() : '-'}</td>
                             
                              {/* 16-17 특별상점 */} 
                              <td colSpan="2" style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle' }}>
@@ -2460,6 +2456,7 @@ export default function Home() {
                             {/* 13 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
                             {/* 14 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
                             {/* 15 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
+                            {/* 15.1 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumSecretShopSpent > 0 ? sumSecretShopSpent.toLocaleString() : '-'}</td>
                             {/* 16,17 */} <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
                             {/* 18 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
                             {/* 19 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
@@ -2483,6 +2480,7 @@ export default function Home() {
                               <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumFlawlessCrystal / countWithData).toLocaleString() : '-'}</td>
                               <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumTokens / countWithData) : '-'}</td>
                               <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumPotions / countWithData) : '-'}</td>
+                              <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumSecretShopSpent / countWithData).toLocaleString() : '-'}</td>
                               <td colSpan="2" style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>-</td>
                               <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumBoundValue / countWithData).toLocaleString() : '-'}</td>
                               <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumTradableValue / countWithData).toLocaleString() : '-'}</td>
