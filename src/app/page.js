@@ -3236,8 +3236,6 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
                     )}
                  </div>
               )}
-                </div>
-             )}
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
              <button onClick={handleClose} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
