@@ -5,41 +5,41 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 const SERVER_LIST = [
   { id: "cain", name: "카인" },
-  { id: "diregie", name: "디레지에" },
-  { id: "siroco", name: "시로코" },
-  { id: "prey", name: "프레이" },
-  { id: "casillas", name: "카시야스" },
-  { id: "hilder", name: "힐더" },
-  { id: "anton", name: "안톤" },
+  { id: "diregie", name: "?�레지?? },
+  { id: "siroco", name: "?�로�? },
+  { id: "prey", name: "?�레?? },
+  { id: "casillas", name: "카시?�스" },
+  { id: "hilder", name: "?�더" },
+  { id: "anton", name: "?�톤" },
   { id: "bakal", name: "바칼" }
 ];
 
 const getGradeTier = (pts) => {
   if (!pts) return null;
-  if (pts >= 2550) return { rarity: "태초", tier: "" };
+  if (pts >= 2550) return { rarity: "?�초", tier: "" };
   const tiers = [
-    { p: 2440, r: "에픽", t: "V" }, { p: 2355, r: "에픽", t: "IV" }, { p: 2270, r: "에픽", t: "III" }, { p: 2185, r: "에픽", t: "II" }, { p: 2100, r: "에픽", t: "I" },
-    { p: 1990, r: "레전더리", t: "V" }, { p: 1905, r: "레전더리", t: "IV" }, { p: 1820, r: "레전더리", t: "III" }, { p: 1735, r: "레전더리", t: "II" }, { p: 1650, r: "레전더리", t: "I" },
-    { p: 1540, r: "유니크", t: "V" }, { p: 1455, r: "유니크", t: "IV" }, { p: 1370, r: "유니크", t: "III" }, { p: 1285, r: "유니크", t: "II" }, { p: 1200, r: "유니크", t: "I" },
-    { p: 1070, r: "레어", t: "V" }, { p: 990, r: "레어", t: "IV" }, { p: 910, r: "레어", t: "III" }, { p: 830, r: "레어", t: "II" }, { p: 750, r: "레어", t: "I" }
+    { p: 2440, r: "?�픽", t: "V" }, { p: 2355, r: "?�픽", t: "IV" }, { p: 2270, r: "?�픽", t: "III" }, { p: 2185, r: "?�픽", t: "II" }, { p: 2100, r: "?�픽", t: "I" },
+    { p: 1990, r: "?�전?�리", t: "V" }, { p: 1905, r: "?�전?�리", t: "IV" }, { p: 1820, r: "?�전?�리", t: "III" }, { p: 1735, r: "?�전?�리", t: "II" }, { p: 1650, r: "?�전?�리", t: "I" },
+    { p: 1540, r: "?�니??, t: "V" }, { p: 1455, r: "?�니??, t: "IV" }, { p: 1370, r: "?�니??, t: "III" }, { p: 1285, r: "?�니??, t: "II" }, { p: 1200, r: "?�니??, t: "I" },
+    { p: 1070, r: "?�어", t: "V" }, { p: 990, r: "?�어", t: "IV" }, { p: 910, r: "?�어", t: "III" }, { p: 830, r: "?�어", t: "II" }, { p: 750, r: "?�어", t: "I" }
   ];
   for (let tier of tiers) { if (pts >= tier.p) return { rarity: tier.r, tier: tier.t }; }
-  return { rarity: "등급 없음", tier: "" };
+  return { rarity: "?�급 ?�음", tier: "" };
 };
 
 const getTierClass = (rarity) => {
-  if(rarity === '태초') return 'tier-태초';
-  if(rarity === '에픽') return 'tier-에픽';
-  if(rarity === '레전더리') return 'tier-레전더리';
-  if(rarity === '유니크') return 'tier-유니크';
-  if(rarity === '레어') return 'tier-레어';
+  if(rarity === '?�초') return 'tier-?�초';
+  if(rarity === '?�픽') return 'tier-?�픽';
+  if(rarity === '?�전?�리') return 'tier-?�전?�리';
+  if(rarity === '?�니??) return 'tier-?�니??;
+  if(rarity === '?�어') return 'tier-?�어';
   return '';
 };
 
 const GradeBadge = ({ points }) => {
   if (!points) return null;
   const grade = getGradeTier(points);
-  if (!grade || grade.rarity === '등급 없음') return null;
+  if (!grade || grade.rarity === '?�급 ?�음') return null;
   return (
     <span className={getTierClass(grade.rarity)} style={{ fontSize: '0.85rem', marginLeft: '0.2rem' }}>
       ({grade.rarity}{grade.tier ? ` ${grade.tier}` : ''})
@@ -48,28 +48,28 @@ const GradeBadge = ({ points }) => {
 };
 
 const ADVANCED_DUNGEONS = [
-  { name: '배교자의 성', fame: 101853 },
-  { name: '별거북 대서고', fame: 91582 },
-  { name: '해방된 흉몽', fame: 71179 },
-  { name: '죽음의 여신전', fame: 55950 },
-  { name: '애쥬어 메인', fame: 44929 },
-  { name: '달이 잠긴 호수', fame: 34749 }
+  { name: '배교?�의 ??, fame: 101853 },
+  { name: '별거�??�?�고', fame: 91582 },
+  { name: '?�방???�몽', fame: 71179 },
+  { name: '죽음???�신??, fame: 55950 },
+  { name: '?��???메인', fame: 44929 },
+  { name: '?�이 ?�긴 ?�수', fame: 34749 }
 ];
 
 const RAIDS = [
-  { name: '이내 황혼전', fame: 72688 },
-  { name: '디레지에 레이드', fame: 63257 }
+  { name: '?�내 ?�혼??, fame: 72688 },
+  { name: '?�레지???�이??, fame: 63257 }
 ];
 
 const APOCALYPSE = [
-  { name: '2단계', fame: 105881 },
-  { name: '1단계', fame: 98171 },
+  { name: '2?�계', fame: 105881 },
+  { name: '1?�계', fame: 98171 },
   { name: '매칭', fame: 73993 }
 ];
 
 const getRole = (c) => {
   if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
-  const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+  const bufferKeywords = ['?�러메딕', '?�루?�이??, '뮤즈', '?�챈?�리??];
   const jobName = c.base?.jobGrowName || c.base?.jobName || '';
   return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
 };
@@ -123,11 +123,11 @@ export default function Home() {
   const [activeLootModal, setActiveLootModal] = useState(null);
 
   const [auctionPrices, setAuctionPrices] = useState({
-     '무결점 라이언 코어': 0,
-     '무결점 조화의 결정체': 0,
-     '닳아버린 순례의 증표': 0,
-     '순례의 인장(1회 교환 가능)': 0,
-     '순례의 인장(1회 교환 가능) 교환권 1개 상자': 0
+     '무결???�이??코어': 0,
+     '무결??조화??결정�?: 0,
+     '?�아버린 ?��???증표': 0,
+     '?��????�장(1??교환 가??': 0,
+     '?��????�장(1??교환 가?? 교환�?1�??�자': 0
   });
   const [isFetchingPrices, setIsFetchingPrices] = useState(false);
 
@@ -163,9 +163,9 @@ export default function Home() {
   
   
   const chartData = React.useMemo(() => {
-    // --- 일자별 모드: 매일 06:00 기준으로 당일 최신 명성값을 1포인트로 집계 ---
+    // --- ?�자�?모드: 매일 06:00 기�??�로 ?�일 최신 명성값을 1?�인?�로 집계 ---
     if (chartViewMode === 'daily') {
-      // 어떤 로그를 대상으로 할지 결정
+      // ?�떤 로그�??�?�으�??��? 결정
       const relevantLogs = historyLogs
         .filter(l => l.fameChange && (historyFilterChar === '' || l.charId === historyFilterChar))
         .sort((a, b) => a.timestamp - b.timestamp);
@@ -173,21 +173,21 @@ export default function Home() {
       if (relevantLogs.length === 0) {
         if (characters.length > 0) {
           const now = new Date();
-          return [{ time: Date.now(), formattedTime: '현재', fame: historyFilterChar === '' ? characters.reduce((acc, c) => acc + c.base.fame, 0) : (characters.find(c => c.id === historyFilterChar)?.base.fame ?? 0) }];
+          return [{ time: Date.now(), formattedTime: '?�재', fame: historyFilterChar === '' ? characters.reduce((acc, c) => acc + c.base.fame, 0) : (characters.find(c => c.id === historyFilterChar)?.base.fame ?? 0) }];
         }
         return [];
       }
 
-      // 각 타임스탬프에 대해 '일자 키' 계산 (06:00 기준 → KST=UTC+9, 06:00 KST = 21:00 UTC 전날)
+      // �??�?�스?�프???�??'?�자 ?? 계산 (06:00 기�? ??KST=UTC+9, 06:00 KST = 21:00 UTC ?�날)
       const getDayKey = (ts) => {
         const d = new Date(ts);
-        // 06:00 KST 기준: UTC 시간에서 -9+6=-3시간 빼기 → 같은 날로 묶기
-        const offset = (9 - 6) * 60 * 60 * 1000; // 3시간
+        // 06:00 KST 기�?: UTC ?�간?�서 -9+6=-3?�간 빼기 ??같�? ?�로 묶기
+        const offset = (9 - 6) * 60 * 60 * 1000; // 3?�간
         const adjusted = new Date(ts - offset);
         return `${adjusted.getUTCFullYear()}-${String(adjusted.getUTCMonth()+1).padStart(2,'0')}-${String(adjusted.getUTCDate()).padStart(2,'0')}`;
       };
 
-      // 각 타임스탬프별 전체 명성값 계산 (이벤트 모드와 동일 로직)
+      // �??�?�스?�프�??�체 명성�?계산 (?�벤??모드?� ?�일 로직)
       const allTimestamps = [...new Set(historyLogs.filter(l => l.fameChange).map(l => l.timestamp))].sort((a,b)=>a-b);
       const computeFameAt = (t) => {
         let total = 0;
@@ -208,16 +208,16 @@ export default function Home() {
         return total;
       };
 
-      // 관련 타임스탬프만 추출
+      // 관???�?�스?�프�?추출
       const targetTimestamps = historyFilterChar === ''
         ? allTimestamps
         : [...new Set(historyLogs.filter(l => l.charId === historyFilterChar && l.fameChange).map(l => l.timestamp))].sort((a,b)=>a-b);
 
-      // 일자별로 가장 마지막 타임스탬프 선택
+      // ?�자별로 가??마�?�??�?�스?�프 ?�택
       const dayMap = {};
       targetTimestamps.forEach(t => {
         const key = getDayKey(t);
-        dayMap[key] = t; // 덮어쓰면 자연스럽게 당일 최신값
+        dayMap[key] = t; // ??��?�면 ?�연?�럽�??�일 최신�?
       });
 
       const days = Object.keys(dayMap).sort();
@@ -228,7 +228,7 @@ export default function Home() {
         return { time: t, formattedTime: `${m}/${d}`, fame };
       });
 
-      // 시작 포인트 추가
+      // ?�작 ?�인??추�?
       if (dataPoints.length > 0) {
         const firstT = targetTimestamps[0];
         let initFame = 0;
@@ -243,23 +243,23 @@ export default function Home() {
         }
         const firstDay = getDayKey(firstT);
         const [y,m,d] = firstDay.split('-');
-        dataPoints.unshift({ time: firstT - 1, formattedTime: `${m}/${d} 이전`, fame: initFame });
+        dataPoints.unshift({ time: firstT - 1, formattedTime: `${m}/${d} ?�전`, fame: initFame });
       }
 
-      // 현재 포인트 추가
+      // ?�재 ?�인??추�?
       const now = Date.now();
       const lastT = targetTimestamps[targetTimestamps.length - 1];
       if (now - lastT > 60000) {
         let curFame = historyFilterChar === ''
           ? characters.reduce((acc,c) => acc+c.base.fame, 0)
           : (characters.find(c=>c.id===historyFilterChar)?.base.fame ?? (() => { const cl = historyLogs.filter(l=>l.charId===historyFilterChar&&l.fameChange).sort((a,b)=>a.timestamp-b.timestamp); return cl.length>0?cl[cl.length-1].fameChange.new:0; })());
-        dataPoints.push({ time: now, formattedTime: '현재', fame: curFame });
+        dataPoints.push({ time: now, formattedTime: '?�재', fame: curFame });
       }
 
       return dataPoints;
     }
 
-    // --- 이벤트 모드 (기존 로직) ---
+    // --- ?�벤??모드 (기존 로직) ---
     const timestamps = new Set();
     historyLogs.forEach(log => {
         if (log.fameChange) timestamps.add(log.timestamp);
@@ -271,7 +271,7 @@ export default function Home() {
         if (characters.length > 0) {
             return [{
                 time: Date.now(),
-                formattedTime: '현재',
+                formattedTime: '?�재',
                 fame: characters.reduce((acc, c) => acc + c.base.fame, 0)
             }];
         }
@@ -288,7 +288,7 @@ export default function Home() {
         if (targetTimes.length === 0) {
             const char = characters.find(c => c.id === historyFilterChar);
             if (char) {
-                return [{ time: Date.now(), formattedTime: '현재', fame: char.base.fame }];
+                return [{ time: Date.now(), formattedTime: '?�재', fame: char.base.fame }];
             }
             return [];
         }
@@ -363,7 +363,7 @@ export default function Home() {
        
        dataPoints.unshift({
            time: firstTime - 1,
-           formattedTime: `시작`, 
+           formattedTime: `?�작`, 
            fame: initialTotalFame
        });
     }
@@ -383,7 +383,7 @@ export default function Home() {
         
         dataPoints.push({
             time: now,
-            formattedTime: '현재',
+            formattedTime: '?�재',
             fame: currentTotal
         });
     }
@@ -411,21 +411,21 @@ export default function Home() {
   });
   
   const [customOptions, setCustomOptions] = useState({
-    enchant: ['기본', '가성비', '준종결', '종결'],
-    title: ['기본', '가성비', '준종결', '종결'],
-    creature: ['기본', '가성비', '준종결', '종결'],
-    creatureArtifact: ['없음', '언커먼', '레어', '유니크'],
-    avatar: ['기본', '이벤압', '레압', '클레압', '엔드'],
-    emblem: ['없음', '화려', '찬란', '다발'],
-    platEmblem: ['없음', '잡플티', '유효', '종결'],
-    skinAvatar: ['없음', '기본', '특판', '프리미엄'],
-    skinSocket: ['막힘', '뚫림'],
-    skinEmblem: ['없음', '화려', '찬란'],
-    weaponAvatar: ['없음', '기본', '레어'],
-    weaponSocket: ['막힘', '뚫림'],
-    weaponEmblem: ['없음', '화려', '찬란'],
-    aura: ['기본', '가성비', '준종결', '종결'],
-    auraEmblem: ['없음', '화려', '찬란']
+    enchant: ['기본', '가?�비', '준종결', '종결'],
+    title: ['기본', '가?�비', '준종결', '종결'],
+    creature: ['기본', '가?�비', '준종결', '종결'],
+    creatureArtifact: ['?�음', '?�커�?, '?�어', '?�니??],
+    avatar: ['기본', '?�벤??, '?�압', '?�레??, '?�드'],
+    emblem: ['?�음', '?�려', '찬�?', '?�발'],
+    platEmblem: ['?�음', '?�플??, '?�효', '종결'],
+    skinAvatar: ['?�음', '기본', '?�판', '?�리미엄'],
+    skinSocket: ['막힘', '?�림'],
+    skinEmblem: ['?�음', '?�려', '찬�?'],
+    weaponAvatar: ['?�음', '기본', '?�어'],
+    weaponSocket: ['막힘', '?�림'],
+    weaponEmblem: ['?�음', '?�려', '찬�?'],
+    aura: ['기본', '가?�비', '준종결', '종결'],
+    auraEmblem: ['?�음', '?�려', '찬�?']
   });
 
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -433,7 +433,7 @@ export default function Home() {
 
   const autoRefreshDone = React.useRef(false);
 
-  // Stale Closure 방지용 최신 상태 프록시 Ref
+  // Stale Closure 방�???최신 ?�태 ?�록??Ref
   const charsRef = React.useRef(characters);
   const logsRef = React.useRef(historyLogs);
   const optsRef = React.useRef(customOptions);
@@ -443,14 +443,14 @@ export default function Home() {
   const pilgrimageRef = React.useRef(pilgrimageHistory);
   useEffect(() => { pilgrimageRef.current = pilgrimageHistory; }, [pilgrimageHistory]);
   
-  // 클라우드 버전 관리를 위한 Ref (다중 탭 덮어쓰기 원천 차단용)
+  // ?�라?�드 버전 관리�? ?�한 Ref (?�중 ????��?�기 ?�천 차단??
   const lastCloudUpdateAtRef = React.useRef(0);
 
   useEffect(() => { charsRef.current = characters; }, [characters]);
   useEffect(() => { logsRef.current = historyLogs; }, [historyLogs]);
   useEffect(() => { optsRef.current = customOptions; }, [customOptions]);
 
-  // --- 클라우드 동기화 엔진 ---
+  // --- ?�라?�드 ?�기???�진 ---
   const syncUpCloudData = async (key, updatedCharacters, updatedLogs, updatedOpts, updatedMerc, forceOverride = false, updatedPilgrimage = null) => {
     if(!key) return;
     try {
@@ -472,27 +472,27 @@ export default function Home() {
       const resData = await res.json();
       
       if (resData.conflict) {
-          console.warn("다중 탭 충돌 감지! 클라우드에 더 최신 데이터가 존재하여 현재 구형 뷰의 덮어쓰기를 차단하고 클라우드를 내려받습니다.");
+          console.warn("?�중 ??충돌 감�?! ?�라?�드????최신 ?�이?��? 존재?�여 ?�재 구형 뷰의 ??��?�기�?차단?�고 ?�라?�드�??�려받습?�다.");
           await syncDownCloudData(key, updatedCharacters, updatedLogs, updatedOpts);
           return;
       }
       
       if (resData.success && resData.newUpdateAt) {
-          lastCloudUpdateAtRef.current = resData.newUpdateAt; // 새 버전으로 지식 갱신
+          lastCloudUpdateAtRef.current = resData.newUpdateAt; // ??버전?�로 지??갱신
       }
     } catch(e) { console.error(e) }
   };
 
   const handleManualCloudSync = async () => {
     if (!apiKey) {
-       alert("API 키를 먼저 설정해야 합니다.");
+       alert("API ?��? 먼�? ?�정?�야 ?�니??");
        return;
     }
     setIsCloudSyncing(true);
-    // 버튼 등을 통한 수동 동기화 시에는 억지로라도 덮어씌움 (forceOverride = true)
+    // 버튼 ?�을 ?�한 ?�동 ?�기???�에???��?로라????��?��? (forceOverride = true)
     await syncUpCloudData(apiKey, characters, historyLogs, customOptions, mercRef.current, true);
     setIsCloudSyncing(false);
-    alert("현재 기기의 최신 데이터가 클라우드 서버에 수동으로 백업되었습니다!");
+    alert("?�재 기기??최신 ?�이?��? ?�라?�드 ?�버???�동?�로 백업?�었?�니??");
   };
 
   const syncDownCloudData = async (targetKey, localChars, localLogs, localOpts) => {
@@ -503,7 +503,7 @@ export default function Home() {
       if (res.success && res.data) {
          const cData = res.data;
          
-         // 클라우드 버전 기록 흡수
+         // ?�라?�드 버전 기록 ?�수
          if (cData.lastUpdateAt) {
              lastCloudUpdateAtRef.current = cData.lastUpdateAt;
          }
@@ -531,7 +531,7 @@ export default function Home() {
             modified = true;
          }
          
-         // 클라우드가 텅 비어있고, 로컬에는 기존 데이터가 가득하다면 (첫 이주, Migration)
+         // ?�라?�드가 ??비어?�고, 로컬?�는 기존 ?�이?��? 가?�하?�면 (�??�주, Migration)
          if (!modified && (localChars?.length > 0 || localLogs?.length > 0)) {
             await syncUpCloudData(targetKey, localChars, localLogs, localOpts, mercRef.current);
          }
@@ -541,7 +541,7 @@ export default function Home() {
              return true;
          }
       } else if (res.success && (!res.data)) {
-         // 클라우드가 아예 null (키가 처음 생성된 상태)
+         // ?�라?�드가 ?�예 null (?��? 처음 ?�성???�태)
          if (localChars?.length > 0 || localLogs?.length > 0) {
             await syncUpCloudData(targetKey, localChars, localLogs, localOpts, mercRef.current);
          }
@@ -554,12 +554,12 @@ export default function Home() {
   useEffect(() => {
     if (!apiKey || characters.length === 0) return;
     const timer = setInterval(() => {
-      // 최신 Ref를 전달해서 Stale Closure 우회
+      // 최신 Ref�??�달?�서 Stale Closure ?�회
       handleRefreshAll(charsRef.current, apiKey);
     }, 60000);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKey]); // characters가 업데이트 될 때마다 Interval이 뜯어지는 것도 방지
+  }, [apiKey]); // characters가 ?�데?�트 ???�마??Interval????��지??것도 방�?
 
   useEffect(() => {
     const key = localStorage.getItem("DNF_API_KEY") || "";
@@ -581,12 +581,12 @@ export default function Home() {
       try {
         const parsed = JSON.parse(savedOpts);
         setCustomOptions({
-          enchant: ['기본', '가성비', '준종결', '종결'],
-          title: ['기본', '가성비', '준종결', '종결'],
-          aura: ['기본', '가성비', '준종결', '종결'],
-          creature: ['기본', '가성비', '준종결', '종결'],
-          avatar: ['기본', '이벤압', '레압', '클레압', '찬작', '엔드'],
-          emblem: ['기본', '화려', '찬란', '다발', '종결플티'],
+          enchant: ['기본', '가?�비', '준종결', '종결'],
+          title: ['기본', '가?�비', '준종결', '종결'],
+          aura: ['기본', '가?�비', '준종결', '종결'],
+          creature: ['기본', '가?�비', '준종결', '종결'],
+          avatar: ['기본', '?�벤??, '?�압', '?�레??, '찬작', '?�드'],
+          emblem: ['기본', '?�려', '찬�?', '?�발', '종결?�티'],
           ...parsed
         });
       } catch(e) {}
@@ -649,11 +649,11 @@ export default function Home() {
       }
     };
 
-    // 마운트 시 클라우드 동기화 수행
+    // 마운?????�라?�드 ?�기???�행
     if (key) {
       syncDownCloudData(key, loadedChars, loadedLogs, loadedOpts).then((cloudHydrated) => {
-         // 동기화가 끝난 후, 이미 클라우드 데이터를 받았어도 자동갱신 로직은 수행을 권장 (다만 클라우드가 더 최신이므로 충돌 가능성 있음)
-         // 현재 최적화 방식으론, 클라우드 데이터를 다운받은 후 그냥 polling 큐에 맡기는 것이 안전함.
+         // ?�기?��? ?�난 ?? ?��? ?�라?�드 ?�이?��? 받았?�도 ?�동갱신 로직?� ?�행??권장 (?�만 ?�라?�드가 ??최신?��?�?충돌 가?�성 ?�음)
+         // ?�재 최적??방식?�론, ?�라?�드 ?�이?��? ?�운받�? ??그냥 polling ?�에 맡기??것이 ?�전??
          if (!cloudHydrated) {
              triggerLocalMountRefresh();
          }
@@ -684,7 +684,7 @@ export default function Home() {
     e.preventDefault();
     if (!charName.trim()) return;
     if (!apiKey) {
-      alert("API KEY를 먼저 설정해주세요.");
+      alert("API KEY�?먼�? ?�정?�주?�요.");
       setShowSettings(true);
       return;
     }
@@ -698,14 +698,14 @@ export default function Home() {
       return;
     }
 
-    const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+    const bufferKeywords = ['?�러메딕', '?�루?�이??, '뮤즈', '?�챈?�리??];
     const jobName = data.base?.jobGrowName || data.base?.jobName || '';
     const autoRole = bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
     data.manual = { role: autoRole };
 
     // Check duplicate
     if (characters.some(c => c.id === data.id)) {
-      alert("이미 등록된 캐릭터입니다.");
+      alert("?��? ?�록??캐릭?�입?�다.");
       return;
     }
 
@@ -714,7 +714,7 @@ export default function Home() {
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
     setCharName('');
     
-    // Cloud Sync (유저 인터랙션 = forceOverride true)
+    // Cloud Sync (?��? ?�터?�션 = forceOverride true)
     if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, mercRef.current, true);
   };
 
@@ -770,7 +770,7 @@ export default function Home() {
               newLogs.push(logEntry);
            }
            
-           // manual 역시 과거 1분 전 상태가 아니라 가장 최신 상태인 charsRef.current에서 가져와야 레이스 컨디션을 방지함
+           // manual ??�� 과거 1�????�태가 ?�니??가??최신 ?�태??charsRef.current?�서 가?��????�이??컨디?�을 방�???
            const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
            return { ...res, manual: latestManual };
         }
@@ -783,10 +783,10 @@ export default function Home() {
 
     if (newLogs.length > 0) {
        setHistoryLogs(prev => {
-          const merged = [...newLogs, ...prev].slice(0, 1000); // 최대 1000개 기록 제한
+          const merged = [...newLogs, ...prev].slice(0, 1000); // 최�? 1000�?기록 ?�한
           localStorage.setItem('DNF_HISTORY', JSON.stringify(merged));
           
-          // 무조건 최신 optsRef.current를 전달하여 과거 커스텀옵션이 클라우드에 덮어씌워지는 대참사(Stale) 방지
+          // 무조�?최신 optsRef.current�??�달?�여 과거 커스?�?�션???�라?�드????��?�워지???�참사(Stale) 방�?
           if (keyToUse) syncUpCloudData(keyToUse, updatedList, merged, optsRef.current, mercRef.current);
           
           return merged;
@@ -797,7 +797,7 @@ export default function Home() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("정말로 이 캐릭터를 삭제하시겠습니까?")) return;
+    if (!window.confirm("?�말�???캐릭?��? ??��?�시겠습?�까?")) return;
     const newList = characters.filter(c => c.id !== id);
     setCharacters(newList);
     localStorage.setItem('DNF_CHARACTERS', JSON.stringify(newList));
@@ -808,7 +808,7 @@ export default function Home() {
     const existingManual = char.manual || {};
     
     let defaultRole = 'dealer';
-    const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+    const bufferKeywords = ['?�러메딕', '?�루?�이??, '뮤즈', '?�챈?�리??];
     const jobName = char.base?.jobGrowName || char.base?.jobName || '';
     if (bufferKeywords.some(kw => jobName.includes(kw))) {
         defaultRole = 'buffer';
@@ -865,7 +865,7 @@ export default function Home() {
   };
 
   const deleteLog = (id) => {
-    if (!window.confirm("이 성장 기록을 정말 삭제하시겠습니까?")) return;
+    if (!window.confirm("???�장 기록???�말 ??��?�시겠습?�까?")) return;
     setHistoryLogs(prev => {
       const updated = prev.filter(L => L.id !== id);
       localStorage.setItem('DNF_HISTORY', JSON.stringify(updated));
@@ -896,35 +896,35 @@ export default function Home() {
         <h1 className="title">DNF Info Manager</h1>
         <div style={{display:'flex', gap:'0.5rem'}}>
           <button onClick={handleManualCloudSync} disabled={isCloudSyncing} style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8' }}>
-            {isCloudSyncing ? '☁️ 동기화 중...' : '☁️ 수동 클라우드 백업'}
+            {isCloudSyncing ? '?�️ ?�기??�?..' : '?�️ ?�동 ?�라?�드 백업'}
           </button>
-          <button onClick={openOptionsModal}>🛠️ 옵션 편집</button>
-          <button onClick={() => setShowSettings(true)}>⚙️ API 설정</button>
+          <button onClick={openOptionsModal}>?���??�션 ?�집</button>
+          <button onClick={() => setShowSettings(true)}>?�️ API ?�정</button>
         </div>
       </header>
 
       <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
-         <button className={`tab-btn ${activeTab === 'roster' ? 'active' : ''}`} onClick={() => setActiveTab('roster')}>👥 캐릭터 로스터</button>
-         <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>📜 성장 일지 기록</button>
-         <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>🎯 다음 던전 목표 현황</button>
-         <button className={`tab-btn ${activeTab === 'merc' ? 'active' : ''}`} onClick={() => setActiveTab('merc')}>⚔️ 용병단 레벨</button>
-         <button className={`tab-btn ${activeTab === 'pilgrimage' ? 'active' : ''}`} onClick={() => setActiveTab('pilgrimage')}>✨ 광휘의 순례</button>
+         <button className={`tab-btn ${activeTab === 'roster' ? 'active' : ''}`} onClick={() => setActiveTab('roster')}>?�� 캐릭??로스??/button>
+         <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>?�� ?�장 ?��? 기록</button>
+         <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>?�� ?�음 ?�전 목표 ?�황</button>
+         <button className={`tab-btn ${activeTab === 'merc' ? 'active' : ''}`} onClick={() => setActiveTab('merc')}>?�️ ?�병???�벨</button>
+         <button className={`tab-btn ${activeTab === 'pilgrimage' ? 'active' : ''}`} onClick={() => setActiveTab('pilgrimage')}>??광휘???��?</button>
       </div>
 
       {activeTab === 'roster' && (
       <>
-        {/* 로스터 서브탭 */}
+        {/* 로스???�브??*/}
         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.2rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
           <button
             className={`tab-btn ${rosterSubTab === 'overview' ? 'active' : ''}`}
             onClick={() => setRosterSubTab('overview')}
             style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}
-          >📋 캐릭터 종합 정보</button>
+          >?�� 캐릭??종합 ?�보</button>
           <button
             className={`tab-btn ${rosterSubTab === 'items' ? 'active' : ''}`}
             onClick={() => setRosterSubTab('items')}
             style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}
-          >🎽 캐릭터 아이템 현황</button>
+          >?�� 캐릭???�이???�황</button>
         </div>
         {rosterSubTab === 'overview' && (
         <section className="glass-panel" style={{ marginBottom: '2rem' }}>
@@ -934,18 +934,18 @@ export default function Home() {
           </select>
           <input 
             type="text" 
-            placeholder="캐릭터명 입력" 
+            placeholder="캐릭?�명 ?�력" 
             value={charName} 
             onChange={e => setCharName(e.target.value)} 
           />
           <button type="submit" disabled={isAdding}>
-            {isAdding ? <div className="loader"/> : "캐릭터 추가"}
+            {isAdding ? <div className="loader"/> : "캐릭??추�?"}
           </button>
           
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
 
              <button type="button" onClick={() => handleRefreshAll()} disabled={isRefreshing || characters.length === 0} style={{ background: '#475569' }}>
-               {isRefreshing ? <div className="loader"/> : "🔄 전체 갱신"}
+               {isRefreshing ? <div className="loader"/> : "?�� ?�체 갱신"}
              </button>
           </div>
         </form>
@@ -956,7 +956,7 @@ export default function Home() {
       <section className="glass-panel table-wrapper">
         {characters.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-            상단의 폼을 이용해 관리할 캐릭터를 추가해주세요.
+            ?�단???�을 ?�용??관리할 캐릭?��? 추�??�주?�요.
           </div>
         ) : (
           (() => {
@@ -976,17 +976,17 @@ export default function Home() {
                     <table style={{ tableLayout: 'fixed', width: '100%' }}>
                       <thead>
                         <tr>
-                          <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
+                          <th style={{ width: '5%', textAlign: 'center' }}>?�버</th>
                           <th style={{ width: '8%', textAlign: 'center' }}>직업</th>
-                          <th style={{ width: '16%', textAlign: 'center' }}>캐릭터명</th>
+                          <th style={{ width: '16%', textAlign: 'center' }}>캐릭?�명</th>
                           <th style={{ width: '6%', textAlign: 'center' }}>명성</th>
-                          <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
-                          <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
-                          <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
-                          <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
-                          <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
-                          <th style={{ width: '7%', textAlign: 'center' }}>던담</th>
-                          <th style={{ width: '7%', textAlign: 'center' }}>관리</th>
+                          <th style={{ width: '11%', textAlign: 'center' }}>?�급?�전</th>
+                          <th style={{ width: '10%', textAlign: 'center' }}>?�이??/th>
+                          <th style={{ width: '10%', textAlign: 'center' }}>?�포칼립??/th>
+                          <th style={{ width: '12%', textAlign: 'center' }}>?�비 (?�수)</th>
+                          <th style={{ width: '8%', textAlign: 'center' }}>?�약 (?�수)</th>
+                          <th style={{ width: '7%', textAlign: 'center' }}>?�담</th>
+                          <th style={{ width: '7%', textAlign: 'center' }}>관�?/th>
                         </tr>
                       </thead>
                       <tbody>
@@ -995,7 +995,7 @@ export default function Home() {
                             return (
                               <tr key={`empty-${mIdx}`}>
                                 <td colSpan="11" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem', background: 'rgba(0,0,0,0.2)' }}>
-                                  {mIdx < 3 ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
+                                  {mIdx < 3 ? '?�러 ?�리 비어?�음' : '버퍼 ?�리 비어?�음'}
                                 </td>
                               </tr>
                             );
@@ -1010,14 +1010,14 @@ export default function Home() {
                                   borderBottom: '1px solid rgba(255,255,255,0.05)'
                                 }}
                               >
-                                <td data-label="서버" style={{ textAlign: 'center' }}>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
+                                <td data-label="?�버" style={{ textAlign: 'center' }}>{SERVER_LIST.find(s => s.id === c.base.server)?.name || c.base.server}</td>
                   <td data-label="직업" style={{ textAlign: 'center' }}>{c.base.jobGrowName}</td>
-                    <td data-label="캐릭터명" style={{ textAlign: 'center' }}>
+                    <td data-label="캐릭?�명" style={{ textAlign: 'center' }}>
                       <div style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>{c.base.charName}</div>
                     </td>
                   <td data-label="명성" style={{ textAlign: 'center' }}>
                     {(() => {
-                        const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || gIdx < 2);
+                        const filteredRaids = RAIDS.filter(r => r.name !== '?�내 ?�혼?? || gIdx < 2);
                         const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
                         const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
                         const diffD = nextDungeon ? nextDungeon.fame - c.base.fame : null;
@@ -1025,13 +1025,13 @@ export default function Home() {
                         const isImminent = (diffD !== null && diffD < 1000) || (diffR !== null && diffR < 1000);
                         return (
                           <div style={{ color: isImminent ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textShadow: isImminent ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }}>
-                            {isImminent && <span style={{ marginRight: '3px' }}>🔥</span>}
+                            {isImminent && <span style={{ marginRight: '3px' }}>?��</span>}
                             {c.base.fame.toLocaleString()}
                           </div>
                         );
                     })()}
                   </td>
-                  <td data-label="상급던전" style={{ textAlign: 'center' }}>
+                  <td data-label="?�급?�전" style={{ textAlign: 'center' }}>
                     {(() => {
                       const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
                       const diff = nextDungeon ? nextDungeon.fame - c.base.fame : null;
@@ -1051,7 +1051,7 @@ export default function Home() {
                               fontWeight: isImminent ? 'bold' : 'normal',
                               boxShadow: isImminent ? '0 0 6px rgba(234, 179, 8, 0.3)' : 'none'
                             }}>
-                              {isImminent ? '🔥' : '🚀'} {nextDungeon.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#f87171' }}>{diff.toLocaleString()}</strong>
+                              {isImminent ? '?��' : '??'} {nextDungeon.name}까�? <strong style={{ color: isImminent ? '#fde047' : '#f87171' }}>{diff.toLocaleString()}</strong>
                             </div>
                           )}
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
@@ -1073,9 +1073,9 @@ export default function Home() {
                       );
                     })()}
                   </td>
-                  <td data-label="레이드" style={{ textAlign: 'center' }}>
+                  <td data-label="?�이?? style={{ textAlign: 'center' }}>
                     {(() => {
-                      const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || gIdx < 2);
+                      const filteredRaids = RAIDS.filter(r => r.name !== '?�내 ?�혼?? || gIdx < 2);
                       const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
                       const raidDiff = nextRaid ? nextRaid.fame - c.base.fame : null;
                       const isImminent = raidDiff !== null && raidDiff < 1000;
@@ -1094,7 +1094,7 @@ export default function Home() {
                               fontWeight: isImminent ? 'bold' : 'normal',
                               boxShadow: isImminent ? '0 0 6px rgba(234, 179, 8, 0.3)' : 'none'
                             }}>
-                              {isImminent ? '🔥' : '⚔️'} {nextRaid.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#a855f7' }}>{raidDiff.toLocaleString()}</strong>
+                              {isImminent ? '?��' : '?�️'} {nextRaid.name}까�? <strong style={{ color: isImminent ? '#fde047' : '#a855f7' }}>{raidDiff.toLocaleString()}</strong>
                             </div>
                           )}
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center' }}>
@@ -1116,13 +1116,13 @@ export default function Home() {
                       );
                     })()}
                   </td>
-                  <td data-label="아포칼립스" style={{ textAlign: 'center' }}>
+                  <td data-label="?�포칼립?? style={{ textAlign: 'center' }}>
                     {(() => {
-                      // state: 0=진입불가, 1=매칭가능, 2=1단계가능, 3=2단계가능
+                      // state: 0=진입불�?, 1=매칭가?? 2=1?�계가?? 3=2?�계가??
                       const fame = c.base.fame;
                       const state = fame >= 105881 ? 3 : fame >= 98171 ? 2 : fame >= 73993 ? 1 : 0;
-                      const stateLabels = ['', '매칭', '1단계', '2단계'];
-                      const nextTargets = [{ name: '매칭', fame: 73993 }, { name: '1단계', fame: 98171 }, { name: '2단계', fame: 105881 }, null];
+                      const stateLabels = ['', '매칭', '1?�계', '2?�계'];
+                      const nextTargets = [{ name: '매칭', fame: 73993 }, { name: '1?�계', fame: 98171 }, { name: '2?�계', fame: 105881 }, null];
                       const currentLabel = stateLabels[state];
                       const nextTarget = state < 3 ? nextTargets[state] : null;
                       const diff = nextTarget ? nextTarget.fame - fame : null;
@@ -1132,7 +1132,7 @@ export default function Home() {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                             <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>-</span>
                             <div style={{ fontSize: '0.7rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.08)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.25)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
-                              {isImminent ? '🔥' : '💀'} 매칭까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
+                              {isImminent ? '?��' : '??'} 매칭까�? <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
                             </div>
                           </div>
                         );
@@ -1140,30 +1140,30 @@ export default function Home() {
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           <span style={{ background: 'rgba(251, 146, 60, 0.2)', color: '#fb923c', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', border: '1px solid rgba(251,146,60,0.35)' }}>
-                            💀 {currentLabel}
+                            ?? {currentLabel}
                           </span>
                           {nextTarget && (
                             <div style={{ fontSize: '0.7rem', color: isImminent ? '#fef08a' : '#fb923c', background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(251,146,60,0.05)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: isImminent ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(251,146,60,0.2)', whiteSpace: 'nowrap', fontWeight: isImminent ? 'bold' : 'normal' }}>
-                              {isImminent ? '🔥' : '▶'} {nextTarget.name}까지 <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
+                              {isImminent ? '?��' : '??} {nextTarget.name}까�? <strong style={{ color: isImminent ? '#fde047' : '#f97316' }}>{diff.toLocaleString()}</strong>
                             </div>
                           )}
                         </div>
                       );
                     })()}
                   </td>
-                  <td data-label="장비" style={{ textAlign: 'center' }}>
+                  <td data-label="?�비" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.equipment.setName}</div>
                     <div className={getTierClass(c.equipment.rarity)} style={{ fontSize: '0.7rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.equipment.gradeDesc} ({c.equipment.points})
                     </div>
                   </td>
-                  <td data-label="서약" style={{ textAlign: 'center' }}>
+                  <td data-label="?�약" style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '0.7rem', opacity: 0.8, letterSpacing: '-0.3px' }}>{c.oath.setName}</div>
                     <div className={getTierClass(c.oath.rarity)} style={{ fontSize: '0.7rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                       {c.oath.gradeDesc} ({c.oath.points})
                     </div>
                   </td>
-                  <td data-label="던담" style={{ textAlign: 'center' }}>
+                  <td data-label="?�담" style={{ textAlign: 'center' }}>
                     {c.charId ? (
                       <a 
                         href={`https://dundam.xyz/character?server=${c.base.server}&key=${c.charId}`} 
@@ -1171,16 +1171,16 @@ export default function Home() {
                         rel="noopener noreferrer"
                         style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }}
                       >
-                        조회 🔗
+                        조회 ?��
                       </a>
                     ) : (
                       <span style={{ color: 'var(--text-muted)' }}>-</span>
                     )}
                   </td>
-                  <td data-label="관리" style={{ textAlign: 'center' }}>
+                  <td data-label="관�? style={{ textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
                       <button type="button" className="danger" style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem' }} onClick={() => handleDelete(c.id)}>
-                        🗑️
+                        ?���?
                       </button>
                     </div>
                   </td>
@@ -1200,30 +1200,30 @@ export default function Home() {
       </section>
       )}
 
-      {/* 캐릭터 아이템 현황 서브탭 */}
+      {/* 캐릭???�이???�황 ?�브??*/}
       {rosterSubTab === 'items' && (
         <section className="glass-panel" style={{ overflowX: 'auto' }}>
           <h3 style={{ margin: '0 0 1.2rem', fontSize: '0.7rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: '0.5rem' }}>
-            🎽 캐릭터 아이템 현황
-            <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '0.6rem', fontWeight: 'normal' }}>수동 입력 정보 기준</span>
+            ?�� 캐릭???�이???�황
+            <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '0.6rem', fontWeight: 'normal' }}>?�동 ?�력 ?�보 기�?</span>
           </h3>
           {characters.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>캐릭터를 먼저 추가해주세요.</div>
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>캐릭?��? 먼�? 추�??�주?�요.</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', color: '#cbd5e1', tableLayout: 'auto', minWidth: '900px' }}>
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e2e8f0', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>캐릭터명</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e2e8f0', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>캐릭?�명</th>
                   <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e2e8f0', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>직업</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>칭호</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#f472b6', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>오라</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#10b981', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>크리쳐</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#a78bfa', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>마부</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#fb923c', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>스위칭</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#818cf8', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>아바타</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e879f9', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>피부</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>무기압</th>
-                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#64748b', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>수동설정</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>�?��</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#f472b6', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>?�라</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#10b981', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>?�리�?/th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#a78bfa', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>마�?</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#fb923c', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>?�위�?/th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#818cf8', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>?�바?�</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#e879f9', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>?��?</th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>무기??/th>
+                  <th style={{ padding: '0.6rem 0.8rem', textAlign: 'center', color: '#64748b', fontWeight: 'bold', whiteSpace: 'nowrap', border: '1px solid rgba(255,255,255,0.07)' }}>?�동?�정</th>
                 </tr>
               </thead>
               <tbody>
@@ -1245,7 +1245,7 @@ export default function Home() {
                         return (
                           <tr key={`group-${gIdx}-empty-${mIdx}`}>
                             <td colSpan="11" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.2)' }}>
-                              {mIdx < 3 ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
+                              {mIdx < 3 ? '?�러 ?�리 비어?�음' : '버퍼 ?�리 비어?�음'}
                             </td>
                           </tr>
                         );
@@ -1262,13 +1262,13 @@ export default function Home() {
                         <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.15s' }}
                           onMouseEnter={e => e.currentTarget.style.background = mIdx === 3 ? 'rgba(167, 139, 250, 0.1)' : 'rgba(56,189,248,0.04)'}
                           onMouseLeave={e => e.currentTarget.style.background = ''}>
-                      {/* 캐릭터명 */}
+                      {/* 캐릭?�명 */}
                       {cell(<span style={{ fontWeight: 'bold', color: '#e2e8f0' }}>{c.base.charName}</span>)}
                       {/* 직업 */}
                       {cell(<span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{c.base.jobGrowName}</span>)}
-                      {/* 칭호 */}
+                      {/* �?�� */}
                       {cell(m.title ? <span style={{ color: '#38bdf8' }}>{m.title}</span> : dash)}
-                      {/* 오라: 종류 + 엠블렘 */}
+                      {/* ?�라: 종류 + ?�블??*/}
                       {cell(
                         (m.aura || m.auraEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
@@ -1277,7 +1277,7 @@ export default function Home() {
                           </div>
                         ) : dash
                       )}
-                      {/* 크리쳐: 종류 + 아티팩트 */}
+                      {/* ?�리�? 종류 + ?�티?�트 */}
                       {cell(
                         (m.creature || m.creatureArtifact) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
@@ -1286,51 +1286,51 @@ export default function Home() {
                           </div>
                         ) : dash
                       )}
-                      {/* 마부 */}
+                      {/* 마�? */}
                       {cell(m.enchant ? <span style={{ color: '#a78bfa' }}>{m.enchant}</span> : dash)}
-                      {/* 스위칭: 버프레벨 + 편린 */}
+                      {/* ?�위�? 버프?�벨 + ?�린 */}
                       {cell(
                         (m.buffLevel || m.buffAbyss) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
-                            {m.buffLevel && <span style={{ color: '#fb923c' }}>버프 {String(m.buffLevel).includes('레벨') ? m.buffLevel : `${m.buffLevel}레벨`}</span>}
-                            {m.buffAbyss && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>편린 {String(m.buffAbyss).includes('개') ? m.buffAbyss : `${m.buffAbyss}개`}</span>}
+                            {m.buffLevel && <span style={{ color: '#fb923c' }}>버프 {String(m.buffLevel).includes('?�벨') ? m.buffLevel : `${m.buffLevel}?�벨`}</span>}
+                            {m.buffAbyss && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>?�린 {String(m.buffAbyss).includes('�?) ? m.buffAbyss : `${m.buffAbyss}�?}</span>}
                           </div>
                         ) : dash
                       )}
-                      {/* 아바타: 종류 + 플엠 + 엠블렘 */}
+                      {/* ?�바?�: 종류 + ?�엠 + ?�블??*/}
                       {cell(
                         (m.avatar || m.platEmblem || m.emblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.avatar && <span style={{ color: '#818cf8' }}>{m.avatar}</span>}
-                            {m.platEmblem && <span style={{ color: 'rgba(56,189,248,0.7)', fontSize: '0.7rem' }}>플:{m.platEmblem}</span>}
-                            {m.emblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>일:{m.emblem}</span>}
+                            {m.platEmblem && <span style={{ color: 'rgba(56,189,248,0.7)', fontSize: '0.7rem' }}>??{m.platEmblem}</span>}
+                            {m.emblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>??{m.emblem}</span>}
                           </div>
                         ) : dash
                       )}
-                      {/* 피부: 종류 + 소켓 + 엠블렘 */}
+                      {/* ?��?: 종류 + ?�켓 + ?�블??*/}
                       {cell(
                         (m.skinAvatar || m.skinSocket || m.skinEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.skinAvatar && <span style={{ color: '#e879f9' }}>{m.skinAvatar}</span>}
-                            {m.skinSocket && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>소켓: {m.skinSocket}</span>}
+                            {m.skinSocket && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>?�켓: {m.skinSocket}</span>}
                             {m.skinEmblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>[{m.skinEmblem}]</span>}
                           </div>
                         ) : dash
                       )}
-                      {/* 무기압: 종류 + 소켓 + 엠블렘 */}
+                      {/* 무기?? 종류 + ?�켓 + ?�블??*/}
                       {cell(
                         (m.weaponAvatar || m.weaponSocket || m.weaponEmblem) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
                             {m.weaponAvatar && <span style={{ color: '#ef4444' }}>{m.weaponAvatar}</span>}
-                            {m.weaponSocket && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>소켓: {m.weaponSocket}</span>}
+                            {m.weaponSocket && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>?�켓: {m.weaponSocket}</span>}
                             {m.weaponEmblem && <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>[{m.weaponEmblem}]</span>}
                           </div>
                         ) : dash
                       )}
-                      {/* 수동설정 버튼 */}
+                      {/* ?�동?�정 버튼 */}
                       <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)', verticalAlign: 'middle', background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent' }}>
                         <button type="button" onClick={() => openManualModal(c)} style={{ padding: '0.35rem 0.65rem', fontSize: '0.7rem', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer' }}>
-                          ⚙️
+                          ?�️
                         </button>
                       </td>
                     </tr>
@@ -1351,7 +1351,7 @@ export default function Home() {
         <section className="glass-panel" style={{ minHeight: '60vh' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap:'wrap', gap:'1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <h2 style={{ margin: 0 }}>성장 일지</h2>
+              <h2 style={{ margin: 0 }}>?�장 ?��?</h2>
               {(() => {
                 let currentFame = 0;
                 if (historyFilterChar === '') {
@@ -1367,20 +1367,20 @@ export default function Home() {
                 }
                 return currentFame > 0 ? (
                   <div style={{ padding: '0.4rem 0.8rem', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', borderRadius: '8px', color: '#38bdf8', fontWeight: 'bold' }}>
-                    현재 명성: <span style={{ color: '#fff' }}>{currentFame.toLocaleString()}</span>
+                    ?�재 명성: <span style={{ color: '#fff' }}>{currentFame.toLocaleString()}</span>
                   </div>
                 ) : null;
               })()}
             </div>
             <select value={historyFilterChar} onChange={e => setHistoryFilterChar(e.target.value)} style={{ padding: '0.2rem 0.1rem', minWidth: '200px' }}>
-              <option value="">전체 캐릭터 보기</option>
+              <option value="">?�체 캐릭??보기</option>
               {getSortedCharacters(characters).map(c => <option key={c.id} value={c.id}>{c.base.charName} ({c.base.jobGrowName})</option>)}
             </select>
           </div>
 
-          {/* 그래프 뷰 모드 토글 */}
+          {/* 그래??�?모드 ?��? */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
-            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>그래프 기준:</span>
+            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>그래??기�?:</span>
             <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '3px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <button
                 onClick={() => setChartViewMode('event')}
@@ -1391,7 +1391,7 @@ export default function Home() {
                   fontWeight: chartViewMode === 'event' ? 'bold' : 'normal',
                   boxShadow: chartViewMode === 'event' ? '0 0 8px rgba(56,189,248,0.2)' : 'none'
                 }}
-              >⚡ 이벤트 발생 기준</button>
+              >???�벤??발생 기�?</button>
               <button
                 onClick={() => setChartViewMode('daily')}
                 style={{
@@ -1401,7 +1401,7 @@ export default function Home() {
                   fontWeight: chartViewMode === 'daily' ? 'bold' : 'normal',
                   boxShadow: chartViewMode === 'daily' ? '0 0 8px rgba(167,139,250,0.2)' : 'none'
                 }}
-              >📅 일자별 (매일 06:00 기준)</button>
+              >?�� ?�자�?(매일 06:00 기�?)</button>
             </div>
           </div>
 
@@ -1411,11 +1411,11 @@ export default function Home() {
                 <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                   <XAxis dataKey="formattedTime" stroke="#94a3b8" fontSize={11} tickMargin={10} minTickGap={20} />
-                  <YAxis domain={['dataMin', 'dataMax']} stroke="#94a3b8" fontSize={11} width={50} tickFormatter={(v) => v >= 10000 ? `${(v/10000).toFixed(1)}만` : v.toLocaleString()} />
+                  <YAxis domain={['dataMin', 'dataMax']} stroke="#94a3b8" fontSize={11} width={50} tickFormatter={(v) => v >= 10000 ? `${(v/10000).toFixed(1)}�? : v.toLocaleString()} />
                   <Tooltip 
                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc' }}
                      itemStyle={{ color: '#38bdf8', fontWeight: 'bold' }}
-                     formatter={(value) => [value.toLocaleString(), historyFilterChar === '' ? '모험단 총 명성' : '명성']}
+                     formatter={(value) => [value.toLocaleString(), historyFilterChar === '' ? '모험??�?명성' : '명성']}
                      labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
                   />
                   <Line type={chartViewMode === 'daily' ? 'linear' : 'stepAfter'} dataKey="fame" stroke={chartViewMode === 'daily' ? '#a78bfa' : '#38bdf8'} strokeWidth={2} dot={{ r: 3, strokeWidth: 1, fill: '#0f172a' }} activeDot={{ r: 5 }} animationDuration={1000} />
@@ -1426,7 +1426,7 @@ export default function Home() {
 
           {historyLogs.filter(L => historyFilterChar === '' || L.charId === historyFilterChar).length === 0 ? (
             <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '3rem' }}>
-              아직 변동 기록이 없습니다.<br/>서버에서 새로운 스펙업 정보가 감지되면 자동으로 이곳에 누적 기록됩니다!
+              ?�직 변??기록???�습?�다.<br/>?�버?�서 ?�로???�펙???�보가 감�??�면 ?�동?�로 ?�곳???�적 기록?�니??
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
@@ -1439,27 +1439,27 @@ export default function Home() {
                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.8rem', alignItems: 'center' }}>
                        <div>
                          <strong style={{ fontSize: '1.15rem', color: '#60a5fa' }}>{log.charName} <span style={{fontSize: '0.7rem', color:'var(--text-muted)'}}>{log.job}</span></strong>
-                         <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginLeft: '0.5rem' }}>🕒 {timeStr}</span>
+                         <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginLeft: '0.5rem' }}>?�� {timeStr}</span>
                        </div>
                        <div style={{ display: 'flex', gap: '0.4rem' }}>
-                         <button type="button" onClick={() => openEditLog(log)} style={{ padding: '0.2rem 0.4rem', background: 'rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>✏️ 수정</button>
-                         <button type="button" onClick={() => deleteLog(log.id)} className="danger" style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}>❌ 삭제</button>
+                         <button type="button" onClick={() => openEditLog(log)} style={{ padding: '0.2rem 0.4rem', background: 'rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>?�️ ?�정</button>
+                         <button type="button" onClick={() => deleteLog(log.id)} className="danger" style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}>????��</button>
                        </div>
                      </div>
                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
                        {log.fameChange && (
                           <div className="log-pill" style={{ borderColor: log.fameChange.new > log.fameChange.old ? 'rgba(74, 222, 128, 0.4)' : 'rgba(248, 113, 113, 0.4)' }}>
-                             <strong>명성:</strong> {log.fameChange.old.toLocaleString()} ➡️ <span style={{color: log.fameChange.new > log.fameChange.old ? '#4ade80' : '#f87171', fontWeight:'bold'}}>{log.fameChange.new.toLocaleString()} ({log.fameChange.new > log.fameChange.old ? '+' : ''}{(log.fameChange.new - log.fameChange.old).toLocaleString()})</span>
+                             <strong>명성:</strong> {log.fameChange.old.toLocaleString()} ?�️ <span style={{color: log.fameChange.new > log.fameChange.old ? '#4ade80' : '#f87171', fontWeight:'bold'}}>{log.fameChange.new.toLocaleString()} ({log.fameChange.new > log.fameChange.old ? '+' : ''}{(log.fameChange.new - log.fameChange.old).toLocaleString()})</span>
                           </div>
                        )}
                        {log.equipChange && (
                           <div className="log-pill" style={{ borderColor: log.equipChange.new > log.equipChange.old ? 'rgba(74, 222, 128, 0.4)' : (log.equipChange.new < log.equipChange.old ? 'rgba(248, 113, 113, 0.4)' : 'rgba(255,255,255,0.2)') }}>
-                             <strong>장비:</strong> {log.equipChange.oldSet ? `[${log.equipChange.oldSet}] ` : ''}{log.equipChange.old}<GradeBadge points={log.equipChange.old}/> ➡️ {log.equipChange.newSet ? `[${log.equipChange.newSet}] ` : ''}<span style={{color: log.equipChange.new > log.equipChange.old ? '#4ade80' : (log.equipChange.new < log.equipChange.old ? '#f87171' : '#fff'), fontWeight:'bold'}}>{log.equipChange.new}<GradeBadge points={log.equipChange.new}/> ({log.equipChange.new > log.equipChange.old ? '+' : ''}{(log.equipChange.new - log.equipChange.old)})</span>
+                             <strong>?�비:</strong> {log.equipChange.oldSet ? `[${log.equipChange.oldSet}] ` : ''}{log.equipChange.old}<GradeBadge points={log.equipChange.old}/> ?�️ {log.equipChange.newSet ? `[${log.equipChange.newSet}] ` : ''}<span style={{color: log.equipChange.new > log.equipChange.old ? '#4ade80' : (log.equipChange.new < log.equipChange.old ? '#f87171' : '#fff'), fontWeight:'bold'}}>{log.equipChange.new}<GradeBadge points={log.equipChange.new}/> ({log.equipChange.new > log.equipChange.old ? '+' : ''}{(log.equipChange.new - log.equipChange.old)})</span>
                           </div>
                        )}
                        {log.oathChange && (
                           <div className="log-pill" style={{ borderColor: log.oathChange.new > log.oathChange.old ? 'rgba(74, 222, 128, 0.4)' : (log.oathChange.new < log.oathChange.old ? 'rgba(248, 113, 113, 0.4)' : 'rgba(255,255,255,0.2)') }}>
-                             <strong>서약:</strong> {log.oathChange.oldSet ? `[${log.oathChange.oldSet}] ` : ''}{log.oathChange.old}<GradeBadge points={log.oathChange.old}/> ➡️ {log.oathChange.newSet ? `[${log.oathChange.newSet}] ` : ''}<span style={{color: log.oathChange.new > log.oathChange.old ? '#4ade80' : (log.oathChange.new < log.oathChange.old ? '#f87171' : '#fff'), fontWeight:'bold'}}>{log.oathChange.new}<GradeBadge points={log.oathChange.new}/> ({log.oathChange.new > log.oathChange.old ? '+' : ''}{(log.oathChange.new - log.oathChange.old)})</span>
+                             <strong>?�약:</strong> {log.oathChange.oldSet ? `[${log.oathChange.oldSet}] ` : ''}{log.oathChange.old}<GradeBadge points={log.oathChange.old}/> ?�️ {log.oathChange.newSet ? `[${log.oathChange.newSet}] ` : ''}<span style={{color: log.oathChange.new > log.oathChange.old ? '#4ade80' : (log.oathChange.new < log.oathChange.old ? '#f87171' : '#fff'), fontWeight:'bold'}}>{log.oathChange.new}<GradeBadge points={log.oathChange.new}/> ({log.oathChange.new > log.oathChange.old ? '+' : ''}{(log.oathChange.new - log.oathChange.old)})</span>
                           </div>
                        )}
                      </div>
@@ -1472,8 +1472,8 @@ export default function Home() {
       )}
 
       {activeTab === 'imminent' && (() => {
-        // 공통 카드 렌더러
-        const renderCard = (c, target, diff, emoji = '🚀', accentColor = '#38bdf8', currentBadge = null) => {
+        // 공통 카드 ?�더??
+        const renderCard = (c, target, diff, emoji = '??', accentColor = '#38bdf8', currentBadge = null) => {
           const isImminent = diff < 1000;
           return (
             <div key={c.id} style={{
@@ -1497,87 +1497,87 @@ export default function Home() {
                 color: isImminent ? '#fef08a' : '#cbd5e1', textAlign: 'center', marginTop: 'auto',
                 border: isImminent ? '1px solid rgba(234, 179, 8, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)'
               }}>
-                {isImminent ? '🔥' : emoji} <strong>{target.name}</strong> 컷까지 <strong style={{ color: '#fff', fontSize: '1.15em' }}>{diff.toLocaleString()}</strong> 남음{isImminent ? '!' : ''}
+                {isImminent ? '?��' : emoji} <strong>{target.name}</strong> 컷까지 <strong style={{ color: '#fff', fontSize: '1.15em' }}>{diff.toLocaleString()}</strong> ?�음{isImminent ? '!' : ''}
               </div>
             </div>
           );
         };
 
-        const emptyMsg = (msg = '모든 조건을 달성했거나 대상 캐릭터가 없습니다.') => (
+        const emptyMsg = (msg = '모든 조건???�성?�거???�??캐릭?��? ?�습?�다.') => (
           <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', gridColumn: '1 / -1', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>{msg}</div>
         );
 
         return (
           <section className="glass-panel" style={{ minHeight: '60vh' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-              <h2 style={{ margin: 0 }}>🎯 다음 던전 목표 현황</h2>
-              {/* 상급던전 뷰 토글 - 상급던전 탭일 때만 표시 */}
+              <h2 style={{ margin: 0 }}>?�� ?�음 ?�전 목표 ?�황</h2>
+              {/* ?�급?�전 �??��? - ?�급?�전 ??�� ?�만 ?�시 */}
               {imminentSubTab === 'dungeon' && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setDungeonView('byDungeon')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: dungeonView === 'byDungeon' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'byDungeon' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'byDungeon' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 던전별 정렬</button>
-                  <button onClick={() => setDungeonView('overall')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: dungeonView === 'overall' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'overall' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'overall' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
+                  <button onClick={() => setDungeonView('byDungeon')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: dungeonView === 'byDungeon' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'byDungeon' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'byDungeon' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>?���??�전�??�렬</button>
+                  <button onClick={() => setDungeonView('overall')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: dungeonView === 'overall' ? 'rgba(147,197,253,0.2)' : 'rgba(255,255,255,0.04)', border: dungeonView === 'overall' ? '1px solid rgba(147,197,253,0.4)' : '1px solid rgba(255,255,255,0.1)', color: dungeonView === 'overall' ? '#93c5fd' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>?�� ?�체 ?�렬</button>
                 </div>
               )}
               {imminentSubTab === 'apoc' && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setApocView('byTier')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: apocView === 'byTier' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'byTier' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'byTier' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>🗂️ 단계별 정렬</button>
-                  <button onClick={() => setApocView('overall')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: apocView === 'overall' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'overall' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'overall' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>📊 전체 정렬</button>
+                  <button onClick={() => setApocView('byTier')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: apocView === 'byTier' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'byTier' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'byTier' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>?���??�계�??�렬</button>
+                  <button onClick={() => setApocView('overall')} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: apocView === 'overall' ? 'rgba(251,146,60,0.2)' : 'rgba(255,255,255,0.04)', border: apocView === 'overall' ? '1px solid rgba(251,146,60,0.4)' : '1px solid rgba(255,255,255,0.1)', color: apocView === 'overall' ? '#fb923c' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>?�� ?�체 ?�렬</button>
                 </div>
               )}
             </div>
 
-            {/* 서브탭 버튼 */}
+            {/* ?�브??버튼 */}
             <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
-              <button className={`tab-btn ${imminentSubTab === 'dungeon' ? 'active' : ''}`} onClick={() => setImminentSubTab('dungeon')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>🚀 상급던전</button>
-              <button className={`tab-btn ${imminentSubTab === 'raid' ? 'active' : ''}`} onClick={() => setImminentSubTab('raid')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>⚔️ 레이드</button>
-              <button className={`tab-btn ${imminentSubTab === 'apoc' ? 'active' : ''}`} onClick={() => setImminentSubTab('apoc')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>💀 아포칼립스</button>
+              <button className={`tab-btn ${imminentSubTab === 'dungeon' ? 'active' : ''}`} onClick={() => setImminentSubTab('dungeon')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>?? ?�급?�전</button>
+              <button className={`tab-btn ${imminentSubTab === 'raid' ? 'active' : ''}`} onClick={() => setImminentSubTab('raid')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>?�️ ?�이??/button>
+              <button className={`tab-btn ${imminentSubTab === 'apoc' ? 'active' : ''}`} onClick={() => setImminentSubTab('apoc')} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>?? ?�포칼립??/button>
             </div>
 
-            {/* ────────────── 상급던전 탭 ────────────── */}
+            {/* ?�?�?�?�?�?�?�?�?�?�?�?�?�?� ?�급?�전 ???�?�?�?�?�?�?�?�?�?�?�?�?�?� */}
             {imminentSubTab === 'dungeon' && (() => {
-              // 던전 순서: 낮은→높은 fame 순 (ascending)
-              const dungeons = [...ADVANCED_DUNGEONS].reverse(); // 낮은 명성부터
+              // ?�전 ?�서: ????�높?� fame ??(ascending)
+              const dungeons = [...ADVANCED_DUNGEONS].reverse(); // ??? 명성부??
 
               if (dungeonView === 'overall') {
-                // 전체 정렬: 다음 던전 남은 명성 오름차순
+                // ?�체 ?�렬: ?�음 ?�전 ?��? 명성 ?�름차순
                 const items = characters.map(c => {
                   const next = dungeons.find(d => d.fame > c.base.fame);
                   return { c, next };
                 }).filter(x => x.next).sort((a, b) => (a.next.fame - a.c.base.fame) - (b.next.fame - b.c.base.fame));
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-                    {items.length === 0 ? emptyMsg('모든 캐릭터가 최고 상급던전에 진입 가능합니다.') : items.map(({ c, next }) => renderCard(c, next, next.fame - c.base.fame, '🚀', '#93c5fd'))}
+                    {items.length === 0 ? emptyMsg('모든 캐릭?��? 최고 ?�급?�전??진입 가?�합?�다.') : items.map(({ c, next }) => renderCard(c, next, next.fame - c.base.fame, '??', '#93c5fd'))}
                   </div>
                 );
               }
 
-              // 던전별 정렬: 높은 명성(배교자의 성) → 낮은 명성(달이 잠긴 호수) 순 표시
+              // ?�전�??�렬: ?��? 명성(배교?�의 ?? ????? 명성(?�이 ?�긴 ?�수) ???�시
               return (
                 <div>
                   {ADVANCED_DUNGEONS.map((target) => {
-                    // dungeons(오름차순)에서 target의 인덱스를 찾아 이전 던전을 계산
+                    // dungeons(?�름차순)?�서 target???�덱?��? 찾아 ?�전 ?�전??계산
                     const targetIdx = dungeons.findIndex(d => d.name === target.name);
                     const prevDungeon = targetIdx > 0 ? dungeons[targetIdx - 1] : null;
-                    // 이 던전에 아직 못 들어가고 (fame < target.fame)
-                    // 그리고 이전 던전은 클리어했거나(fame >= prevDungeon.fame) 이전 던전 자체가 없는 경우
+                    // ???�전???�직 �??�어가�?(fame < target.fame)
+                    // 그리�??�전 ?�전?� ?�리?�했거나(fame >= prevDungeon.fame) ?�전 ?�전 ?�체가 ?�는 경우
                     const eligible = characters.filter(c =>
                       c.base.fame < target.fame &&
                       (prevDungeon == null || c.base.fame >= prevDungeon.fame)
                     ).sort((a, b) => (target.fame - a.base.fame) - (target.fame - b.base.fame));
 
-                    const currentDungeonName = prevDungeon ? prevDungeon.name : '진입 가능 던전 없음';
+                    const currentDungeonName = prevDungeon ? prevDungeon.name : '진입 가???�전 ?�음';
 
                     return (
                       <div key={target.name} style={{ marginBottom: '2rem' }}>
                         <h3 style={{ borderBottom: '1px solid rgba(147,197,253,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#93c5fd', fontSize: '0.7rem' }}>
-                          🚀 {target.name} 진입 목표
-                          <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>현재 최고: {currentDungeonName} | 잔여 {eligible.length}명</span>
+                          ?? {target.name} 진입 목표
+                          <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>?�재 최고: {currentDungeonName} | ?�여 {eligible.length}�?/span>
                         </h3>
                         {eligible.length === 0 ? (
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>?�당 캐릭???�음</div>
                         ) : (
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.8rem' }}>
-                            {eligible.map(c => renderCard(c, target, target.fame - c.base.fame, '🚀', '#93c5fd', `현재: ${currentDungeonName}`))}
+                            {eligible.map(c => renderCard(c, target, target.fame - c.base.fame, '??', '#93c5fd', `?�재: ${currentDungeonName}`))}
                           </div>
                         )}
                       </div>
@@ -1587,11 +1587,11 @@ export default function Home() {
               );
             })()}
 
-            {/* ────────────── 레이드 탭 ────────────── */}
+            {/* ?�?�?�?�?�?�?�?�?�?�?�?�?�?� ?�이?????�?�?�?�?�?�?�?�?�?�?�?�?�?� */}
             {imminentSubTab === 'raid' && (() => {
               const getRole = (char) => {
                 if (char.manual?.isManualRoleSet && char.manual?.role) return char.manual.role;
-                const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
+                const bufferKeywords = ['?�러메딕', '?�루?�이??, '뮤즈', '?�챈?�리??];
                 const jobName = char.base?.jobGrowName || char.base?.jobName || '';
                 return bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
               };
@@ -1603,42 +1603,42 @@ export default function Home() {
                 const rank = role === 'dealer' ? dealers.findIndex(x => x.id === c.id) : buffers.findIndex(x => x.id === c.id);
                 const gIdx = rank === -1 ? 999 : (role === 'dealer' ? Math.floor(rank / 3) : rank);
                 
-                const filtered = RAIDS.filter(r => r.name !== '이내 황혼전' || gIdx < 2);
+                const filtered = RAIDS.filter(r => r.name !== '?�내 ?�혼?? || gIdx < 2);
                 const next = [...filtered].reverse().find(r => r.fame > c.base.fame);
                 return { c, next };
               }).filter(x => x.next).sort((a, b) => (a.next.fame - a.c.base.fame) - (b.next.fame - b.c.base.fame));
               return (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-                  {raidItems.length === 0 ? emptyMsg('모든 레이드 조건을 달성했거나 대상 캐릭터가 없습니다.') : raidItems.map(({ c, next }) => renderCard(c, next, next.fame - c.base.fame, '⚔️', '#d8b4fe'))}
+                  {raidItems.length === 0 ? emptyMsg('모든 ?�이??조건???�성?�거???�??캐릭?��? ?�습?�다.') : raidItems.map(({ c, next }) => renderCard(c, next, next.fame - c.base.fame, '?�️', '#d8b4fe'))}
                 </div>
               );
             })()}
 
-            {/* ────────────── 아포칼립스 탭 ────────────── */}
+            {/* ?�?�?�?�?�?�?�?�?�?�?�?�?�?� ?�포칼립?????�?�?�?�?�?�?�?�?�?�?�?�?�?� */}
             {imminentSubTab === 'apoc' && (() => {
-              const apocTiers = [{ name: '매칭', fame: 73993 }, { name: '1단계', fame: 98171 }, { name: '2단계', fame: 105881 }];
+              const apocTiers = [{ name: '매칭', fame: 73993 }, { name: '1?�계', fame: 98171 }, { name: '2?�계', fame: 105881 }];
 
               if (apocView === 'overall') {
                 const apocItems = characters.map(c => {
                   const fame = c.base.fame;
                   const state = fame >= 105881 ? 3 : fame >= 98171 ? 2 : fame >= 73993 ? 1 : 0;
-                  const currentLabel = ['없음', '매칭', '1단계', '2단계'][state];
+                  const currentLabel = ['?�음', '매칭', '1?�계', '2?�계'][state];
                   const next = state < 3 ? apocTiers[state] : null;
                   return { c, state, currentLabel, next };
                 }).filter(x => x.next).sort((a, b) => (a.next.fame - a.c.base.fame) - (b.next.fame - b.c.base.fame));
                 return (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-                    {apocItems.length === 0 ? emptyMsg('모든 캐릭터가 아포칼립스 2단계에 진입 가능합니다.') : apocItems.map(({ c, state, currentLabel, next }) => renderCard(c, next, next.fame - c.base.fame, '💀', '#fb923c', state > 0 ? `현재: ${currentLabel}` : '미진입'))}
+                    {apocItems.length === 0 ? emptyMsg('모든 캐릭?��? ?�포칼립??2?�계??진입 가?�합?�다.') : apocItems.map(({ c, state, currentLabel, next }) => renderCard(c, next, next.fame - c.base.fame, '??', '#fb923c', state > 0 ? `?�재: ${currentLabel}` : '미진??))}
                   </div>
                 );
               }
 
-              // 단계별 정렬: 2단계 → 1단계 → 매칭 순서로 표시
-              // 각 단계를 목표로 하는 캐릭터(현재 state = 목표 state - 1)만 표시
+              // ?�계�??�렬: 2?�계 ??1?�계 ??매칭 ?�서�??�시
+              // �??�계�?목표�??�는 캐릭???�재 state = 목표 state - 1)�??�시
               const tierGroups = [
-                { target: apocTiers[2], currentLabel: '1단계', minFame: 98171, maxFame: 105881 },  // 2단계 목표: 현재 1단계
-                { target: apocTiers[1], currentLabel: '매칭',  minFame: 73993, maxFame: 98171  },  // 1단계 목표: 현재 매칭
-                { target: apocTiers[0], currentLabel: '미진입', minFame: 0,     maxFame: 73993  },  // 매칭 목표: 현재 미진입
+                { target: apocTiers[2], currentLabel: '1?�계', minFame: 98171, maxFame: 105881 },  // 2?�계 목표: ?�재 1?�계
+                { target: apocTiers[1], currentLabel: '매칭',  minFame: 73993, maxFame: 98171  },  // 1?�계 목표: ?�재 매칭
+                { target: apocTiers[0], currentLabel: '미진??, minFame: 0,     maxFame: 73993  },  // 매칭 목표: ?�재 미진??
               ];
               return (
                 <div>
@@ -1649,14 +1649,14 @@ export default function Home() {
                     return (
                       <div key={target.name} style={{ marginBottom: '2rem' }}>
                         <h3 style={{ borderBottom: '1px solid rgba(251,146,60,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#fb923c', fontSize: '0.7rem' }}>
-                          💀 {target.name} 진입 목표
-                          <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>현재: {currentLabel} | 잔여 {eligible.length}명</span>
+                          ?? {target.name} 진입 목표
+                          <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>?�재: {currentLabel} | ?�여 {eligible.length}�?/span>
                         </h3>
                         {eligible.length === 0 ? (
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>?�당 캐릭???�음</div>
                         ) : (
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.8rem' }}>
-                            {eligible.map(c => renderCard(c, target, target.fame - c.base.fame, '💀', '#fb923c', `현재: ${currentLabel}`))}
+                            {eligible.map(c => renderCard(c, target, target.fame - c.base.fame, '??', '#fb923c', `?�재: ${currentLabel}`))}
                           </div>
                         )}
                       </div>
@@ -1691,36 +1691,36 @@ export default function Home() {
         return (
           <section className='glass-panel' style={{ minHeight: '60vh' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '2rem' }}>
-              <h2 style={{ margin: 0 }}>⚔️ 용병단 레벨</h2>
+              <h2 style={{ margin: 0 }}>?�️ ?�병???�벨</h2>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '1rem 1.2rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem' }}>현재 레벨</div>
-                  <input type='number' min='1' value={mercLevelInput} onChange={e => setMercLevelInput(e.target.value)} placeholder='예: 6' style={{ width: '80px', padding: '0.4rem 0.6rem', textAlign: 'center' }} />
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem' }}>?�재 ?�벨</div>
+                  <input type='number' min='1' value={mercLevelInput} onChange={e => setMercLevelInput(e.target.value)} placeholder='?? 6' style={{ width: '80px', padding: '0.4rem 0.6rem', textAlign: 'center' }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem' }}>다음 레벨 목표 포인트</div>
-                  <input type='text' value={mercTargetInput} onChange={e => setMercTargetInput(e.target.value)} placeholder='예: 30000' style={{ width: '130px', padding: '0.4rem 0.6rem', textAlign: 'center' }} />
+                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem' }}>?�음 ?�벨 목표 ?�인??/div>
+                  <input type='text' value={mercTargetInput} onChange={e => setMercTargetInput(e.target.value)} placeholder='?? 30000' style={{ width: '130px', padding: '0.4rem 0.6rem', textAlign: 'center' }} />
                 </div>
-                <button onClick={handleSaveMerc} style={{ padding: '0.4rem 1rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8', borderRadius: '6px', cursor: 'pointer' }}>저장</button>
+                <button onClick={handleSaveMerc} style={{ padding: '0.4rem 1rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8', borderRadius: '6px', cursor: 'pointer' }}>?�??/button>
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
               <div style={{ background: 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(234,179,8,0.1))', border: '1px solid rgba(251,146,60,0.3)', borderRadius: '12px', padding: '1.2rem 2rem', textAlign: 'center', minWidth: '140px' }}>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.4rem' }}>현재 레벨</div>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.4rem' }}>?�재 ?�벨</div>
                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#fb923c', lineHeight: 1 }}>Lv.{mercLevel}</div>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.3rem' }}>→ Lv.{mercLevel + 1} 도전 중</div>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.3rem' }}>??Lv.{mercLevel + 1} ?�전 �?/div>
               </div>
               <div style={{ flex: 1, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '1.2rem 1.5rem', minWidth: '260px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <div>
-                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>서약 총합</span>
+                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>?�약 총합</span>
                     <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: isNearTarget ? '#fef08a' : '#e2e8f0', marginLeft: '0.6rem' }}>{totalOath.toLocaleString()}</span>
                     {hasTarget && <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginLeft: '0.4rem' }}>/ {mercNextLevelTarget.toLocaleString()}</span>}
                   </div>
                   {remaining !== null && (
                     <div style={{ fontSize: '0.7rem', color: isNearTarget ? '#fef08a' : '#fb923c', fontWeight: isNearTarget ? 'bold' : 'normal' }}>
-                      {isNearTarget ? '🔥' : '📈'} {remaining === 0 ? '목표 달성!' : `${remaining.toLocaleString()} 부족`}
+                      {isNearTarget ? '?��' : '?��'} {remaining === 0 ? '목표 ?�성!' : `${remaining.toLocaleString()} 부�?}
                     </div>
                   )}
                 </div>
@@ -1736,17 +1736,17 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-                {!hasTarget && <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>우측 상단 설정에서 현재 레벨과 다음 레벨 목표 포인트를 입력하세요.</p>}
+                {!hasTarget && <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', margin: 0 }}>?�측 ?�단 ?�정?�서 ?�재 ?�벨�??�음 ?�벨 목표 ?�인?��? ?�력?�세??</p>}
               </div>
             </div>
 
             <div>
               <h3 style={{ margin: '0 0 1rem', fontSize: '0.7rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.5rem' }}>
-                캐릭터별 서약 기여도 <span style={{ fontSize: '0.7rem', color: '#64748b' }}>(등록순 상위 20개)</span>
+                캐릭?�별 ?�약 기여??<span style={{ fontSize: '0.7rem', color: '#64748b' }}>(?�록???�위 20�?</span>
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {top20.length === 0 ? (
-                  <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>캐릭터를 먼저 추가해주세요.</div>
+                  <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>캐릭?��? 먼�? 추�??�주?�요.</div>
                 ) : top20.map((c, i) => {
                   const pts = c.oath.rawPoints ?? c.oath.points ?? 0;
                   const pct = totalOath > 0 ? (pts / totalOath * 100) : 0;
@@ -1768,7 +1768,7 @@ export default function Home() {
                   );
                 })}
               </div>
-              {characters.length > 20 && <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.8rem', textAlign: 'center' }}>* 등록된 {characters.length}개 캐릭터 중 상위 20개만 계산에 포함됩니다.</p>}
+              {characters.length > 20 && <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.8rem', textAlign: 'center' }}>* ?�록??{characters.length}�?캐릭??�??�위 20개만 계산???�함?�니??</p>}
             </div>
           </section>
         );
@@ -1805,7 +1805,7 @@ export default function Home() {
         };
         
         const fetchAuctionPrices = async () => {
-           if (!apiKey) { alert("API 키가 필요합니다."); return; }
+           if (!apiKey) { alert("API ?��? ?�요?�니??"); return; }
            setIsFetchingPrices(true);
            try {
              // Collect custom item names from all characters
@@ -1816,7 +1816,7 @@ export default function Home() {
                  if (item.name && item.name.trim()) customNames.add(item.name.trim());
                });
              });
-             const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자', '피로 회복의 영약', '레전더리 소울 결정', '에픽 소울 결정'];
+             const baseItems = ['무결???�이??코어', '무결??조화??결정�?, '?�아버린 ?��???증표', '?��????�장(1??교환 가??', '?��????�장(1??교환 가?? 교환�?1�??�자', '?�로 ?�복???�약', '?�전?�리 ?�울 결정', '?�픽 ?�울 결정'];
              const allItemNames = [...baseItems, ...Array.from(customNames)];
              const res = await fetch('/api/auction', {
                 method: 'POST',
@@ -1842,24 +1842,25 @@ export default function Home() {
                   }
                 });
                 setPilgrimageForm(updatedForm);
-                alert("경매장 시세를 성공적으로 불러왔습니다!");
+                alert("경매???�세�??�공?�으�?불러?�습?�다!");
              } else {
-                alert("불러오기 실패: " + data.error);
+                alert("불러?�기 ?�패: " + data.error);
              }
            } catch(e) {
              console.error(e);
-             alert("경매장 API 연동 중 오류가 발생했습니다.");
+             alert("경매??API ?�동 �??�류가 발생?�습?�다.");
            }
            setIsFetchingPrices(false);
         };
          const addCharToken = (charId, initialPrice = '') => {
-           const form = getCharForm(charId);
-           updateCharForm(charId, 'secretTokens', [...form.secretTokens, { id: Date.now(), buyPrice: initialPrice }]);
-        };
-        const updateCharToken = (charId, tokenId, val) => {
-           const form = getCharForm(charId);
-           updateCharForm(charId, 'secretTokens', form.secretTokens.map(t => t.id === tokenId ? { ...t, buyPrice: val } : t));
-        };
+            const form = getCharForm(charId);
+            const mPrice = auctionPrices['?�아버린 ?��???증표'] || 0;
+            updateCharForm(charId, 'secretTokens', [...form.secretTokens, { id: Date.now(), buyPrice: initialPrice, sellPrice: mPrice }]);
+         };
+        const updateCharToken = (charId, tokenId, field, val) => {
+            const form = getCharForm(charId);
+            updateCharForm(charId, 'secretTokens', form.secretTokens.map(t => t.id === tokenId ? { ...t, [field]: val } : t));
+         };
         const removeCharToken = (charId, tokenId) => {
            const form = getCharForm(charId);
            updateCharForm(charId, 'secretTokens', form.secretTokens.filter(t => t.id !== tokenId));
@@ -1881,7 +1882,7 @@ export default function Home() {
         const handleSavePilgrimage = () => {
           const selectedIds = characters.filter(c => getCharForm(c.id).selected).map(c => c.id);
           if (selectedIds.length === 0) {
-            alert('돌 캐릭터를 하나 이상 선택해주세요.');
+            alert('??캐릭?��? ?�나 ?�상 ?�택?�주?�요.');
             return;
           }
           
@@ -1891,10 +1892,10 @@ export default function Home() {
             const fatigue = Number(form.startFatigue || 0);
             const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0) : 0;
             
-            // 귀속재화 가치 산출
+            // 귀?�재??가�??�출
             const sealValue = Number(form.seal || 0) * 5000;
-            const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
-            const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
+            const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결???�이??코어'] || 0);
+            const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결??조화??결정�?] || 0);
             
             let customTradableValue = 0;
             (form.customItems || []).forEach(item => {
@@ -1904,36 +1905,39 @@ export default function Home() {
 
             const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
             
-            // 교환 가능재화 가치 산출 (보정 전)
+            // 교환 가?�재??가�??�출 (보정 ??
             const pureGoldInput = Number(form.pureGold || 0);
-            const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
-            const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
+            const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결???�이??코어'] || 0);
+            const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결??조화??결정�?] || 0);
             
-            // 인장 교환권 및 교환 가능 인장 가치 산출
-            const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
-            const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
+            // ?�장 교환�?�?교환 가???�장 가�??�출
+            const priceTradableSeal = auctionPrices['?��????�장(1??교환 가??'] || 0;
+            const priceVoucherBox = auctionPrices['?��????�장(1??교환 가?? 교환�?1�??�자'] || 0;
             const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
             const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
             const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
             const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
 
-            // 소모재화 비용 산출
-            const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
-            const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
-            const totalConsumedValue = tokenCost + potionCost;
+            // ?�모?�화 비용 ?�출
+            const tokenCost = runs * (auctionPrices['?�아버린 ?��???증표'] || 0);
+            const potionCost = form.usePotion ? (auctionPrices['?�로 ?�복???�약'] || 0) : 0;
+            const totalConsumedValue = tokenCost + potionCost + recipeSealCost + recipeSoulCrystalCost;
             
-            // 비밀상점 가치 산출 (캐릭터별)
-            const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
+            // 비�??�점 가�??�출 (캐릭?�별)
+            const tokenPrice = auctionPrices['?�아버린 ?��???증표'] || 0;
             let tokenProfit = 0;
             let secretShopGoldSpent = 0;
+            let secretShopRewardValue = 0;
 
             (form.secretTokens || []).forEach(t => {
-              const bp = Number(t.buyPrice || 0);
-              if (bp > 0) {
-                 secretShopGoldSpent += bp;
-                 tokenProfit += (tokenPrice - bp);
-              }
-            });
+                       const bp = Number(t.buyPrice || 0);
+                       const sp = Number(t.sellPrice || 0);
+                       if (bp > 0 || sp > 0) {
+                          secretShopGoldSpent += bp;
+                          secretShopRewardValue += sp;
+                          tokenProfit += (sp - bp);
+                       }
+                     });
 
             let recipeProfit = 0;
             let recipeSealCost = 0;
@@ -1941,48 +1945,51 @@ export default function Home() {
             let recipeGiftRewardValue = 0;
             
             (form.secretRecipes || []).forEach(r => {
-               const bp = Number(r.buyPrice || 0);
-               if (r.type === 'shinyGift') {
-                  const matPrice = auctionPrices['레전더리 소울 결정'] || 0;
-                  const rewardVal = 5 * tokenPrice;
-                  if (bp > 0 || matPrice > 0) {
-                     secretShopGoldSpent += bp;
-                     recipeSoulCrystalCost += matPrice;
-                     recipeGiftRewardValue += rewardVal;
-                     recipeProfit += (rewardVal - bp - matPrice);
-                  }
-               } else if (r.type === 'brilliantGift') {
-                  const matPrice = auctionPrices['에픽 소울 결정'] || 0;
-                  const rewardVal = 20 * tokenPrice;
-                  if (bp > 0 || matPrice > 0) {
-                     secretShopGoldSpent += bp;
-                     recipeSoulCrystalCost += matPrice;
-                     recipeGiftRewardValue += rewardVal;
-                     recipeProfit += (rewardVal - bp - matPrice);
-                  }
-               } else {
-                  const seals = Number(r.sealCost || 0);
-                  const sp = Number(r.sellPrice || 0);
-                  if (bp > 0 || sp > 0) {
-                    if (bp > 0) secretShopGoldSpent += bp;
-                    const sealVal = seals * 5000;
-                    recipeSealCost += sealVal;
-                    recipeProfit += (sp - bp - sealVal);
-                  }
-               }
-            });
+                        const bp = Number(r.buyPrice || 0);
+                        if (r.type === 'shinyGift') {
+                           const matPrice = auctionPrices['?�전?�리 ?�울 결정'] || 0;
+                           const rewardVal = 5 * tokenPrice;
+                           if (bp > 0 || matPrice > 0) {
+                              secretShopGoldSpent += bp;
+                              recipeSoulCrystalCost += matPrice;
+                              recipeGiftRewardValue += rewardVal;
+                              secretShopRewardValue += rewardVal;
+                              recipeProfit += (rewardVal - bp - matPrice);
+                           }
+                        } else if (r.type === 'brilliantGift') {
+                           const matPrice = auctionPrices['?�픽 ?�울 결정'] || 0;
+                           const rewardVal = 20 * tokenPrice;
+                           if (bp > 0 || matPrice > 0) {
+                              secretShopGoldSpent += bp;
+                              recipeSoulCrystalCost += matPrice;
+                              recipeGiftRewardValue += rewardVal;
+                              secretShopRewardValue += rewardVal;
+                              recipeProfit += (rewardVal - bp - matPrice);
+                           }
+                        } else {
+                           const seals = Number(r.sealCost || 0);
+                           const sp = Number(r.sellPrice || 0);
+                           if (bp > 0 || sp > 0) {
+                             if (bp > 0) secretShopGoldSpent += bp;
+                             const sealVal = seals * 5000;
+                             recipeSealCostValue += sealVal;
+                             secretShopRewardValue += sp;
+                             recipeProfit += (sp - bp - sealVal);
+                           }
+                        }
+                     });
 
-            // 순 골드 보정 (상점 지출액 복원)
-            const restoredPureGold = pureGoldInput + secretShopGoldSpent;
+            // ??골드 보정 (?�점 지출액 복원)
+            const restoredPureGold = pureGoldInput;
 
-            // 최종 교환 가능재화 가치 (보정된 순골드 + 코어/결정체 + 인장류 수익 + 상점 순수익 + 커스텀)
-            const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit + customTradableValue;
+            // 최종 교환 가?�재??가�?(보정???�골??+ 코어/결정�?+ ?�장�??�익 + ?�점 ?�수??+ 커스?�)
+            const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + secretShopRewardValue + customTradableValue;
             const finalBoundValue = totalBoundValue - recipeSealCost;
             const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
 
             return {
               charId: id,
-              charName: c ? c.base.charName : '알 수 없음',
+              charName: c ? c.base.charName : '?????�음',
               jobName: c ? c.base.jobGrowName : '',
               startFatigue: form.startFatigue,
               runs,
@@ -2042,7 +2049,7 @@ export default function Home() {
           setPilgrimageHistory(updated);
           localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(updated));
           
-          // 선택된 캐릭터들 초기화 (데이터 리셋 및 선택 해제)
+          // ?�택??캐릭?�들 초기??(?�이??리셋 �??�택 ?�제)
           const resetForm = { ...pilgrimageForm };
           selectedIds.forEach(id => {
             resetForm[id] = {
@@ -2062,7 +2069,7 @@ export default function Home() {
         };
 
         const handleDeletePilgrimage = (id) => {
-          if (!window.confirm("이 기록을 삭제하시겠습니까?")) return;
+          if (!window.confirm("??기록????��?�시겠습?�까?")) return;
           const updated = pilgrimageHistory.filter(r => r.id !== id);
           setPilgrimageHistory(updated);
           localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(updated));
@@ -2072,31 +2079,31 @@ export default function Home() {
 
         return (
           <section className='glass-panel' style={{ minHeight: '60vh' }}>
-            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>✨ 광휘의 순례 기록표</h2>
+            <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>??광휘???��? 기록??/h2>
             
             {/* Global Actions */}
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <label style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>일괄 피로도:</label>
+                  <label style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>?�괄 ?�로??</label>
                   <input type="number" value={globalStartFatigue} onChange={e => setGlobalStartFatigue(Number(e.target.value))} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: '0.7rem' }} />
-                  <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
+                  <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>?�용</button>
                 </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
-                      {isFetchingPrices ? '불러오는 중...' : '단가 새로고침'}
+                      {isFetchingPrices ? '불러?�는 �?..' : '?��? ?�로고침'}
                     </button>
                     <button onClick={() => setShowAuctionPricesModal(true)} style={{ padding: '0.5rem 1rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
-                      단가 확인
+                      ?��? ?�인
                     </button>
                   </div>
-                  <button onClick={handleSavePilgrimage} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px', fontSize: '0.7rem' }}>선택 캐릭터 저장</button>
+                  <button onClick={handleSavePilgrimage} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px', fontSize: '0.7rem' }}>?�택 캐릭???�??/button>
                 </div>
             </div>
 
             {/* Character Selector */}
             <div style={{ marginBottom: '1.5rem' }}>
-<h3 style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
+<h3 style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭???�택 (?�릭?�여 추�?/?�거)</h3>
                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {getSortedCharacters(characters).map(c => {
                     const isSelected = getCharForm(c.id).selected;
@@ -2114,37 +2121,37 @@ export default function Home() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.05)', fontSize: '0.7rem' }}>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>캐릭터</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>시작 피로도</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
-                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>재화 입력</th>
-                    <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>획득 재화 (기록)</th>
-                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>소모 재화</th>
-                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점 관리</th>
-                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가치 산출 (골드)</th>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>캐릭??/th>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>?�작 ?�로??/th>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>?�상 ?�수</th>
+                    <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>?�화 ?�력</th>
+                    <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>?�득 ?�화 (기록)</th>
+                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>?�모 ?�화</th>
+                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>?�별?�점 관�?/th>
+                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가�??�출 (골드)</th>
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem', lineHeight: '1.2' }}>
-                    {/* 획득 재화 (9) */}
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>순 골드</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의<br/>인장</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의 인장<br/>(1회 교환 가능)<br/>교환권 1개 상자</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>응축된<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점<br/>라이언 코어</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>빛나는 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점 조화의<br/>결정체</th>
-                    {/* 소모 재화 (3) */}
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>닳아버린<br/>순례의 증표</th>
-                    <th style={{ padding: '0.2rem 0.1rem', color: '#fca5a5', fontSize: '0.7rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.2rem 0.1rem', color: '#fca5a5', fontSize: '0.7rem' }}>특별상점<br/>지출</th>
-                    {/* 특별상점 관리 (1 cell w/ cs2) */}
-                    <th colSpan="2" style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점 관리</th>
-                    {/* 가치 산출 (4) */}
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>귀속 가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>교환 가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순수익<br/>(귀속 포함)</th>
-                    <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>순수익<br/>(귀속 제외)</th>
+                    {/* ?�득 ?�화 (9) */}
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>??골드</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>?��???br/>?�장</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>?��????�장<br/>(1??교환 가??</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>?��????�장<br/>(1??교환 가??<br/>교환�?/th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>?��????�장<br/>(1??교환 가??<br/>교환�?1�??�자</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>?�축??br/>?�이??코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결??br/>?�이??코어</th>
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>빛나??조화??br/>결정�?/th>
+                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결??조화??br/>결정�?/th>
+                    {/* ?�모 ?�화 (3) */}
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>?�아버린<br/>?��???증표</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#fca5a5', fontSize: '0.7rem' }}>?�로 ?�복??br/>?�약</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#fca5a5', fontSize: '0.7rem' }}>?�별?�점<br/>지�?/th>
+                    {/* ?�별?�점 관�?(1 cell w/ cs2) */}
+                    <th colSpan="2" style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>?�별?�점 관�?/th>
+                    {/* 가�??�출 (4) */}
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>귀??가�?/th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>교환 가�?/th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>?�수??br/>(귀???�함)</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>?�수??br/>(귀???�외)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2154,7 +2161,7 @@ export default function Home() {
                      if (selectedChars.length === 0) {
                        return (
                          <tr>
-                           <td colSpan="21" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td>
+                           <td colSpan="21" style={{ padding: '2rem', color: 'var(--text-muted)' }}>?�에??참여??캐릭?��? ?�택?�주?�요.</td>
                          </tr>
                        );
                      }
@@ -2189,8 +2196,8 @@ export default function Home() {
                     const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
                     
                     const sealValue = Number(form.seal || 0) * 5000;
-                    const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
-                    const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
+                    const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결???�이??코어'] || 0);
+                    const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결??조화??결정�?] || 0);
                     
                     let customTradableValue = 0;
                     (form.customItems || []).forEach(item => {
@@ -2201,20 +2208,20 @@ export default function Home() {
                     const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
                     
                     const pureGoldInput = Number(form.pureGold || 0);
-                    const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
-                    const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
+                    const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결???�이??코어'] || 0);
+                    const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결??조화??결정�?] || 0);
                     
-                    const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
-                    const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
+                    const priceTradableSeal = auctionPrices['?��????�장(1??교환 가??'] || 0;
+                    const priceVoucherBox = auctionPrices['?��????�장(1??교환 가?? 교환�?1�??�자'] || 0;
                     const voucherProfitPerItem = Math.max(0, (3 * priceTradableSeal) - 75000);
                     const voucherProfitTotal = Number(form.sealVoucher || 0) * voucherProfitPerItem;
                     const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
                     const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
                     
-                    const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
-                    const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
+                    const tokenCost = runs * (auctionPrices['?�아버린 ?��???증표'] || 0);
+                    const potionCost = form.usePotion ? (auctionPrices['?�로 ?�복???�약'] || 0) : 0;
 
-                    const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
+                    const tokenPrice = auctionPrices['?�아버린 ?��???증표'] || 0;
                     let secretShopGoldSpent = 0;
                      let secretShopRewardValue = 0;
                      let secretShopCostValue = 0;
@@ -2225,62 +2232,59 @@ export default function Home() {
                      let recipeGiftRewardValue = 0;
                     
                     (form.secretTokens || []).forEach(t => {
-                      const bp = Number(t.buyPrice || 0);
-                      if (bp > 0) {
-                         secretShopGoldSpent += bp;
-                         secretShopCostValue += bp;
-                         secretShopRewardValue += tokenPrice;
-                          tokenProfit += (tokenPrice - bp);
+                       const bp = Number(t.buyPrice || 0);
+                       const sp = Number(t.sellPrice || 0);
+                       if (bp > 0 || sp > 0) {
+                          secretShopGoldSpent += bp;
+                          secretShopRewardValue += sp;
+                          tokenProfit += (sp - bp);
                        }
-                    });
+                     });
 
                     (form.secretRecipes || []).forEach(r => {
-                       const bp = Number(r.buyPrice || 0);
-                       if (r.type === 'shinyGift') {
-                          const matPrice = auctionPrices['레전더리 소울 결정'] || 0;
-                          const rewardVal = 5 * tokenPrice;
-                          if (bp > 0 || matPrice > 0) {
-                             secretShopGoldSpent += bp;
-                             secretShopCostValue += (bp + matPrice);
-                             secretShopRewardValue += rewardVal;
+                        const bp = Number(r.buyPrice || 0);
+                        if (r.type === 'shinyGift') {
+                           const matPrice = auctionPrices['?�전?�리 ?�울 결정'] || 0;
+                           const rewardVal = 5 * tokenPrice;
+                           if (bp > 0 || matPrice > 0) {
+                              secretShopGoldSpent += bp;
                               recipeSoulCrystalCost += matPrice;
                               recipeGiftRewardValue += rewardVal;
+                              secretShopRewardValue += rewardVal;
                               recipeProfit += (rewardVal - bp - matPrice);
                            }
-                       } else if (r.type === 'brilliantGift') {
-                          const matPrice = auctionPrices['에픽 소울 결정'] || 0;
-                          const rewardVal = 20 * tokenPrice;
-                          if (bp > 0 || matPrice > 0) {
-                             secretShopGoldSpent += bp;
-                             secretShopCostValue += (bp + matPrice);
-                             secretShopRewardValue += rewardVal;
+                        } else if (r.type === 'brilliantGift') {
+                           const matPrice = auctionPrices['?�픽 ?�울 결정'] || 0;
+                           const rewardVal = 20 * tokenPrice;
+                           if (bp > 0 || matPrice > 0) {
+                              secretShopGoldSpent += bp;
                               recipeSoulCrystalCost += matPrice;
                               recipeGiftRewardValue += rewardVal;
+                              secretShopRewardValue += rewardVal;
                               recipeProfit += (rewardVal - bp - matPrice);
                            }
-                       } else {
-                          const seals = Number(r.sealCost || 0);
-                          const sp = Number(r.sellPrice || 0);
-                          if (bp > 0 || sp > 0) {
-                            if (bp > 0) secretShopGoldSpent += bp;
-                            const sealVal = seals * 5000;
-                            recipeSealCostValue += sealVal;
-                            secretShopCostValue += (bp + sealVal);
-                            secretShopRewardValue += sp;
+                        } else {
+                           const seals = Number(r.sealCost || 0);
+                           const sp = Number(r.sellPrice || 0);
+                           if (bp > 0 || sp > 0) {
+                             if (bp > 0) secretShopGoldSpent += bp;
+                             const sealVal = seals * 5000;
+                             recipeSealCostValue += sealVal;
+                             secretShopRewardValue += sp;
                              recipeProfit += (sp - bp - sealVal);
                            }
-                       }
-                    });
+                        }
+                     });
 
-                    const totalConsumedValue = tokenCost + potionCost + secretShopCostValue;
-                    const restoredPureGold = pureGoldInput + secretShopGoldSpent;
+                    const totalConsumedValue = tokenCost + potionCost + recipeSealCostValue + recipeSoulCrystalCost;
+                    const restoredPureGold = pureGoldInput;
 
-                    // 최종 교환 가능재화 가치
+                    // 최종 교환 가?�재??가�?
                     const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + secretShopRewardValue + customTradableValue;
                     const finalBoundValue = totalBoundValue - recipeSealCostValue;
                     const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
                     
-                    // 합계 누적 (입력 데이터가 있을 경우에만 포함)
+                    // ?�계 ?�적 (?�력 ?�이?��? ?�을 경우?�만 ?�함)
                     if (hasLootData) {
                         countWithData++;
                         sumFatigue += fatigue;
@@ -2304,15 +2308,15 @@ export default function Home() {
 
                         return (
                           <tr key={c.id} style={rowStyle}>
-                            {/* 1 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="클릭 시 목록에서 제거">
-                              <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span> <span style={{fontSize: '0.7rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>❌</span>
+                            {/* 1 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title="?�릭 ??목록?�서 ?�거">
+                              <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span> <span style={{fontSize: '0.7rem', color:'rgba(255,255,255,0.3)', fontWeight:'normal'}}>??/span>
                             </td>
                             {/* 2 */} <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
                             {/* 3 */} <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{runs}</td>
                             {/* 4 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                              <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: 'rgba(74, 222, 128, 0.2)', border: '1px solid rgba(74, 222, 128, 0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
+                              <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: 'rgba(74, 222, 128, 0.2)', border: '1px solid rgba(74, 222, 128, 0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>?�화 ?�력</button>
                             </td>
-                            {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{restoredPureGold > 0 ? restoredPureGold.toLocaleString() : '-'}</td>
+                            {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `?�� ?�점 지출액(${secretShopGoldSpent.toLocaleString()})??보정???�제 ?�랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{restoredPureGold > 0 ? restoredPureGold.toLocaleString() : '-'}</td>
                             {/* 6 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal > 0 ? Number(form.seal).toLocaleString() : '-'}</td>
                             {/* 7 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal > 0 ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
                             {/* 8 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher > 0 ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
@@ -2336,18 +2340,18 @@ export default function Home() {
                                   cursor: 'pointer'
                                 }}
                               >
-                                {form.usePotion ? '사용' : '미사용'}
+                                {form.usePotion ? '?�용' : '미사??}
                               </button>
                             </td>
                             {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>{secretShopGoldSpent > 0 ? secretShopGoldSpent.toLocaleString() : '-'}</td>
                             
-                             {/* 17-18 특별상점 */} 
+                             {/* 17-18 ?�별?�점 */} 
                              <td colSpan="2" style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle' }}>
                                <button 
                                  onClick={() => setActiveSecretShopModal({ charId: c.id })} 
                                  style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid rgba(167, 139, 250, 0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer', width: '100%' }}
                                >
-                                 특별상점 관리 {((form.secretTokens?.length || 0) + (form.secretRecipes?.length || 0)) > 0 ? `(${(form.secretTokens?.length || 0) + (form.secretRecipes?.length || 0)})` : ''}
+                                 ?�별?�점 관�?{((form.secretTokens?.length || 0) + (form.secretRecipes?.length || 0)) > 0 ? `(${(form.secretTokens?.length || 0) + (form.secretRecipes?.length || 0)})` : ''}
                                </button>
                              </td>
 
@@ -2455,11 +2459,11 @@ export default function Home() {
                         <>
                           {rows}
                           <tr style={{ background: 'rgba(255,255,255,0.05)', fontWeight: 'bold', borderTop: '2px solid rgba(255,255,255,0.2)' }}>
-                            {/* 1 */} <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>총합계 ({countWithData})</td>
+                            {/* 1 */} <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>총합�?({countWithData})</td>
                             {/* 2 */} <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>{sumFatigue > 0 ? sumFatigue : '-'}</td>
                             {/* 3 */} <td style={{ padding: '0.5rem', color: '#fbbf24' }}>{sumRuns > 0 ? sumRuns : '-'}</td>
                             {/* 4 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
-                            {/* 5 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title="비밀상점 지출액이 보정된 실제 드랍 골드의 총합">{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
+                            {/* 5 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title="비�??�점 지출액??보정???�제 ?�랍 골드??총합">{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
                             {/* 6 */} <td style={{ padding: '0.5rem' }}>{sumSeal > 0 ? sumSeal.toLocaleString() : '-'}</td>
                             {/* 7 */} <td style={{ padding: '0.5rem' }}>{sumTradableSeal > 0 ? sumTradableSeal.toLocaleString() : '-'}</td>
                             {/* 8 */} <td style={{ padding: '0.5rem' }}>{sumSealVoucher > 0 ? sumSealVoucher.toLocaleString() : '-'}</td>
@@ -2468,13 +2472,13 @@ export default function Home() {
                             {/* 11 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCore > 0 ? sumFlawlessCore.toLocaleString() : '-'}</td>
                             {/* 12 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumCrystal > 0 ? sumCrystal.toLocaleString() : '-'}</td>
                             {/* 13 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
-                            {/* 소모 재화 (3) */}
+                            {/* ?�모 ?�화 (3) */}
                             <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
                             <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
                             <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumSecretShopSpent > 0 ? sumSecretShopSpent.toLocaleString() : '-'}</td>
-                            {/* 특별상점 관리 (1 cell w/ cs2) */}
+                            {/* ?�별?�점 관�?(1 cell w/ cs2) */}
                             <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
-                            {/* 가치 산출 (4) */}
+                            {/* 가�??�출 (4) */}
                             <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
                             <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
@@ -2482,7 +2486,7 @@ export default function Home() {
                             
                           </tr>
                             <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.65rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                              <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>평균 (캐릭터당)</td>
+                              <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>?�균 (캐릭?�당)</td>
                               <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumFatigue / countWithData) : '-'}</td>
                               <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumRuns / countWithData) : '-'}</td>
                               <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
@@ -2524,28 +2528,28 @@ export default function Home() {
               <div className="modal-overlay">
                 <div className="modal-content glass-panel" style={{ maxWidth: '600px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-                    📊 상세 가치 산출 내역 ({calcDetail.charName})
+                    ?�� ?�세 가�??�출 ?�역 ({calcDetail.charName})
                   </h3>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '1.5rem' }}>
                     {/* Bound Section */}
                     <div>
-                      <h4 style={{ color: '#fb923c', marginBottom: '0.5rem', fontSize: '0.7rem' }}>📦 귀속 가치 (Bound)</h4>
+                      <h4 style={{ color: '#fb923c', marginBottom: '0.5rem', fontSize: '0.7rem' }}>?�� 귀??가�?(Bound)</h4>
                       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>순례의 인장 ({calcDetail.items.seal}개)</span>
+                          <span>?��????�장 ({calcDetail.items.seal}�?</span>
                           <span>{calcDetail.breakdown.seal.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>응축된 라이언 코어 ({calcDetail.items.core}개)</span>
+                          <span>?�축???�이??코어 ({calcDetail.items.core}�?</span>
                           <span>{calcDetail.breakdown.core.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                          <span>빛나는 조화의 결정체 ({calcDetail.items.crystal}개)</span>
+                          <span>빛나??조화??결정�?({calcDetail.items.crystal}�?</span>
                           <span>{calcDetail.breakdown.crystal.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#fb923c' }}>
-                          <span>귀속 합계</span>
+                          <span>귀???�계</span>
                           <span>{calcDetail.totals.bound.toLocaleString()} G</span>
                         </div>
                       </div>
@@ -2553,66 +2557,61 @@ export default function Home() {
 
                     {/* Tradable Section */}
                     <div>
-                      <h4 style={{ color: '#38bdf8', marginBottom: '0.5rem', fontSize: '0.7rem' }}>💰 교환 가능 가치 (Tradable)</h4>
+                      <h4 style={{ color: '#38bdf8', marginBottom: '0.5rem', fontSize: '0.7rem' }}>?�� 교환 가??가�?(Tradable)</h4>
                       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span title="유저 입력값">순 골드 (입력값)</span>
+                          <span title="?��? ?�력�?>??골드 (?�력�?</span>
                           <span>{calcDetail.items.pureGold.toLocaleString()} G</span>
                         </div>
-                        {calcDetail.breakdown.secretShopGoldSpent > 0 && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                            <span title="비밀상점 구매로 인해 줄어든 순골드 수치를 복구한 값입니다.">비밀상점 지출액 보정</span>
-                            <span>+{calcDetail.breakdown.secretShopGoldSpent.toLocaleString()} G</span>
-                          </div>
-                        )}
+                        
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>무결점 라이언 코어 ({calcDetail.items.flawlessCore}개)</span>
+                          <span>무결???�이??코어 ({calcDetail.items.flawlessCore}�?</span>
                           <span>{calcDetail.breakdown.flawlessCore.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>무결점 조화의 결정체 ({calcDetail.items.flawlessCrystal}개)</span>
+                          <span>무결??조화??결정�?({calcDetail.items.flawlessCrystal}�?</span>
                           <span>{calcDetail.breakdown.flawlessCrystal.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>순례의 인장(1회 교환 가능) 교환권 수익 ({calcDetail.items.sealVoucher}개)</span>
+                          <span>?��????�장(1??교환 가?? 교환�??�익 ({calcDetail.items.sealVoucher}�?</span>
                           <span>{calcDetail.breakdown.sealVoucher.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>순례의 인장(1회 교환 가능) 교환권 1개 상자 ({calcDetail.items.sealVoucherBox}개)</span>
+                          <span>?��????�장(1??교환 가?? 교환�?1�??�자 ({calcDetail.items.sealVoucherBox}�?</span>
                           <span>{calcDetail.breakdown.sealVoucherBox.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>순례의 인장(1회 교환 가능) ({calcDetail.items.tradableSeal}개)</span>
+                          <span>?��????�장(1??교환 가?? ({calcDetail.items.tradableSeal}�?</span>
                           <span>{calcDetail.breakdown.tradableSeal.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                          <span>비밀상점 레시피 수익</span>
+                          <span>비�??�점 ?�시???�익</span>
                                           <span>{calcDetail.breakdown.recipeProfit.toLocaleString()} G</span>
                                         </div>
                                         {(calcDetail.breakdown.recipeSoulCrystalCost > 0 || calcDetail.breakdown.recipeGiftRewardValue > 0) && (
                                           <div style={{ padding: '0.4rem', background: 'rgba(0,0,0,0.15)', borderRadius: '4px', marginTop: '0.2rem', marginBottom: '0.5rem', fontSize: '0.65rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                                              <span>ㄴ 답례품 소울 결정 소모</span>
+                                              <span>???��????�울 결정 ?�모</span>
                                               <span>-{calcDetail.breakdown.recipeSoulCrystalCost.toLocaleString()} G</span>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8' }}>
-                                              <span>ㄴ 답례품 증표 보상 가치</span>
+                                              <span>???��???증표 보상 가�?/span>
                                               <span>+{calcDetail.breakdown.recipeGiftRewardValue.toLocaleString()} G</span>
                                             </div>
                                           </div>
                                         )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                          <span>닳아버린 순례의 증표 단가 이득</span>
-                          <span>{calcDetail.breakdown.tokenProfit.toLocaleString()} G</span>
+                          <span>비�??�점 ?�장 구매 ?�득 (?�매가 - 구매가)</span>
+                           <span>{calcDetail.breakdown.tokenProfit.toLocaleString()} G</span>
                         </div>
                         {calcDetail.breakdown.customTradable > 0 && (
                           <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                            <span>커스텀 추가 항목 (교환)</span>
+                            <span>커스?� 추�? ??�� (교환)</span>
                             <span>{calcDetail.breakdown.customTradable.toLocaleString()} G</span>
                           </div>
                         )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#38bdf8' }}>
-                          <span>교환 가능 합계</span>
+                          <span>교환 가???�계</span>
                           <span>{calcDetail.totals.tradable.toLocaleString()} G</span>
                         </div>
                       </div>
@@ -2620,14 +2619,14 @@ export default function Home() {
 
                     {/* Cost Section */}
                     <div>
-                      <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.7rem' }}>📉 소모 비용 (Costs)</h4>
+                      <h4 style={{ color: '#f87171', marginBottom: '0.5rem', fontSize: '0.7rem' }}>?�� ?�모 비용 (Costs)</h4>
                       <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.3rem', marginBottom: '0.3rem' }}>
-                          <span>닳아버린 순례의 증표 소모 ({calcDetail.items.runs}개)</span>
+                          <span>?�아버린 ?��???증표 ?�모 ({calcDetail.items.runs}�?</span>
                           <span>-{calcDetail.breakdown.tokenCost.toLocaleString()} G</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#f87171' }}>
-                          <span>소모 합계</span>
+                          <span>?�모 ?�계</span>
                           <span>-{calcDetail.totals.consumed.toLocaleString()} G</span>
                         </div>
                       </div>
@@ -2636,33 +2635,33 @@ export default function Home() {
                     {/* Final Results */}
                     <div style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '1rem', marginTop: '0.5rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>
-                        <span>순수익 (귀속 제외)</span>
+                        <span>?�수??(귀???�외)</span>
                         <span>{calcDetail.final.excludingBound.toLocaleString()} G</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 'bold', color: '#4ade80' }}>
-                        <span>순수익 (귀속 포함)</span>
+                        <span>?�수??(귀???�함)</span>
                         <span>{calcDetail.final.includingBound.toLocaleString()} G</span>
                       </div>
                       <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.8rem', fontStyle: 'italic', textAlign: 'right' }}>
-                        * 순수익(귀속 제외) = 교환 가능 합계 - 소모 합계<br/>
-                        * 순수익(귀속 포함) = 귀속 합계 + 교환 가능 합계 - 소모 합계
+                        * ?�수??귀???�외) = 교환 가???�계 - ?�모 ?�계 (비�??�점 구매 비용?� ?��? ??골드??반영?�어 ?�습?�다)<br/>
+                        * ?�수??귀???�함) = 귀???�계 + 교환 가???�계 - ?�모 ?�계
                       </div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button onClick={() => setCalcDetail(null)} style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>확인</button>
+                    <button onClick={() => setCalcDetail(null)} style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>?�인</button>
                   </div>
                 </div>
               </div>
             )}
             {showAuctionPricesModal && (() => {
-              const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자', '피로 회복의 영약', '레전더리 소울 결정', '에픽 소울 결정'];
+              const baseItems = ['무결???�이??코어', '무결??조화??결정�?, '?�아버린 ?��???증표', '?��????�장(1??교환 가??', '?��????�장(1??교환 가?? 교환�?1�??�자', '?�로 ?�복???�약', '?�전?�리 ?�울 결정', '?�픽 ?�울 결정'];
               return (
               <div className="modal-overlay">
                 <div className="modal-content glass-panel" style={{ maxWidth: '500px', width: '90%' }}>
                    <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                     ⚖️ 현재 적용된 경매장 단가
+                     ?�️ ?�재 ?�용??경매???��?
                    </h3>
                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px' }}>
                      {Object.entries(auctionPrices).map(([name, price]) => {
@@ -2681,7 +2680,7 @@ export default function Home() {
                                 delete next[name];
                                 return next;
                               });
-                            }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 0.2rem', flexShrink: 0 }} title="목록에서 삭제">×</button>
+                            }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0 0.2rem', flexShrink: 0 }} title="목록?�서 ??��">×</button>
                           )}
                           {isBase && <span style={{ width: '1.2rem' }}></span>}
                         </div>
@@ -2689,48 +2688,48 @@ export default function Home() {
                      })}
                    </div>
                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <button onClick={() => setShowAuctionPricesModal(false)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
+                      <button onClick={() => setShowAuctionPricesModal(false)} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>?�기</button>
                    </div>
                 </div>
               </div>
               );
             })()}
 
-            <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>히스토리</h3>
+            <h3 style={{ fontSize: '1.1rem', color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>?�스?�리</h3>
             {pilgrimageHistory.length === 0 ? (
-              <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>아직 등록된 기록이 없습니다.</div>
+              <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px' }}>?�직 ?�록??기록???�습?�다.</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {pilgrimageHistory.map(record => (
                   <div key={record.id} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
                     <div style={{ background: 'rgba(255,255,255,0.04)', padding: '0.8rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold' }}>📅 {new Date(record.date).toLocaleString()}</span>
-                      <button className="danger" onClick={() => handleDeletePilgrimage(record.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}>기록 삭제</button>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold' }}>?�� {new Date(record.date).toLocaleString()}</span>
+                      <button className="danger" onClick={() => handleDeletePilgrimage(record.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}>기록 ??��</button>
                     </div>
                     <div style={{ overflowX: 'auto', padding: '1rem' }}>
                        {record.chars ? (
                          <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
-                           [구버전 기록] 캐릭터: {record.chars.join(', ')} / 획득: {record.acquired} / 소모: {record.consumed}
+                           [구버??기록] 캐릭?? {record.chars.join(', ')} / ?�득: {record.acquired} / ?�모: {record.consumed}
                          </div>
                        ) : (
                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
                            <thead>
                              <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>
-                               <th style={{ padding: '0.2rem 0.1rem', textAlign: 'left', fontSize: '0.7rem' }}>캐릭터</th>
-                               <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>피로도(판수)</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순 골드</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장(1회 교환 가능)</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장(1회 교환 가능) 교환권</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>응축된 라이언 코어</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>무결점 라이언 코어</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>빛나는 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>무결점 조화의 결정체</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>귀속 가치</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>교환 가치</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순수익<br/>(귀속 포함)</th>
-                                <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>순수익<br/>(귀속 제외)</th>
+                               <th style={{ padding: '0.2rem 0.1rem', textAlign: 'left', fontSize: '0.7rem' }}>캐릭??/th>
+                               <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>?�로???�수)</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>??골드</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>?��????�장</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>?��????�장(1??교환 가??</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>?��????�장(1??교환 가?? 교환�?/th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>?��????�장(1??교환 가?? 교환�?1�??�자</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>?�축???�이??코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>무결???�이??코어</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>빛나??조화??결정�?/th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>무결??조화??결정�?/th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>귀??가�?/th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>교환 가�?/th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>?�수??br/>(귀???�함)</th>
+                                <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>?�수??br/>(귀???�외)</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#94a3b8', fontSize: '0.7rem' }}>메모</th>
                              </tr>
                            </thead>
@@ -2741,9 +2740,9 @@ export default function Home() {
                                let tradable = d.values?.tradable || 0;
                                const consumed = d.values?.consumed || 0;
                                
-                               // 구버전 기록 보정: 영약 소모 비용이 누락된 경우 현재 단가로 차감
+                               // 구버??기록 보정: ?�약 ?�모 비용???�락??경우 ?�재 ?��?�?차감
                                if (d.consumed?.potion > 0 && d.values?.potionCost === undefined) {
-                                 const pPrice = auctionPrices['피로 회복의 영약'] || 0;
+                                 const pPrice = auctionPrices['?�로 ?�복???�약'] || 0;
                                  tradable -= pPrice;
                                  profit -= pPrice;
                                }
@@ -2753,7 +2752,7 @@ export default function Home() {
                                return (
                                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                                    <td style={{ padding: '0.25rem', color: '#e2e8f0', fontWeight: 'bold', textAlign: 'left', fontSize: '0.7rem' }}>{d.charName}</td>
-                                   <td style={{ padding: '0.4rem' }}>{d.startFatigue} <span style={{ color: '#fbbf24' }}>({d.runs}판)</span></td>
+                                   <td style={{ padding: '0.4rem' }}>{d.startFatigue} <span style={{ color: '#fbbf24' }}>({d.runs}??</span></td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.pureGold ? '#fff' : '#64748b' }}>{d.acquired.pureGold ? Number(d.acquired.pureGold).toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.seal ? '#fff' : '#64748b' }}>{d.acquired.seal || '-'}</td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.tradableSeal ? '#fff' : '#64748b' }}>{d.acquired.tradableSeal || '-'}</td>
@@ -2778,24 +2777,24 @@ export default function Home() {
                          <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between' }}>
                              <div style={{ flex: 1, minWidth: '200px' }}>
-                               <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>비밀상점 정산 내역</h5>
+                               <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>비�??�점 ?�산 ?�역</h5>
                                <div style={{ fontSize: '0.7rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                 <div>- 닳아버린 순례의 증표 구매 이득 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
-                                 <div>- 레시피 순수익 (교환 가치 반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
-                                 <div>- 레시피 순례의 인장 소모 비용 (귀속 가치 차감): <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
+                                 <div>- ?�아버린 ?��???증표 구매 ?�득 (교환 가�?반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
+                                 <div>- ?�시???�수??(교환 가�?반영): <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
+                                 <div>- ?�시???��????�장 ?�모 비용 (귀??가�?차감): <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
                                </div>
                              </div>
                              <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
-                               <h5 style={{ margin: '0 0 0.2rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>이번 순례 총 결산</h5>
+                               <h5 style={{ margin: '0 0 0.2rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>?�번 ?��? �?결산</h5>
                                {(() => {
                                  let bSum = record.sessionTotals.bound || 0;
                                  let tSum = record.sessionTotals.tradable || 0;
                                  let pSum = record.sessionTotals.profit || 0;
                                  
-                                 // 구버전 기록 보정 (세션 합계)
+                                 // 구버??기록 보정 (?�션 ?�계)
                                  record.details.forEach(d => {
                                    if (d.consumed?.potion > 0 && d.values?.potionCost === undefined) {
-                                      const pPrice = auctionPrices['피로 회복의 영약'] || 0;
+                                      const pPrice = auctionPrices['?�로 ?�복???�약'] || 0;
                                       tSum -= pPrice;
                                       pSum -= pPrice;
                                    }
@@ -2803,13 +2802,13 @@ export default function Home() {
 
                                  return (
                                    <>
-                                     <div style={{ fontSize: '0.7rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{bSum.toLocaleString()}</span></div>
-                                     <div style={{ fontSize: '0.7rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{tSum.toLocaleString()}</span></div>
+                                     <div style={{ fontSize: '0.7rem' }}>�?귀??가�? <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{bSum.toLocaleString()}</span></div>
+                                     <div style={{ fontSize: '0.7rem' }}>�?교환 가�? <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{tSum.toLocaleString()}</span></div>
                                      <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>
-                                       최종 순수익(귀속 포함): <span style={{ color: pSum > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{pSum.toLocaleString()}</span>
+                                       최종 ?�수??귀???�함): <span style={{ color: pSum > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{pSum.toLocaleString()}</span>
                                      </div>
                                      <div style={{ fontSize: '0.7rem' }}>
-                                       최종 순수익(귀속 제외): <span style={{ color: (tSum - record.sessionTotals.consumed) > 0 ? '#38bdf8' : '#f87171', fontWeight: 'bold' }}>{(tSum - record.sessionTotals.consumed).toLocaleString()}</span>
+                                       최종 ?�수??귀???�외): <span style={{ color: (tSum - record.sessionTotals.consumed) > 0 ? '#38bdf8' : '#f87171', fontWeight: 'bold' }}>{(tSum - record.sessionTotals.consumed).toLocaleString()}</span>
                                      </div>
                                    </>
                                  );
@@ -2830,14 +2829,14 @@ export default function Home() {
       {editingLogId && editLogForm && (
         <div className="modal-overlay">
           <div className="modal-content glass-panel" style={{ maxWidth: '450px' }}>
-            <h2 style={{marginTop: 0}}>성장 일지 수동 교정</h2>
+            <h2 style={{marginTop: 0}}>?�장 ?��? ?�동 교정</h2>
             
             {editLogForm.fameChange && (
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>명성치 수정</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>명성�??�정</label>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <input type="number" style={{ width: '100%' }} value={editLogForm.fameChange.old} onChange={e => setEditLogForm({...editLogForm, fameChange: {...editLogForm.fameChange, old: Number(e.target.value)}})} />
-                  <span>➡️</span>
+                  <span>?�️</span>
                   <input type="number" style={{ width: '100%' }} value={editLogForm.fameChange.new} onChange={e => setEditLogForm({...editLogForm, fameChange: {...editLogForm.fameChange, new: Number(e.target.value)}})} />
                 </div>
               </div>
@@ -2845,39 +2844,39 @@ export default function Home() {
 
             {editLogForm.equipChange && (
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>장비점수 및 세트 수정</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>?�비?�수 �??�트 ?�정</label>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom:'0.5rem' }}>
-                  <input type="text" style={{ width: '45%' }} value={editLogForm.equipChange.oldSet || ''} placeholder="이전세트" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, oldSet: e.target.value}})} />
-                  <span>➡️</span>
-                  <input type="text" style={{ width: '45%' }} value={editLogForm.equipChange.newSet || ''} placeholder="신규세트" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, newSet: e.target.value}})} />
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.equipChange.oldSet || ''} placeholder="?�전?�트" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, oldSet: e.target.value}})} />
+                  <span>?�️</span>
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.equipChange.newSet || ''} placeholder="?�규?�트" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, newSet: e.target.value}})} />
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <input type="number" style={{ width: '45%' }} value={editLogForm.equipChange.old} placeholder="이전점수" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, old: Number(e.target.value)}})} />
-                  <span>➡️</span>
-                  <input type="number" style={{ width: '45%' }} value={editLogForm.equipChange.new} placeholder="신규점수" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, new: Number(e.target.value)}})} />
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.equipChange.old} placeholder="?�전?�수" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, old: Number(e.target.value)}})} />
+                  <span>?�️</span>
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.equipChange.new} placeholder="?�규?�수" onChange={e => setEditLogForm({...editLogForm, equipChange: {...editLogForm.equipChange, new: Number(e.target.value)}})} />
                 </div>
               </div>
             )}
 
             {editLogForm.oathChange && (
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>서약점수 및 세트 수정</label>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>?�약?�수 �??�트 ?�정</label>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom:'0.5rem' }}>
-                  <input type="text" style={{ width: '45%' }} value={editLogForm.oathChange.oldSet || ''} placeholder="이전서약" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, oldSet: e.target.value}})} />
-                  <span>➡️</span>
-                  <input type="text" style={{ width: '45%' }} value={editLogForm.oathChange.newSet || ''} placeholder="신규서약" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, newSet: e.target.value}})} />
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.oathChange.oldSet || ''} placeholder="?�전?�약" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, oldSet: e.target.value}})} />
+                  <span>?�️</span>
+                  <input type="text" style={{ width: '45%' }} value={editLogForm.oathChange.newSet || ''} placeholder="?�규?�약" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, newSet: e.target.value}})} />
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <input type="number" style={{ width: '45%' }} value={editLogForm.oathChange.old} placeholder="이전점수" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, old: Number(e.target.value)}})} />
-                  <span>➡️</span>
-                  <input type="number" style={{ width: '45%' }} value={editLogForm.oathChange.new} placeholder="신규점수" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, new: Number(e.target.value)}})} />
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.oathChange.old} placeholder="?�전?�수" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, old: Number(e.target.value)}})} />
+                  <span>?�️</span>
+                  <input type="number" style={{ width: '45%' }} value={editLogForm.oathChange.new} placeholder="?�규?�수" onChange={e => setEditLogForm({...editLogForm, oathChange: {...editLogForm.oathChange, new: Number(e.target.value)}})} />
                 </div>
               </div>
             )}
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
               <button type="button" onClick={() => setEditingLogId(null)} className="danger">취소</button>
-              <button type="button" onClick={saveEditLog}>저장</button>
+              <button type="button" onClick={saveEditLog}>?�??/button>
             </div>
           </div>
         </div>
@@ -2886,9 +2885,9 @@ export default function Home() {
       {showSettings && (
         <div className="modal-overlay">
           <div className="glass-panel modal-content">
-            <h2 style={{ marginTop: 0 }}>API 키 설정</h2>
+            <h2 style={{ marginTop: 0 }}>API ???�정</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>
-              네오플 오픈 API 키를 입력해주세요.<br/>이 키는 브라우저 저장소에만 남으며 매 조회 시 백엔드로 안전하게 전달됩니다.
+              ?�오???�픈 API ?��? ?�력?�주?�요.<br/>???�는 브라?��? ?�?�소?�만 ?�으�?�?조회 ??백엔?�로 ?�전?�게 ?�달?�니??
             </p>
             <input 
               style={{ width: '100%', boxSizing: 'border-box', marginBottom: '1.5rem' }}
@@ -2903,7 +2902,7 @@ export default function Home() {
                   취소
                 </button>
               )}
-              <button type="button" onClick={handleSaveSettings}>저장</button>
+              <button type="button" onClick={handleSaveSettings}>?�??/button>
             </div>
           </div>
         </div>
@@ -2912,27 +2911,27 @@ export default function Home() {
       {manualModalChar && (
         <div className="modal-overlay">
           <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
-            <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>[{manualModalChar.base.charName}] 수동 제원 설정</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '1.5rem' }}>상단 🛠️ 탭에서 구성한 목록에서만 선택 가능합니다.</p>
+            <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>[{manualModalChar.base.charName}] ?�동 ?�원 ?�정</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '1.5rem' }}>?�단 ?���???��??구성??목록?�서�??�택 가?�합?�다.</p>
             <div style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-               <h3 style={{ fontSize: '0.7rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>기본 설정</h3>
-               <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', color: '#cbd5e1' }}>역할군 (로스터 편성에 사용됨)</label>
+               <h3 style={{ fontSize: '0.7rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>기본 ?�정</h3>
+               <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', color: '#cbd5e1' }}>??���?(로스???�성???�용??</label>
                <select 
                  style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.7rem' }}
                  value={manualForm.role || 'dealer'}
                  onChange={e => setManualForm({...manualForm, role: e.target.value})}
                >
-                 <option value="dealer">딜러</option>
+                 <option value="dealer">?�러</option>
                  <option value="buffer">버퍼</option>
                </select>
             </div>
             <div className="manual-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem', marginTop: '1rem' }}>
               {[
-                 { title: '장비 영역', keys: ['enchant', 'title'], labels: { enchant: '마부 상태', title: '칭호 현황' } },
-                 { title: '크리쳐 영역', keys: ['creature', 'creatureArtifact'], labels: { creature: '크리쳐 현황', creatureArtifact: '크리쳐 아티팩트' } },
-                 { title: '스위칭 영역', keys: ['buffLevel', 'buffAbyss'], labels: { buffLevel: '버프 레벨', buffAbyss: '심연의 편린 개수' } },
-                 { title: '아바타 영역', keys: ['avatar', 'emblem', 'platEmblem', 'skinAvatar', 'skinSocket', 'skinEmblem', 'weaponAvatar', 'weaponSocket', 'weaponEmblem', 'aura', 'auraEmblem'], 
-                   labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘', skinAvatar: '피부 아바타', skinSocket: '피부 소켓 여부', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponSocket: '무기 소켓 여부', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
+                 { title: '?�비 ?�역', keys: ['enchant', 'title'], labels: { enchant: '마�? ?�태', title: '�?�� ?�황' } },
+                 { title: '?�리�??�역', keys: ['creature', 'creatureArtifact'], labels: { creature: '?�리�??�황', creatureArtifact: '?�리�??�티?�트' } },
+                 { title: '?�위�??�역', keys: ['buffLevel', 'buffAbyss'], labels: { buffLevel: '버프 ?�벨', buffAbyss: '?�연???�린 개수' } },
+                 { title: '?�바?� ?�역', keys: ['avatar', 'emblem', 'platEmblem', 'skinAvatar', 'skinSocket', 'skinEmblem', 'weaponAvatar', 'weaponSocket', 'weaponEmblem', 'aura', 'auraEmblem'], 
+                   labels: { avatar: '?�바?� ?�황', emblem: '?�반 ?�블??, platEmblem: '?�하???�래?�넘', skinAvatar: '?��? ?�바?�', skinSocket: '?��? ?�켓 ?��?', skinEmblem: '?��? ?�블??, weaponAvatar: '무기 ?�바?�', weaponSocket: '무기 ?�켓 ?��?', weaponEmblem: '무기 ?�블??, aura: '?�라 ?�황', auraEmblem: '?�라 ?�블?? } }
               ].map(group => (
                  <div key={group.title} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <h3 style={{ fontSize: '0.7rem', margin: '0 0 1rem 0', color: '#60a5fa', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
@@ -2945,7 +2944,7 @@ export default function Home() {
                             min="0"
                             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.7rem' }}
                             value={manualForm[k] || ''}
-                            placeholder="양의 정수 입력"
+                            placeholder="?�의 ?�수 ?�력"
                             onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
                           />
                         ) : (
@@ -2954,7 +2953,7 @@ export default function Home() {
                             value={manualForm[k] || ''}
                             onChange={e => setManualForm({...manualForm, [k]: e.target.value})}
                           >
-                            <option value="">- 선택 안 함 -</option>
+                            <option value="">- ?�택 ????-</option>
                             {customOptions[k]?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                           </select>
                         )}
@@ -2965,7 +2964,7 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
               <button type="button" onClick={() => setManualModalChar(null)} style={{ background: 'transparent', border: '1px solid var(--border-color)' }}>취소</button>
-              <button type="button" onClick={handleSaveManual}>저장</button>
+              <button type="button" onClick={handleSaveManual}>?�??/button>
             </div>
           </div>
         </div>
@@ -2974,17 +2973,17 @@ export default function Home() {
       {showOptionsModal && (
         <div className="modal-overlay">
           <div className="glass-panel modal-content" style={{ maxWidth: '650px', width: '95%' }}>
-            <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>🛠️ 드롭다운 전체 항목 편집</h2>
+            <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>?���??�롭?�운 ?�체 ??�� ?�집</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '1.5rem' }}>
-              각 카테고리별로 콤마(,)를 사용해 선택지를 자유롭게 입력하세요. 
+              �?카테고리별로 콤마(,)�??�용???�택지�??�유�?�� ?�력?�세?? 
             </p>
             <div className="options-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem', marginTop: '1rem' }}>
               {[
-                 { title: '장비 영역', keys: ['enchant', 'title'], labels: { enchant: '마부 상태', title: '칭호 현황' } },
-                 { title: '크리쳐 영역', keys: ['creature', 'creatureArtifact'], labels: { creature: '크리쳐 현황', creatureArtifact: '크리쳐 아티팩트' } },
-                 { title: '스위칭 영역', keys: ['buffLevel', 'buffAbyss'], labels: { buffLevel: '버프 레벨', buffAbyss: '심연의 편린 개수' } },
-                 { title: '아바타 영역', keys: ['avatar', 'emblem', 'platEmblem', 'skinAvatar', 'skinSocket', 'skinEmblem', 'weaponAvatar', 'weaponSocket', 'weaponEmblem', 'aura', 'auraEmblem'], 
-                   labels: { avatar: '아바타 현황', emblem: '일반 엠블렘', platEmblem: '상하의 플래티넘 엠블렘 보유 여부', skinAvatar: '피부 아바타', skinSocket: '피부 소켓 여부', skinEmblem: '피부 엠블렘', weaponAvatar: '무기 아바타', weaponSocket: '무기 소켓 여부', weaponEmblem: '무기 엠블렘', aura: '오라 현황', auraEmblem: '오라 엠블렘' } }
+                 { title: '?�비 ?�역', keys: ['enchant', 'title'], labels: { enchant: '마�? ?�태', title: '�?�� ?�황' } },
+                 { title: '?�리�??�역', keys: ['creature', 'creatureArtifact'], labels: { creature: '?�리�??�황', creatureArtifact: '?�리�??�티?�트' } },
+                 { title: '?�위�??�역', keys: ['buffLevel', 'buffAbyss'], labels: { buffLevel: '버프 ?�벨', buffAbyss: '?�연???�린 개수' } },
+                 { title: '?�바?� ?�역', keys: ['avatar', 'emblem', 'platEmblem', 'skinAvatar', 'skinSocket', 'skinEmblem', 'weaponAvatar', 'weaponSocket', 'weaponEmblem', 'aura', 'auraEmblem'], 
+                   labels: { avatar: '?�바?� ?�황', emblem: '?�반 ?�블??, platEmblem: '?�하???�래?�넘 ?�블??보유 ?��?', skinAvatar: '?��? ?�바?�', skinSocket: '?��? ?�켓 ?��?', skinEmblem: '?��? ?�블??, weaponAvatar: '무기 ?�바?�', weaponSocket: '무기 ?�켓 ?��?', weaponEmblem: '무기 ?�블??, aura: '?�라 ?�황', auraEmblem: '?�라 ?�블?? } }
               ].map(group => (
                  <div key={group.title} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <h3 style={{ fontSize: '0.7rem', margin: '0 0 1rem 0', color: '#10b981', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem' }}>{group.title}</h3>
@@ -2993,14 +2992,14 @@ export default function Home() {
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', color: '#cbd5e1' }}>{group.labels[k]}</label>
                         {(k === 'buffAbyss' || k === 'buffLevel') ? (
                           <div style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.6rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '0.7rem', textAlign: 'center' }}>
-                            (각 캐릭터 개별 정수 입력)
+                            (�?캐릭??개별 ?�수 ?�력)
                           </div>
                         ) : (
                           <textarea 
                             rows={2}
                             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '0.4rem', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', resize: 'vertical', fontSize: '0.7rem' }}
                             value={optionsFormText[k] || ''}
-                            placeholder="종결, 가성비, 화려..."
+                            placeholder="종결, 가?�비, ?�려..."
                             onChange={e => setOptionsFormText({...optionsFormText, [k]: e.target.value})}
                           />
                         )}
@@ -3011,7 +3010,7 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
               <button type="button" onClick={() => setShowOptionsModal(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)' }}>취소</button>
-              <button type="button" onClick={handleSaveOptions}>저장</button>
+              <button type="button" onClick={handleSaveOptions}>?�??/button>
             </div>
           </div>
         </div>
@@ -3091,69 +3090,69 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
   };
 
   if (!activeLootModal) return null;
-  const charName = characters.find(c => c.id === activeLootModal.charId)?.base.charName || '알 수 없음';
+  const charName = characters.find(c => c.id === activeLootModal.charId)?.base.charName || '?????�음';
   
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
        <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', padding: '2rem', borderRadius: '12px', minWidth: '400px', maxWidth: '500px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#4ade80' }}>
-             📦 {charName} - 재화 및 메모 입력
+             ?�� {charName} - ?�화 �?메모 ?�력
            </h3>
            <div style={{ marginBottom: '1.5rem', maxHeight: '50vh', overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순 골드</label>
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>??골드</label>
                 <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).pureGold || ''} onChange={e => updateCharForm(activeLootModal.charId, 'pureGold', e.target.value)} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>?��????�장</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).seal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'seal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능)</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>?��????�장(1??교환 가??</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).tradableSeal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'tradableSeal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>응축된 라이언 코어</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>?�축???�이??코어</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).condensedCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'condensedCore', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>무결점 라이언 코어</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>무결???�이??코어</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).flawlessCore || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCore', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>빛나는 조화의 결정체</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>빛나??조화??결정�?/label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).crystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'crystal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>무결점 조화의 결정체</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>무결??조화??결정�?/label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).flawlessCrystal || ''} onChange={e => updateCharForm(activeLootModal.charId, 'flawlessCrystal', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>?��????�장(1??교환 가?? 교환�?/label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).sealVoucher || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucher', e.target.value)} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>순례의 인장(1회 교환 가능) 교환권 1개 상자</label>
+                  <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' }}>?��????�장(1??교환 가?? 교환�?1�??�자</label>
                   <input type="number" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).sealVoucherBox || ''} onChange={e => updateCharForm(activeLootModal.charId, 'sealVoucherBox', e.target.value)} />
                 </div>
               </div>
               <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <label style={{ fontSize: '0.7rem', color: '#60a5fa', fontWeight: 'bold' }}>커스텀 추가 항목 (교환 가능)</label>
+                  <label style={{ fontSize: '0.7rem', color: '#60a5fa', fontWeight: 'bold' }}>커스?� 추�? ??�� (교환 가??</label>
                   <button onClick={() => {
                     const items = getCharForm(activeLootModal.charId).customItems || [];
                     updateCharForm(activeLootModal.charId, 'customItems', [...items, { id: Date.now().toString(), name: '', quantity: '', price: 0, isBound: false }]);
-                  }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem', background: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 항목 추가</button>
+                  }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem', background: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ ??�� 추�?</button>
                 </div>
                 {(getCharForm(activeLootModal.charId).customItems || []).length === 0 && (
-                  <div style={{ fontSize: '0.65rem', color: '#64748b', textAlign: 'center', padding: '0.5rem' }}>항목이 없습니다. 위 버튼으로 추가하세요.</div>
+                  <div style={{ fontSize: '0.65rem', color: '#64748b', textAlign: 'center', padding: '0.5rem' }}>??��???�습?�다. ??버튼?�로 추�??�세??</div>
                 )}
                 {(getCharForm(activeLootModal.charId).customItems || []).map((item) => (
                   <div key={item.id} style={{ marginBottom: '0.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.6rem', borderRadius: '6px' }}>
                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginBottom: '0.4rem' }}>
                       <div style={{ flex: 1, position: 'relative' }}>
-                        <input type="text" placeholder="아이템 이름 입력" style={{ width: '100%', padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', boxSizing: 'border-box' }} value={item.name} onChange={e => {
+                        <input type="text" placeholder="?�이???�름 ?�력" style={{ width: '100%', padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', boxSizing: 'border-box' }} value={item.name} onChange={e => {
                           const items = getCharForm(activeLootModal.charId).customItems || [];
                           updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name: e.target.value } : i));
                         }} onFocus={() => setFocusedItemId(item.id)} onBlur={e => {
@@ -3180,7 +3179,7 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                           );
                         })()}
                       </div>
-                      <input type="number" placeholder="수량" style={{ width: '60px', padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', textAlign: 'center' }} value={item.quantity} onChange={e => {
+                      <input type="number" placeholder="?�량" style={{ width: '60px', padding: '0.4rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', textAlign: 'center' }} value={item.quantity} onChange={e => {
                         const items = getCharForm(activeLootModal.charId).customItems || [];
                         updateCharForm(activeLootModal.charId, 'customItems', items.map(i => i.id === item.id ? { ...i, quantity: e.target.value } : i));
                       }} />
@@ -3191,9 +3190,9 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.65rem', color: '#94a3b8', paddingLeft: '0.2rem' }}>
                       {fetchingItemId === item.id ? (
-                        <span style={{ color: '#fbbf24' }}>⏳ 단가 조회 중...</span>
+                        <span style={{ color: '#fbbf24' }}>???��? 조회 �?..</span>
                       ) : (
-                        <span>단가: <span style={{ color: Number(item.price || 0) > 0 ? '#fbbf24' : '#64748b', fontWeight: 'bold' }}>{Number(item.price || 0) > 0 ? `${Number(item.price).toLocaleString()} G` : '미조회'}</span></span>
+                        <span>?��?: <span style={{ color: Number(item.price || 0) > 0 ? '#fbbf24' : '#64748b', fontWeight: 'bold' }}>{Number(item.price || 0) > 0 ? `${Number(item.price).toLocaleString()} G` : '미조??}</span></span>
                       )}
                       {item.name && Number(item.quantity || 0) > 0 && Number(item.price || 0) > 0 && (
                         <span style={{ color: '#4ade80' }}>= {(Number(item.quantity) * Number(item.price)).toLocaleString()} G</span>
@@ -3203,12 +3202,12 @@ function LootModalComponent({ activeLootModal, setActiveLootModal, getCharForm, 
                 ))}
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#94a3b8' }}>기타 메모</label>
-                <input type="text" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).memo || ''} onChange={e => updateCharForm(activeLootModal.charId, 'memo', e.target.value)} placeholder="특이사항 메모 입력" />
+                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#94a3b8' }}>기�? 메모</label>
+                <input type="text" style={{ width: '100%', padding: '0.6rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} value={getCharForm(activeLootModal.charId).memo || ''} onChange={e => updateCharForm(activeLootModal.charId, 'memo', e.target.value)} placeholder="?�이?�항 메모 ?�력" />
               </div>
            </div>
            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-             <button onClick={handleClose} style={{ padding: '0.6rem 1.2rem', background: '#4ade80', color: '#1e293b', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>완료 및 닫기</button>
+             <button onClick={handleClose} style={{ padding: '0.6rem 1.2rem', background: '#4ade80', color: '#1e293b', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>?�료 �??�기</button>
            </div>
        </div>
      </div>
@@ -3233,7 +3232,7 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
       const charId = activeSecretShopModal.charId;
       const form = getCharForm(charId);
 
-      const cleanedTokens = (form.secretTokens || []).filter(t => t.buyPrice !== '');
+      const cleanedTokens = (form.secretTokens || []).filter(t => t.buyPrice !== '' || t.sellPrice !== '');
       updateCharForm(charId, 'secretTokens', cleanedTokens);
       const cleanedRecipes = (form.secretRecipes || []).filter(r => r.buyPrice !== '' || r.sealCost !== '' || r.sellPrice !== '');
       updateCharForm(charId, 'secretRecipes', cleanedRecipes);
@@ -3242,66 +3241,76 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
   };
 
   if (!activeSecretShopModal) return null;
-  const charName = characters.find(c => c.id === activeSecretShopModal.charId)?.base.charName || '알 수 없음';
+  const charName = characters.find(c => c.id === activeSecretShopModal.charId)?.base.charName || '?????�음';
   
   return (
     <div className="modal-overlay">
        <div className="modal-content glass-panel" style={{ maxWidth: '600px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
           <h3 style={{ marginTop: 0, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-            🛒 {charName} - 특별상점 통합 관리
+            ?�� {charName} - ?�별?�점 ?�합 관�?
           </h3>
           <div style={{ marginBottom: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                {/* 인장 구매 섹션 */}
+                {/* ?�장 구매 ?�션 */}
                 <div>
                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                     <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 구매 내역 추가</button>
+                     <button onClick={() => addCharToken(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 구매 ?�역 추�?</button>
                      <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginLeft: '0.5rem' }}>
-                       <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>빠른 추가:</span>
+                       <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>빠른 추�?:</span>
                        {[90000, 100000, 110000].map(price => (
                          <button 
                            key={price}
                            onClick={() => addCharToken(activeSecretShopModal.charId, String(price))}
                            style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', cursor: 'pointer' }}
                          >
-                           {price / 10000}만
+                           {price / 10000}�?
                          </button>
                        ))}
                      </div>
                    </div>
-                   {(getCharForm(activeSecretShopModal.charId).secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>구매 내역이 없습니다.</div> : (
-                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                       {(getCharForm(activeSecretShopModal.charId).secretTokens || []).map((t, idx) => (
-                         <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>#{idx+1}</span>
-                            <input type="number" value={t.buyPrice} onChange={e => updateCharToken(activeSecretShopModal.charId, t.id, e.target.value)} style={{ width: '80px', padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} placeholder="골드" />
-                            <button onClick={() => removeCharToken(activeSecretShopModal.charId, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 0.3rem' }}>×</button>
-                         </div>
-                       ))}
-                     </div>
-                   )}
+                   {(getCharForm(activeSecretShopModal.charId).secretTokens || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>구매 ?�역???�습?�다.</div> : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {(getCharForm(activeSecretShopModal.charId).secretTokens || []).map((t, idx) => (
+                          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                             <div style={{ fontSize: '0.7rem', color: '#38bdf8', fontWeight: 'bold', minWidth: '90px' }}>?�장 구매 #{idx+1}</div>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                               <span style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>구매가:</span>
+                               <input type="number" value={t.buyPrice} onChange={e => updateCharToken(activeSecretShopModal.charId, t.id, 'buyPrice', e.target.value)} style={{ width: '80px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} placeholder="골드" />
+                             </div>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                               <span style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>?�매가:</span>
+                               <input type="number" value={t.sellPrice} onChange={e => updateCharToken(activeSecretShopModal.charId, t.id, 'sellPrice', e.target.value)} style={{ width: '80px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} placeholder="?�장가" />
+                             </div>
+                             <div style={{ fontSize: '0.7rem', color: (Number(t.sellPrice||0) - Number(t.buyPrice||0)) >= 0 ? '#4ade80' : '#f87171', fontWeight: 'bold', marginLeft: 'auto', marginRight: '1rem' }}>
+                               ?�익: {(Number(t.sellPrice||0) - Number(t.buyPrice||0)).toLocaleString()} G
+                             </div>
+                             <button onClick={() => removeCharToken(activeSecretShopModal.charId, t.id)} style={{ padding: '0.2rem 0.4rem', background: 'rgba(248, 113, 113, 0.2)', color: '#f87171', border: '1px solid rgba(248, 113, 113, 0.4)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>??��</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)' }} />
 
-                {/* 레시피 제작 섹션 */}
+                {/* ?�시???�작 ?�션 */}
                 <div>
-                   <h4 style={{ fontSize: '0.75rem', color: '#a78bfa', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>🔹 레시피 / 답례품 제작</h4>
+                   <h4 style={{ fontSize: '0.75rem', color: '#a78bfa', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>?�� ?�시??/ ?��????�작</h4>
                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                      <button onClick={() => addCharRecipe(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 일반 레시피</button>
+                      <button onClick={() => addCharRecipe(activeSecretShopModal.charId)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(167, 139, 250, 0.2)', color: '#a78bfa', border: '1px solid rgba(167, 139, 250, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ ?�반 ?�시??/button>
                       <button onClick={() => {
                          const charId = activeSecretShopModal.charId;
                          const form = getCharForm(charId);
                          updateCharForm(charId, 'secretRecipes', [...(form.secretRecipes || []), { id: Date.now(), buyPrice: '', type: 'shinyGift' }]);
-                      }} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 빛나는 답례품</button>
+                      }} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24', border: '1px solid rgba(251, 191, 36, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 빛나???��???/button>
                       <button onClick={() => {
                          const charId = activeSecretShopModal.charId;
                          const form = getCharForm(charId);
                          updateCharForm(charId, 'secretRecipes', [...(form.secretRecipes || []), { id: Date.now(), buyPrice: '', type: 'brilliantGift' }]);
-                      }} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ 화려한 답례품</button>
+                      }} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', borderRadius: '4px', cursor: 'pointer' }}>+ ?�려???��???/button>
                    </div>
                    
-                   {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>제작 내역이 없습니다.</div> : (
+                   {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).length === 0 ? <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>?�작 ?�역???�습?�다.</div> : (
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                        {(getCharForm(activeSecretShopModal.charId).secretRecipes || []).map((r, idx) => {
                          const isShiny = r.type === 'shinyGift';
@@ -3311,7 +3320,7 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
                          return (
                            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>
                               <div style={{ fontSize: '0.7rem', color: isGift ? '#fbbf24' : '#a78bfa', fontWeight: 'bold', minWidth: '110px' }}>
-                                {isShiny ? '🎁 빛나는 답례품' : isBrilliant ? '🎁 화려한 답례품' : `레시피 #${idx+1}`}
+                                {isShiny ? '?�� 빛나???��??? : isBrilliant ? '?�� ?�려???��??? : `?�시??#${idx+1}`}
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                                 <span style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>구매가:</span>
@@ -3319,16 +3328,16 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
                               </div>
                               {isGift ? (
                                 <div style={{ fontSize: '0.65rem', color: '#94a3b8', flex: 1 }}>
-                                  [소모] {isShiny ? '레전더리' : '에픽'} 소울 1 / [보상] 증표 {isShiny ? '5' : '20'}
+                                  [?�모] {isShiny ? '?�전?�리' : '?�픽'} ?�울 1 / [보상] 증표 {isShiny ? '5' : '20'}
                                 </div>
                               ) : (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                    <span style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>인장:</span>
+                                    <span style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>?�장:</span>
                                     <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sealCost', e.target.value)} style={{ width: '40px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} />
                                   </div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                    <span style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>판매가:</span>
+                                    <span style={{ fontSize: '0.65rem', color: '#cbd5e1' }}>?�매가:</span>
                                     <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(activeSecretShopModal.charId, r.id, 'sellPrice', e.target.value)} style={{ width: '80px', padding: '0.2rem 0.1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' }} />
                                   </div>
                                 </div>
@@ -3343,7 +3352,7 @@ function SecretShopModalComponent({ activeSecretShopModal, setActiveSecretShopMo
              </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-             <button onClick={handleClose} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>닫기</button>
+             <button onClick={handleClose} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>?�기</button>
           </div>
        </div>
     </div>
