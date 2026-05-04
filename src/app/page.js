@@ -1920,22 +1920,19 @@ export default function Home() {
             // 소모재화 비용 산출
             const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
             const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
-            const totalConsumedValue = tokenCost + potionCost + recipeSealCost + recipeSoulCrystalCost;
+            const totalConsumedValue = tokenCost + potionCost;
             
             // 비밀상점 가치 산출 (캐릭터별)
             const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
             let tokenProfit = 0;
             let secretShopGoldSpent = 0;
-            let secretShopRewardValue = 0;
 
             (form.secretTokens || []).forEach(t => {
-               const bp = Number(t.buyPrice || 0);
-               const sp = Number(t.sellPrice || 0);
-               if (bp > 0 || sp > 0) {
-                  secretShopGoldSpent += bp;
-                  secretShopRewardValue += sp;
-                  tokenProfit += (sp - bp);
-               }
+              const bp = Number(t.buyPrice || 0);
+              if (bp > 0) {
+                 secretShopGoldSpent += bp;
+                 tokenProfit += (tokenPrice - bp);
+              }
             });
 
             let recipeProfit = 0;
@@ -1952,7 +1949,6 @@ export default function Home() {
                      secretShopGoldSpent += bp;
                      recipeSoulCrystalCost += matPrice;
                      recipeGiftRewardValue += rewardVal;
-                     secretShopRewardValue += rewardVal;
                      recipeProfit += (rewardVal - bp - matPrice);
                   }
                } else if (r.type === 'brilliantGift') {
@@ -1962,7 +1958,6 @@ export default function Home() {
                      secretShopGoldSpent += bp;
                      recipeSoulCrystalCost += matPrice;
                      recipeGiftRewardValue += rewardVal;
-                     secretShopRewardValue += rewardVal;
                      recipeProfit += (rewardVal - bp - matPrice);
                   }
                } else {
@@ -1972,17 +1967,16 @@ export default function Home() {
                     if (bp > 0) secretShopGoldSpent += bp;
                     const sealVal = seals * 5000;
                     recipeSealCost += sealVal;
-                    secretShopRewardValue += sp;
                     recipeProfit += (sp - bp - sealVal);
                   }
                }
             });
 
             // 순 골드 보정 (상점 지출액 복원)
-            const restoredPureGold = pureGoldInput;
+            const restoredPureGold = pureGoldInput + secretShopGoldSpent;
 
             // 최종 교환 가능재화 가치 (보정된 순골드 + 코어/결정체 + 인장류 수익 + 상점 순수익 + 커스텀)
-            const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + secretShopRewardValue + customTradableValue;
+            const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + tokenProfit + recipeProfit + customTradableValue;
             const finalBoundValue = totalBoundValue - recipeSealCost;
             const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
 
@@ -2175,6 +2169,11 @@ export default function Home() {
                     const rows = selectedChars.map((c, idx) => {
                       const form = getCharForm(c.id);
                       
+                     const hasLootData = (
+                        (form.pureGold && form.pureGold !== '') ||
+                        (form.seal && form.seal !== '') ||
+                        (form.condensedCore && form.condensedCore !== '') ||
+                        (form.crystal && form.crystal !== '') ||
                         (form.flawlessCore && form.flawlessCore !== '') ||
                         (form.flawlessCrystal && form.flawlessCrystal !== '') ||
                         (form.sealVoucher && form.sealVoucher !== '') ||
