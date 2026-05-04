@@ -2211,17 +2211,40 @@ export default function Home() {
                       }
                     });
 
-                    let recipeProfit = 0;
+                                        let recipeProfit = 0;
                     let recipeSealCost = 0;
+                    let recipeSoulCrystalCost = 0;
+                    let recipeGiftRewardValue = 0;
+                    
                     (form.secretRecipes || []).forEach(r => {
                        const bp = Number(r.buyPrice || 0);
-                       const seals = Number(r.sealCost || 0);
-                       const sp = Number(r.sellPrice || 0);
-                       if (bp > 0 || sp > 0) {
-                         if (bp > 0) secretShopGoldSpent += bp;
-                         const sealVal = seals * 5000;
-                         recipeSealCost += sealVal;
-                         recipeProfit += (sp - bp - sealVal);
+                       if (r.type === 'shinyGift') {
+                          const matPrice = auctionPrices['레전더리 소울 결정'] || 0;
+                          const rewardVal = 5 * (auctionPrices['닳아버린 순례의 증표'] || 0);
+                          if (bp > 0 || matPrice > 0) {
+                             secretShopGoldSpent += bp;
+                             recipeSoulCrystalCost += matPrice;
+                             recipeGiftRewardValue += rewardVal;
+                             recipeProfit += (rewardVal - bp - matPrice);
+                          }
+                       } else if (r.type === 'brilliantGift') {
+                          const matPrice = auctionPrices['에픽 소울 결정'] || 0;
+                          const rewardVal = 20 * (auctionPrices['닳아버린 순례의 증표'] || 0);
+                          if (bp > 0 || matPrice > 0) {
+                             secretShopGoldSpent += bp;
+                             recipeSoulCrystalCost += matPrice;
+                             recipeGiftRewardValue += rewardVal;
+                             recipeProfit += (rewardVal - bp - matPrice);
+                          }
+                       } else {
+                          const seals = Number(r.sealCost || 0);
+                          const sp = Number(r.sellPrice || 0);
+                          if (bp > 0 || sp > 0) {
+                            if (bp > 0) secretShopGoldSpent += bp;
+                            const sealVal = seals * 5000;
+                            recipeSealCost += sealVal;
+                            recipeProfit += (sp - bp - sealVal);
+                          }
                        }
                     });
 
