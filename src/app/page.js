@@ -1852,9 +1852,9 @@ export default function Home() {
            }
            setIsFetchingPrices(false);
         };
-        const addCharToken = (charId) => {
+         const addCharToken = (charId, initialPrice = '') => {
            const form = getCharForm(charId);
-           updateCharForm(charId, 'secretTokens', [...form.secretTokens, { id: Date.now(), buyPrice: '' }]);
+           updateCharForm(charId, 'secretTokens', [...form.secretTokens, { id: Date.now(), buyPrice: initialPrice }]);
         };
         const updateCharToken = (charId, tokenId, val) => {
            const form = getCharForm(charId);
@@ -1944,7 +1944,7 @@ export default function Home() {
                const bp = Number(r.buyPrice || 0);
                if (r.type === 'shinyGift') {
                   const matPrice = auctionPrices['레전더리 소울 결정'] || 0;
-                  const rewardVal = 5 * (auctionPrices['닳아버린 순례의 증표'] || 0);
+                  const rewardVal = 5 * tokenPrice;
                   if (bp > 0 || matPrice > 0) {
                      secretShopGoldSpent += bp;
                      recipeSoulCrystalCost += matPrice;
@@ -1953,7 +1953,7 @@ export default function Home() {
                   }
                } else if (r.type === 'brilliantGift') {
                   const matPrice = auctionPrices['에픽 소울 결정'] || 0;
-                  const rewardVal = 20 * (auctionPrices['닳아버린 순례의 증표'] || 0);
+                  const rewardVal = 20 * tokenPrice;
                   if (bp > 0 || matPrice > 0) {
                      secretShopGoldSpent += bp;
                      recipeSoulCrystalCost += matPrice;
@@ -2179,9 +2179,7 @@ export default function Home() {
                         (form.sealVoucher && form.sealVoucher !== '') ||
                         (form.sealVoucherBox && form.sealVoucherBox !== '') ||
                         (form.tradableSeal && form.tradableSeal !== '') ||
-                        (form.customItems && form.customItems.length > 0) ||
-                        (form.secretTokens && form.secretTokens.length > 0) ||
-                        (form.secretRecipes && form.secretRecipes.length > 0)
+                        (form.customItems && form.customItems.length > 0)
                       );
 
                     const fatigue = Number(form.startFatigue || 0);
@@ -2218,9 +2216,13 @@ export default function Home() {
 
                     const tokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
                     let secretShopGoldSpent = 0;
-                    let secretShopRewardValue = 0;
-                    let secretShopCostValue = 0;
-                    let recipeSealCostValue = 0;
+                     let secretShopRewardValue = 0;
+                     let secretShopCostValue = 0;
+                     let recipeSealCostValue = 0;
+                     let tokenProfit = 0;
+                     let recipeProfit = 0;
+                     let recipeSoulCrystalCost = 0;
+                     let recipeGiftRewardValue = 0;
                     
                     (form.secretTokens || []).forEach(t => {
                       const bp = Number(t.buyPrice || 0);
@@ -2228,27 +2230,34 @@ export default function Home() {
                          secretShopGoldSpent += bp;
                          secretShopCostValue += bp;
                          secretShopRewardValue += tokenPrice;
-                      }
+                          tokenProfit += (tokenPrice - bp);
+                       }
                     });
 
                     (form.secretRecipes || []).forEach(r => {
                        const bp = Number(r.buyPrice || 0);
                        if (r.type === 'shinyGift') {
                           const matPrice = auctionPrices['레전더리 소울 결정'] || 0;
-                          const rewardVal = 5 * (auctionPrices['닳아버린 순례의 증표'] || 0);
+                          const rewardVal = 5 * tokenPrice;
                           if (bp > 0 || matPrice > 0) {
                              secretShopGoldSpent += bp;
                              secretShopCostValue += (bp + matPrice);
                              secretShopRewardValue += rewardVal;
-                          }
+                              recipeSoulCrystalCost += matPrice;
+                              recipeGiftRewardValue += rewardVal;
+                              recipeProfit += (rewardVal - bp - matPrice);
+                           }
                        } else if (r.type === 'brilliantGift') {
                           const matPrice = auctionPrices['에픽 소울 결정'] || 0;
-                          const rewardVal = 20 * (auctionPrices['닳아버린 순례의 증표'] || 0);
+                          const rewardVal = 20 * tokenPrice;
                           if (bp > 0 || matPrice > 0) {
                              secretShopGoldSpent += bp;
                              secretShopCostValue += (bp + matPrice);
                              secretShopRewardValue += rewardVal;
-                          }
+                              recipeSoulCrystalCost += matPrice;
+                              recipeGiftRewardValue += rewardVal;
+                              recipeProfit += (rewardVal - bp - matPrice);
+                           }
                        } else {
                           const seals = Number(r.sealCost || 0);
                           const sp = Number(r.sellPrice || 0);
@@ -2258,7 +2267,8 @@ export default function Home() {
                             recipeSealCostValue += sealVal;
                             secretShopCostValue += (bp + sealVal);
                             secretShopRewardValue += sp;
-                          }
+                             recipeProfit += (sp - bp - sealVal);
+                           }
                        }
                     });
 
