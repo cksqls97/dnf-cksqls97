@@ -2540,7 +2540,7 @@ export default function Home() {
               </div>
             )}
             {showAuctionPricesModal && (() => {
-              const baseItems = ['\ubb34\uacb0\uc810 \ub77c\uc774\uc5b8 \ucf54\uc5b4', '\ubb34\uacb0\uc810 \uc870\ud654\uc758 \uacb0\uc815\uccb4', '\ub2f3\uc544\ubc84\ub9b0 \uc21c\ub840\uc758 \uc99d\ud45c', '\uc21c\ub840\uc758 \uc778\uc7a5(1\ud68c \uad50\ud658 \uac00\ub2a5)', '\uc21c\ub840\uc758 \uc778\uc7a5(1\ud68c \uad50\ud658 \uac00\ub2a5) \uad50\ud658\uad8c 1\uac1c \uc0c1\uc790'];
+              const baseItems = ['무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자'];
               return (
               <div className="modal-overlay">
                 <div className="modal-content glass-panel" style={{ maxWidth: '500px', width: '90%' }}>
@@ -2612,7 +2612,8 @@ export default function Home() {
                                <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>무결점 조화의 결정체</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>귀속 가치</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>교환 가치</th>
-                               <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>총 수익</th>
+                               <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순수익<br/>(귀속 포함)</th>
+                                <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>순수익<br/>(귀속 제외)</th>
                                <th style={{ padding: '0.2rem 0.1rem', color: '#94a3b8', fontSize: '0.7rem' }}>메모</th>
                              </tr>
                            </thead>
@@ -2621,6 +2622,7 @@ export default function Home() {
                                let profit = d.values?.profit || 0;
                                let bound = d.values?.bound || 0;
                                let tradable = d.values?.tradable || 0;
+                               const consumed = d.values?.consumed || 0;
                                
                                // 구버전 기록 보정: 영약 소모 비용이 누락된 경우 현재 단가로 차감
                                if (d.consumed?.potion > 0 && d.values?.potionCost === undefined) {
@@ -2629,9 +2631,11 @@ export default function Home() {
                                  profit -= pPrice;
                                }
                                
+                               const profitExclBound = tradable - consumed;
+                               
                                return (
                                  <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                                   <td style={{ padding: '0.25rem', color: '#e2e8f0', fontWeight: 'bold', textAlign: 'left', fontSize: '0.7rem' }}>{d.charName} <span style={{fontSize: '0.7rem', color:'#64748b', fontWeight:'normal'}}>({d.jobName})</span></td>
+                                   <td style={{ padding: '0.25rem', color: '#e2e8f0', fontWeight: 'bold', textAlign: 'left', fontSize: '0.7rem' }}>{d.charName}</td>
                                    <td style={{ padding: '0.4rem' }}>{d.startFatigue} <span style={{ color: '#fbbf24' }}>({d.runs}판)</span></td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.pureGold ? '#fff' : '#64748b' }}>{d.acquired.pureGold ? Number(d.acquired.pureGold).toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', color: d.acquired.seal ? '#fff' : '#64748b' }}>{d.acquired.seal || '-'}</td>
@@ -2645,6 +2649,7 @@ export default function Home() {
                                    <td style={{ padding: '0.25rem', color: bound > 0 ? '#fb923c' : '#64748b' }}>{bound > 0 ? bound.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', color: tradable > 0 ? '#fb923c' : '#64748b' }}>{tradable > 0 ? tradable.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.25rem', fontWeight: 'bold', color: profit > 0 ? '#4ade80' : (profit < 0 ? '#f87171' : '#64748b') }}>{profit !== 0 ? profit.toLocaleString() : '-'}</td>
+                                   <td style={{ padding: '0.25rem', fontWeight: 'bold', color: profitExclBound > 0 ? '#38bdf8' : (profitExclBound < 0 ? '#f87171' : '#64748b') }}>{profitExclBound !== 0 ? profitExclBound.toLocaleString() : '-'}</td>
                                    <td style={{ padding: '0.4rem', color: '#cbd5e1', textAlign: 'left', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={d.memo || ''}>{d.memo || '-'}</td>
                                  </tr>
                                );
@@ -2684,7 +2689,10 @@ export default function Home() {
                                      <div style={{ fontSize: '0.7rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{bSum.toLocaleString()}</span></div>
                                      <div style={{ fontSize: '0.7rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{tSum.toLocaleString()}</span></div>
                                      <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>
-                                       최종 순수익: <span style={{ color: pSum > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{pSum.toLocaleString()}</span>
+                                       최종 순수익(귀속 포함): <span style={{ color: pSum > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{pSum.toLocaleString()}</span>
+                                     </div>
+                                     <div style={{ fontSize: '0.7rem' }}>
+                                       최종 순수익(귀속 제외): <span style={{ color: (tSum - record.sessionTotals.consumed) > 0 ? '#38bdf8' : '#f87171', fontWeight: 'bold' }}>{(tSum - record.sessionTotals.consumed).toLocaleString()}</span>
                                      </div>
                                    </>
                                  );
