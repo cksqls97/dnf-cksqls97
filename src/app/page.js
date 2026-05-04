@@ -2119,11 +2119,12 @@ export default function Home() {
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
                     <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>재화 입력</th>
                     <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>획득 재화 (기록)</th>
-                    <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#f87171', fontSize: '0.7rem' }}>소모 재화</th>
+                    <th colSpan="3" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>소모 재화</th>
+                    <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점 관리</th>
                     <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가치 산출 (골드)</th>
-                    
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem', lineHeight: '1.2' }}>
+                    {/* 획득 재화 (9) */}
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>순 골드</th>
                     <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의<br/>인장</th>
                     <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>순례의 인장<br/>(1회 교환 가능)</th>
@@ -2133,12 +2134,15 @@ export default function Home() {
                     <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점<br/>라이언 코어</th>
                     <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>빛나는 조화의<br/>결정체</th>
                     <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점 조화의<br/>결정체</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>닳아버린<br/>순례의 증표</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>피로 회복의<br/>영약</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>특별상점<br/>지출</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>특별상점<br/>관리</th>
-                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>귀속<br/>가치</th>
-                    <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>교환<br/>가치</th>
+                    {/* 소모 재화 (3) */}
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>닳아버린<br/>순례의 증표</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#fca5a5', fontSize: '0.7rem' }}>피로 회복의<br/>영약</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#fca5a5', fontSize: '0.7rem' }}>특별상점<br/>지출</th>
+                    {/* 특별상점 관리 (1 cell w/ cs2) */}
+                    <th colSpan="2" style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점 관리</th>
+                    {/* 가치 산출 (4) */}
+                    <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>귀속 가치</th>
+                    <th style={{ padding: '0.2rem 0.1rem', color: '#fb923c', fontSize: '0.7rem' }}>교환 가치</th>
                     <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순수익<br/>(귀속 포함)</th>
                     <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>순수익<br/>(귀속 제외)</th>
                   </tr>
@@ -2298,15 +2302,15 @@ export default function Home() {
                             {/* 4 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
                               <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: 'rgba(74, 222, 128, 0.2)', border: '1px solid rgba(74, 222, 128, 0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
                             </td>
-                            {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{restoredPureGold ? Number(restoredPureGold).toLocaleString() : '-'}</td>
-                            {/* 6 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal ? Number(form.seal).toLocaleString() : '-'}</td>
-                            {/* 7 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
-                            {/* 8 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
-                            {/* 9 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucherBox ? Number(form.sealVoucherBox).toLocaleString() : '-'}</td>
-                            {/* 10 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.condensedCore ? Number(form.condensedCore).toLocaleString() : '-'}</td>
-                            {/* 11 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCore ? Number(form.flawlessCore).toLocaleString() : '-'}</td>
-                            {/* 12 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.crystal ? Number(form.crystal).toLocaleString() : '-'}</td>
-                            {/* 13 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
+                            {/* 5 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={secretShopGoldSpent > 0 ? `💡 상점 지출액(${secretShopGoldSpent.toLocaleString()})이 보정된 실제 드랍 골드: ${restoredPureGold.toLocaleString()}` : ''}>{restoredPureGold > 0 ? restoredPureGold.toLocaleString() : '-'}</td>
+                            {/* 6 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal > 0 ? Number(form.seal).toLocaleString() : '-'}</td>
+                            {/* 7 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal > 0 ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
+                            {/* 8 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher > 0 ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
+                            {/* 9 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucherBox > 0 ? Number(form.sealVoucherBox).toLocaleString() : '-'}</td>
+                            {/* 10 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.condensedCore > 0 ? Number(form.condensedCore).toLocaleString() : '-'}</td>
+                            {/* 11 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCore > 0 ? Number(form.flawlessCore).toLocaleString() : '-'}</td>
+                            {/* 12 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.crystal > 0 ? Number(form.crystal).toLocaleString() : '-'}</td>
+                            {/* 13 */} <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal > 0 ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
                             
                             {/* 14 */} <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{runs > 0 ? runs : '-'}</td>
                             {/* 15 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>
@@ -2325,9 +2329,9 @@ export default function Home() {
                                 {form.usePotion ? '사용' : '미사용'}
                               </button>
                             </td>
-                            {/* 15.1 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>{secretShopGoldSpent > 0 ? secretShopGoldSpent.toLocaleString() : '-'}</td>
+                            {/* 16 */} <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>{secretShopGoldSpent > 0 ? secretShopGoldSpent.toLocaleString() : '-'}</td>
                             
-                             {/* 16-17 특별상점 */} 
+                             {/* 17-18 특별상점 */} 
                              <td colSpan="2" style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle' }}>
                                <button 
                                  onClick={() => setActiveSecretShopModal({ charId: c.id })} 
@@ -2454,14 +2458,17 @@ export default function Home() {
                             {/* 11 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCore > 0 ? sumFlawlessCore.toLocaleString() : '-'}</td>
                             {/* 12 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumCrystal > 0 ? sumCrystal.toLocaleString() : '-'}</td>
                             {/* 13 */} <td style={{ padding: '0.5rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
-                            {/* 14 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
-                            {/* 15 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
-                            {/* 15.1 */} <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumSecretShopSpent > 0 ? sumSecretShopSpent.toLocaleString() : '-'}</td>
-                            {/* 16,17 */} <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
-                            {/* 18 */} <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
-                            {/* 19 */} <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
-                            {/* 20 */} <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
-                            {/* 21 */} <td style={{ padding: '0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : (sumProfitExclBound < 0 ? '#f87171' : '#cbd5e1') }}>{sumProfitExclBound !== 0 ? sumProfitExclBound.toLocaleString() : '-'}</td>
+                            {/* 소모 재화 (3) */}
+                            <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
+                            <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
+                            <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumSecretShopSpent > 0 ? sumSecretShopSpent.toLocaleString() : '-'}</td>
+                            {/* 특별상점 관리 (1 cell w/ cs2) */}
+                            <td colSpan="2" style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
+                            {/* 가치 산출 (4) */}
+                            <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : (sumTotalProfit < 0 ? '#f87171' : '#cbd5e1') }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
+                            <td style={{ padding: '0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : (sumProfitExclBound < 0 ? '#f87171' : '#cbd5e1') }}>{sumProfitExclBound !== 0 ? sumProfitExclBound.toLocaleString() : '-'}</td>
                             
                           </tr>
                             <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.65rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
