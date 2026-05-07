@@ -147,23 +147,15 @@ export default function Home() {
     const saved = localStorage.getItem('DNF_CHARACTERS');
     if (saved) { try { loadedChars = JSON.parse(saved); setCharacters(loadedChars); } catch (e) {} }
 
+    let loadedOpts = { ...DEFAULT_CUSTOM_OPTIONS };
     const savedOpts = localStorage.getItem('DNF_OPTIONS');
     if (savedOpts) {
       try {
         const parsed = JSON.parse(savedOpts);
-        setCustomOptions({
-          enchant: ['기본', '가성비', '준종결', '종결'],
-          title: ['기본', '가성비', '준종결', '종결'],
-          aura: ['기본', '가성비', '준종결', '종결'],
-          creature: ['기본', '가성비', '준종결', '종결'],
-          avatar: ['기본', '이벤압', '레압', '클레압', '찬작', '엔드'],
-          emblem: ['기본', '화려', '찬란', '다발', '종결플티'],
-          ...parsed
-        });
+        loadedOpts = { ...DEFAULT_CUSTOM_OPTIONS, ...parsed };
+        setCustomOptions(loadedOpts);
       } catch (e) {}
     }
-
-    let loadedOpts = customOptions;
     let loadedLogs = [];
     const savedHistory = localStorage.getItem('DNF_HISTORY');
     if (savedHistory) { try { loadedLogs = JSON.parse(savedHistory); setHistoryLogs(loadedLogs); } catch (e) {} }

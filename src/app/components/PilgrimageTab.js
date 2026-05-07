@@ -15,7 +15,7 @@ const EMPTY_CHAR_FORM = () => ({
 
 function calcCharValues(form, auctionPrices) {
   const fatigue = Number(form.startFatigue || 0);
-  const runs = fatigue > 0 ? Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0) : 0;
+  const runs = Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0);
 
   const sealValue = Number(form.seal || 0) * 5000;
   const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
@@ -220,7 +220,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   }, [pilgrimageForm]);
 
   const getCharForm = (id) => pilgrimageForm[id] || EMPTY_CHAR_FORM();
-  const updateCharForm = (id, field, value) => setPilgrimageForm(prev => ({ ...prev, [id]: { ...getCharForm(id), [field]: value } }));
+  const updateCharForm = (id, field, value) => setPilgrimageForm(prev => ({ ...prev, [id]: { ...(prev[id] || EMPTY_CHAR_FORM()), [field]: value } }));
   const togglePilgrimageChar = (id) => updateCharForm(id, 'selected', !getCharForm(id).selected);
 
   const applyGlobalFatigue = () => {
@@ -231,7 +231,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
   const addCharToken = (charId, buyPrice = '') => {
     const form = getCharForm(charId);
-    updateCharForm(charId, 'secretTokens', [...(form.secretTokens || []), { id: Date.now(), buyPrice }]);
+    updateCharForm(charId, 'secretTokens', [...(form.secretTokens || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, buyPrice }]);
   };
   const updateCharToken = (charId, tokenId, val) => {
     updateCharForm(charId, 'secretTokens', getCharForm(charId).secretTokens.map(t => t.id === tokenId ? { ...t, buyPrice: val } : t));
@@ -241,7 +241,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   };
   const addCharRecipe = (charId) => {
     const form = getCharForm(charId);
-    updateCharForm(charId, 'secretRecipes', [...(form.secretRecipes || []), { id: Date.now(), buyPrice: '', sealCost: '', sellPrice: '' }]);
+    updateCharForm(charId, 'secretRecipes', [...(form.secretRecipes || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, buyPrice: '', sealCost: '', sellPrice: '' }]);
   };
   const updateCharRecipe = (charId, recipeId, field, val) => {
     updateCharForm(charId, 'secretRecipes', getCharForm(charId).secretRecipes.map(r => r.id === recipeId ? { ...r, [field]: val } : r));

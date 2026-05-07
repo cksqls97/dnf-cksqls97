@@ -1,6 +1,6 @@
 const getDayKey = (ts) => {
   const offset = (9 - 6) * 60 * 60 * 1000;
-  const adjusted = new Date(ts - offset);
+  const adjusted = new Date(ts + offset);
   return `${adjusted.getUTCFullYear()}-${String(adjusted.getUTCMonth() + 1).padStart(2, '0')}-${String(adjusted.getUTCDate()).padStart(2, '0')}`;
 };
 
