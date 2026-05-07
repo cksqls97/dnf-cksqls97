@@ -10,6 +10,7 @@ export const SERVER_LIST = [
 ];
 
 export const ADVANCED_DUNGEONS = [
+  { name: '최후의 과업', fame: 108921 },
   { name: '배교자의 성', fame: 101853 },
   { name: '별거북 대서고', fame: 91582 },
   { name: '해방된 흉몽', fame: 71179 },
