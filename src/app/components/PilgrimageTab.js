@@ -197,7 +197,7 @@ const PIP_NORMAL = { w: 560, h: 720 };
 const PIP_CROP   = { w: 1280, h: 820 };
 
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
-  const [activeCharId, setActiveCharId] = useState(selectedChars[0]?.id || null);
+  const [activeCharId, setActiveCharId] = useState(selectedChars[selectedChars.length - 1]?.id || null);
   const [tab, setTab] = useState('loot');
   const [fetchingItemId, setFetchingItemId] = useState(null);
   const [screenshot, setScreenshot] = useState(null); // { dataURL, w, h }
