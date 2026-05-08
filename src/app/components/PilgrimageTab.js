@@ -184,6 +184,8 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const [dragStart, setDragStart] = useState(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [captureStatus, setCaptureStatus] = useState('');
+  const [debugInfo, setDebugInfo] = useState(null); // { cropDataURL, rawText }
+  const [showDebug, setShowDebug] = useState(false);
   const previewRef = useRef(null);
 
   useEffect(() => {
@@ -282,10 +284,12 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       const cropCanvas = document.createElement('canvas');
       cropCanvas.width = rw; cropCanvas.height = rh;
       cropCanvas.getContext('2d').drawImage(img, rx, ry, rw, rh, 0, 0, rw, rh);
-      const base64 = cropCanvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+      const cropDataURL = cropCanvas.toDataURL('image/jpeg', 0.9);
+      const base64 = cropDataURL.split(',')[1];
 
       const res = await fetch('/api/vision', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: base64 }) });
       const data = await res.json();
+      setDebugInfo({ cropDataURL, rawText: data.rawText ?? data.error ?? '(응답 없음)' });
       if (!data.success) throw new Error(data.error || '분석 실패');
 
       const d = data.data;
@@ -350,7 +354,24 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
                   </button>
                 )}
               </div>
-              {captureStatus && <div style={{ fontSize: '0.6rem', color: captureStatus.startsWith('❌') ? '#f87171' : captureStatus.startsWith('✅') ? '#4ade80' : '#94a3b8', lineHeight: 1.4, marginBottom: screenshot ? '0.4rem' : 0 }}>{captureStatus}</div>}
+              {captureStatus && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: screenshot ? '0.4rem' : 0 }}>
+                  <span style={{ fontSize: '0.6rem', color: captureStatus.startsWith('❌') ? '#f87171' : captureStatus.startsWith('✅') ? '#4ade80' : '#94a3b8', lineHeight: 1.4, flex: 1 }}>{captureStatus}</span>
+                  {debugInfo && (
+                    <button onClick={() => setShowDebug(v => !v)} style={{ padding: '0.15rem 0.4rem', fontSize: '0.6rem', background: showDebug ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.06)', color: showDebug ? '#fbbf24' : '#64748b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '3px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      {showDebug ? '디버그 닫기' : '🔍 디버그'}
+                    </button>
+                  )}
+                </div>
+              )}
+              {showDebug && debugInfo && (
+                <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '4px', padding: '0.5rem', marginBottom: '0.4rem' }}>
+                  <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.3rem' }}>전송된 크롭 이미지</div>
+                  <img src={debugInfo.cropDataURL} alt="crop" style={{ width: '100%', borderRadius: '3px', marginBottom: '0.4rem', border: '1px solid rgba(255,255,255,0.1)' }} />
+                  <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.2rem' }}>Claude 원본 응답</div>
+                  <pre style={{ fontSize: '0.55rem', color: '#94a3b8', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '3px', maxHeight: '120px', overflowY: 'auto' }}>{debugInfo.rawText}</pre>
+                </div>
+              )}
               {screenshot && (
                 <div
                   ref={previewRef}

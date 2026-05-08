@@ -117,7 +117,7 @@ ${iconDesc.join('\n')}`;
     }
     data.pureGold = Number(parsed.pureGold ?? 0);
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true, data, rawText: text });
   } catch (e) {
     return NextResponse.json({ success: false, error: String(e) }, { status: 500 });
   }
