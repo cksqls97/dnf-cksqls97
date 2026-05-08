@@ -1,16 +1,26 @@
 import { NextResponse } from 'next/server';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const dynamic = 'force-dynamic';
 
 // tradableSeal / sealVoucher / sealVoucherBox 는 아이콘 동일 → 수동 입력, 자동인식 제외
-const FIELD_NAMES = {
-  pureGold: '순 골드 (비밀상점 이후 잔여액)',
-  seal: '순례의 인장',
-  condensedCore: '응축된 라이언 코어',
-  flawlessCore: '무결점 라이언 코어',
-  crystal: '빛나는 조화의 결정체',
-  flawlessCrystal: '무결점 조화의 결정체',
-};
+const ICON_MAP = [
+  { key: 'seal',          file: 'seal.png',          label: '순례의 인장' },
+  { key: 'condensedCore', file: 'condensedCore.png',  label: '응축된 라이언 코어' },
+  { key: 'flawlessCore',  file: 'flawlessCore.png',   label: '무결점 라이언 코어' },
+  { key: 'crystal',       file: 'crystal.png',        label: '빛나는 조화의 결정체' },
+  { key: 'flawlessCrystal', file: 'flawlessCrystal.png', label: '무결점 조화의 결정체' },
+];
+
+function loadIconBase64(filename) {
+  try {
+    const buf = readFileSync(join(process.cwd(), 'public', 'icons', filename));
+    return buf.toString('base64');
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -30,10 +40,24 @@ export async function POST(request) {
     return NextResponse.json({ success: false, error: 'image 필드 누락' }, { status: 400 });
   }
 
-  const prompt = `이 이미지는 던전앤파이터(DNF) 게임 화면의 일부입니다.
-아이템 아이콘 우상단에 표시된 수량 숫자를 읽어 JSON으로 반환하세요.
-수량이 보이지 않거나 해당 아이콘이 없으면 0을 반환하세요.
-반드시 JSON만 반환하고 다른 텍스트는 포함하지 마세요.
+  // 레퍼런스 아이콘 로드
+  const iconBlocks = [];
+  const iconDesc = [];
+  for (const { key, file, label } of ICON_MAP) {
+    const b64 = loadIconBase64(file);
+    if (b64) {
+      iconBlocks.push({ type: 'text', text: `[레퍼런스 아이콘: ${label} → JSON 키: "${key}"]` });
+      iconBlocks.push({ type: 'image', source: { type: 'base64', media_type: 'image/png', data: b64 } });
+      iconDesc.push(`- "${key}": 위 레퍼런스 이미지와 같은 아이콘`);
+    }
+  }
+
+  const prompt = `위 레퍼런스 아이콘들을 참고해서, 마지막 이미지(게임 캡처 화면)에서 각 아이콘을 찾고 우상단에 표시된 수량 숫자를 읽으세요.
+
+규칙:
+- 아이콘이 없거나 수량 숫자가 없으면 0
+- pureGold는 화면에 보이는 골드(G) 보유량 (숫자만, 콤마 제거)
+- 반드시 JSON만 반환, 다른 텍스트 없음
 
 반환 형식:
 {
@@ -45,13 +69,16 @@ export async function POST(request) {
   "flawlessCrystal": 0
 }
 
-항목 설명 (아이콘 우상단 숫자를 읽으세요):
-- pureGold: 화면에 표시된 골드(G) 수량. 숫자+G 형태이거나 골드 아이콘 옆 숫자.
-- seal: 순례의 인장. 붉은/자주색 원형 문양 아이콘.
-- condensedCore: 응축된 라이언 코어. 파란 보석/코어 형태 아이콘.
-- flawlessCore: 무결점 라이언 코어. 밝게 빛나는 코어 아이콘.
-- crystal: 빛나는 조화의 결정체. 결정체/크리스탈 형태 아이콘.
-- flawlessCrystal: 무결점 조화의 결정체. 더 밝게 빛나는 결정체 아이콘.`;
+각 키 설명:
+- "pureGold": 보유 골드
+${iconDesc.join('\n')}`;
+
+  const messageContent = [
+    ...iconBlocks,
+    { type: 'text', text: '[분석할 게임 화면 캡처]' },
+    { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: image } },
+    { type: 'text', text: prompt },
+  ];
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -64,15 +91,7 @@ export async function POST(request) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 512,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: image } },
-              { type: 'text', text: prompt },
-            ],
-          },
-        ],
+        messages: [{ role: 'user', content: messageContent }],
       }),
     });
 
@@ -93,9 +112,10 @@ export async function POST(request) {
     }
 
     const data = {};
-    for (const key of Object.keys(FIELD_NAMES)) {
+    for (const { key } of ICON_MAP) {
       data[key] = Number(parsed[key] ?? 0);
     }
+    data.pureGold = Number(parsed.pureGold ?? 0);
 
     return NextResponse.json({ success: true, data });
   } catch (e) {

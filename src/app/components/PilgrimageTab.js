@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { getSortedCharacters } from '../lib/gameUtils';
 import { PILGRIMAGE_BASE_ITEMS, DEFAULT_AUCTION_PRICES } from '../lib/constants';
@@ -175,9 +175,13 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const [activeCharId, setActiveCharId] = useState(selectedChars[0]?.id || null);
   const [tab, setTab] = useState('loot');
   const [fetchingItemId, setFetchingItemId] = useState(null);
-  const [captureStream, setCaptureStream] = useState(null);
+  const [screenshot, setScreenshot] = useState(null); // { dataURL, w, h }
+  const [cropRect, setCropRect] = useState(null);     // { x1,y1,x2,y2 } in display coords
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [captureStatus, setCaptureStatus] = useState('');
+  const previewRef = useRef(null);
 
   useEffect(() => {
     if (selectedChars.length > 0 && !selectedChars.find(c => c.id === activeCharId)) {
@@ -199,51 +203,81 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const inp = { width: '100%', padding: '0.35rem 0.4rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px', fontSize: '0.75rem', boxSizing: 'border-box' };
   const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
 
-  const startScreenShare = async () => {
+  const takeScreenshot = async () => {
+    setCaptureStatus('');
+    setCropRect(null);
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-      stream.getVideoTracks()[0].addEventListener('ended', () => { setCaptureStream(null); setCaptureStatus(''); });
-      setCaptureStream(stream);
-      setCaptureStatus('화면 공유 중 — 캡처 버튼을 눌러 분석');
-    } catch (e) {
-      if (e.name !== 'AbortError') setCaptureStatus('화면 공유 실패: ' + e.message);
-    }
-  };
-
-  const stopScreenShare = () => {
-    if (captureStream) { captureStream.getTracks().forEach(t => t.stop()); }
-    setCaptureStream(null);
-    setCaptureStatus('');
-  };
-
-  const captureAndAnalyze = async () => {
-    if (!captureStream) return;
-    setIsCapturing(true);
-    setCaptureStatus('캡처 중...');
-    try {
-      const track = captureStream.getVideoTracks()[0];
+      const track = stream.getVideoTracks()[0];
       let bitmap;
       if (typeof ImageCapture !== 'undefined') {
         bitmap = await new ImageCapture(track).grabFrame();
       } else {
         const video = document.createElement('video');
         video.srcObject = new MediaStream([track]);
-        await new Promise(res => { video.onloadedmetadata = res; video.play(); });
+        await new Promise(res => { video.onloadedmetadata = () => { video.play(); res(); }; });
         const cv = document.createElement('canvas');
         cv.width = video.videoWidth; cv.height = video.videoHeight;
         cv.getContext('2d').drawImage(video, 0, 0);
         video.srcObject = null;
         bitmap = cv;
       }
-      const maxW = 1280;
-      const scale = bitmap.width > maxW ? maxW / bitmap.width : 1;
-      const w = Math.round(bitmap.width * scale), h = Math.round(bitmap.height * scale);
+      stream.getTracks().forEach(t => t.stop());
       const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
-      const base64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+      canvas.width = bitmap.width; canvas.height = bitmap.height;
+      canvas.getContext('2d').drawImage(bitmap, 0, 0);
+      setScreenshot({ dataURL: canvas.toDataURL('image/png'), w: bitmap.width, h: bitmap.height });
+      setCaptureStatus('영역을 드래그해서 선택 후 분석 버튼을 누르세요');
+    } catch (e) {
+      if (e.name !== 'AbortError') setCaptureStatus('❌ 캡처 실패: ' + e.message);
+    }
+  };
 
-      setCaptureStatus('Claude 분석 중...');
+  const onPreviewMouseDown = useCallback((e) => {
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    setDragStart({ x, y });
+    setCropRect({ x1: x, y1: y, x2: x, y2: y });
+    setIsDragging(true);
+  }, []);
+
+  const onPreviewMouseMove = useCallback((e) => {
+    if (!isDragging || !dragStart || !previewRef.current) return;
+    const rect = previewRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+    setCropRect({ x1: dragStart.x, y1: dragStart.y, x2: x, y2: y });
+  }, [isDragging, dragStart]);
+
+  const onPreviewMouseUp = useCallback(() => { setIsDragging(false); }, []);
+
+  const analyzeSelection = async () => {
+    if (!screenshot || !cropRect) return;
+    const { x1, y1, x2, y2 } = cropRect;
+    if (Math.abs(x2 - x1) < 5 || Math.abs(y2 - y1) < 5) {
+      setCaptureStatus('❌ 영역을 더 크게 선택해주세요');
+      return;
+    }
+    setIsCapturing(true);
+    setCaptureStatus('Claude 분석 중...');
+    try {
+      const preview = previewRef.current;
+      const scaleX = screenshot.w / preview.offsetWidth;
+      const scaleY = screenshot.h / preview.offsetHeight;
+      const rx = Math.round(Math.min(x1, x2) * scaleX);
+      const ry = Math.round(Math.min(y1, y2) * scaleY);
+      const rw = Math.round(Math.abs(x2 - x1) * scaleX);
+      const rh = Math.round(Math.abs(y2 - y1) * scaleY);
+
+      const img = new Image();
+      img.src = screenshot.dataURL;
+      await new Promise(res => { img.onload = res; });
+      const cropCanvas = document.createElement('canvas');
+      cropCanvas.width = rw; cropCanvas.height = rh;
+      cropCanvas.getContext('2d').drawImage(img, rx, ry, rw, rh, 0, 0, rw, rh);
+      const base64 = cropCanvas.toDataURL('image/jpeg', 0.9).split(',')[1];
+
       const res = await fetch('/api/vision', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: base64 }) });
       const data = await res.json();
       if (!data.success) throw new Error(data.error || '분석 실패');
@@ -296,22 +330,42 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
           <>
             {/* 화면 캡처 자동 입력 */}
             <div style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '6px', padding: '0.55rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: captureStatus ? '0.4rem' : 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '0.65rem', color: '#38bdf8', fontWeight: 'bold', flex: 1 }}>📷 화면 캡처 자동 입력</span>
-                {!captureStream ? (
-                  <button onClick={startScreenShare} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                    화면 공유 시작
+                <button onClick={takeScreenshot} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  {screenshot ? '재캡처' : '캡처'}
+                </button>
+                {screenshot && (
+                  <button onClick={analyzeSelection} disabled={isCapturing || !cropRect} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: (isCapturing || !cropRect) ? 'rgba(255,255,255,0.05)' : 'rgba(74,222,128,0.2)', color: (isCapturing || !cropRect) ? '#475569' : '#4ade80', border: `1px solid ${(isCapturing || !cropRect) ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.4)'}`, borderRadius: '4px', cursor: (isCapturing || !cropRect) ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
+                    {isCapturing ? '⏳' : '분석'}
                   </button>
-                ) : (
-                  <>
-                    <button onClick={captureAndAnalyze} disabled={isCapturing} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: isCapturing ? 'rgba(255,255,255,0.05)' : 'rgba(74,222,128,0.2)', color: isCapturing ? '#475569' : '#4ade80', border: `1px solid ${isCapturing ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.4)'}`, borderRadius: '4px', cursor: isCapturing ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
-                      {isCapturing ? '⏳ 분석 중' : '캡처 & 자동 입력'}
-                    </button>
-                    <button onClick={stopScreenShare} style={{ padding: '0.25rem 0.5rem', fontSize: '0.65rem', background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '4px', cursor: 'pointer' }}>■</button>
-                  </>
                 )}
               </div>
-              {captureStatus && <div style={{ fontSize: '0.6rem', color: captureStatus.startsWith('❌') ? '#f87171' : captureStatus.startsWith('✅') ? '#4ade80' : '#94a3b8', lineHeight: 1.4 }}>{captureStatus}</div>}
+              {captureStatus && <div style={{ fontSize: '0.6rem', color: captureStatus.startsWith('❌') ? '#f87171' : captureStatus.startsWith('✅') ? '#4ade80' : '#94a3b8', lineHeight: 1.4, marginBottom: screenshot ? '0.4rem' : 0 }}>{captureStatus}</div>}
+              {screenshot && (
+                <div
+                  ref={previewRef}
+                  onMouseDown={onPreviewMouseDown}
+                  onMouseMove={onPreviewMouseMove}
+                  onMouseUp={onPreviewMouseUp}
+                  onMouseLeave={onPreviewMouseUp}
+                  style={{ position: 'relative', width: '100%', aspectRatio: `${screenshot.w}/${screenshot.h}`, cursor: 'crosshair', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', userSelect: 'none' }}
+                >
+                  <img src={screenshot.dataURL} alt="capture" style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }} />
+                  {cropRect && (
+                    <div style={{
+                      position: 'absolute',
+                      left: Math.min(cropRect.x1, cropRect.x2),
+                      top: Math.min(cropRect.y1, cropRect.y2),
+                      width: Math.abs(cropRect.x2 - cropRect.x1),
+                      height: Math.abs(cropRect.y2 - cropRect.y1),
+                      border: '2px solid #4ade80',
+                      background: 'rgba(74,222,128,0.1)',
+                      pointerEvents: 'none',
+                    }} />
+                  )}
+                </div>
+              )}
             </div>
             {/* 자동 입력 항목 */}
             <div>
