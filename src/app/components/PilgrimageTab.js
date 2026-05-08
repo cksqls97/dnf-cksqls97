@@ -45,15 +45,27 @@ function calcCharValues(form, auctionPrices) {
     if (bp > 0) { tokenSpend += bp; tokenProfit += marketTokenPrice; }
   });
 
+  const legendarySoulPrice = auctionPrices['레전더리 소울 결정'] || 0;
+  const epicSoulPrice = auctionPrices['에픽 소울 결정'] || 0;
+
   let recipeSpend = 0;
   let recipeProfit = 0;
-  let recipeSealCostValue = 0;
+  let recipeSealCostValue = 0;  // 귀속: 레시피 인장 소모
+  let giftSoulCost = 0;         // 교환: 답례품 소울 결정 기회비용
   (form.secretRecipes || []).forEach(r => {
     const bp = Number(r.buyPrice || 0);
     if (r.type === 'shinyGift') {
-      if (bp > 0) { recipeSpend += bp; recipeProfit += 5 * marketTokenPrice; }
+      if (bp > 0) {
+        recipeSpend += bp;
+        recipeProfit += 5 * marketTokenPrice;
+        giftSoulCost += legendarySoulPrice; // 레전더리 소울 결정 1개 소모
+      }
     } else if (r.type === 'brilliantGift') {
-      if (bp > 0) { recipeSpend += bp; recipeProfit += 20 * marketTokenPrice; }
+      if (bp > 0) {
+        recipeSpend += bp;
+        recipeProfit += 20 * marketTokenPrice;
+        giftSoulCost += epicSoulPrice; // 에픽 소울 결정 1개 소모
+      }
     } else {
       const seals = Number(r.sealCost || 0);
       const sp = Number(r.sellPrice || 0);
@@ -74,7 +86,7 @@ function calcCharValues(form, auctionPrices) {
   });
 
   const totalConsumedValue = tokenCost + potionCost;
-  const finalTradableValue = pureGoldInput + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + customTradableValue + tokenProfit + recipeProfit;
+  const finalTradableValue = pureGoldInput + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + customTradableValue + tokenProfit + recipeProfit - giftSoulCost;
   const finalBoundValue = totalBoundValue - recipeSealCostValue;
   const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
 
@@ -82,7 +94,7 @@ function calcCharValues(form, auctionPrices) {
     runs, sealValue, boundCoreValue, boundCrystalValue, totalBoundValue, tradableCoreValue, tradableCrystalValue,
     voucherProfitTotal, tradableSealValue, voucherBoxValue, tokenCost, potionCost,
     tokenSpend, recipeSpend, grossPureGold,
-    tokenProfit, recipeProfit,
+    tokenProfit, recipeProfit, giftSoulCost,
     customTradableValue, recipeSealCostValue,
     totalConsumedValue, finalTradableValue, finalBoundValue, totalProfit
   };
@@ -114,6 +126,7 @@ function CalcDetailModal({ calcDetail, onClose }) {
               [`순례의 인장(1회 교환 가능) (${items.tradableSeal}개)`, breakdown.tradableSeal],
               ...(breakdown.tokenProfit ? [['닳아버린 순례의 증표 판매 예정가 (미수령)', breakdown.tokenProfit]] : []),
               ...(breakdown.recipeProfit ? [['레시피/답례품 판매 예정가 (미수령)', breakdown.recipeProfit]] : []),
+              ...(breakdown.giftSoulCost > 0 ? [['답례품 소울 결정 소모 (교환 가능)', -breakdown.giftSoulCost]] : []),
               ...(breakdown.customTradable > 0 ? [['커스텀 추가 항목 (교환)', breakdown.customTradable]] : []),
             ], total: ['교환 가능 합계', totals.tradable, '#38bdf8'] },
             { title: '📉 소모 비용 (Costs)', color: '#f87171', rows: [
@@ -880,7 +893,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     const clickDetail = hasLootData ? {
       charName: c.base.charName,
       items: { seal: Number(form.seal || 0), core: Number(form.condensedCore || 0), crystal: Number(form.crystal || 0), pureGold: Number(form.pureGold || 0), flawlessCore: Number(form.flawlessCore || 0), flawlessCrystal: Number(form.flawlessCrystal || 0), sealVoucher: Number(form.sealVoucher || 0), sealVoucherBox: Number(form.sealVoucherBox || 0), tradableSeal: Number(form.tradableSeal || 0), runs: v.runs },
-      breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, sealVoucher: v.voucherProfitTotal, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, tokenCost: v.tokenCost, potionCost: v.potionCost, recipeSealCost: v.recipeSealCostValue, customTradable: v.customTradableValue, tokenProfit: v.tokenProfit, recipeProfit: v.recipeProfit, grossPureGold: v.grossPureGold, tokenSpend: v.tokenSpend, recipeSpend: v.recipeSpend },
+      breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, sealVoucher: v.voucherProfitTotal, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, tokenCost: v.tokenCost, potionCost: v.potionCost, recipeSealCost: v.recipeSealCostValue, customTradable: v.customTradableValue, tokenProfit: v.tokenProfit, recipeProfit: v.recipeProfit, giftSoulCost: v.giftSoulCost, grossPureGold: v.grossPureGold, tokenSpend: v.tokenSpend, recipeSpend: v.recipeSpend },
       totals: { bound: v.finalBoundValue, tradable: v.finalTradableValue, consumed: v.totalConsumedValue },
       final: { includingBound: totalProfitIncl, excludingBound: profitExclBound }
     } : null;
