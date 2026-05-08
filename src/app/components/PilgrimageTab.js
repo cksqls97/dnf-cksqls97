@@ -37,11 +37,11 @@ function calcCharValues(form, auctionPrices) {
   const tokenCost = runs * marketTokenPrice;
   const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
 
-  // 특별상점: 증표 구매 이득 (시장가 - 구매가)
+  // 특별상점: 증표 구매 가치 (구매가는 pureGold에 이미 반영 → 시장가 전액 추가)
   let tokenProfit = 0;
   (form.secretTokens || []).forEach(t => {
     const bp = Number(t.buyPrice || 0);
-    if (bp > 0) tokenProfit += marketTokenPrice - bp;
+    if (bp > 0) tokenProfit += marketTokenPrice;
   });
 
   // 특별상점: 레시피/답례품 판매 예정가
@@ -109,7 +109,7 @@ function CalcDetailModal({ calcDetail, onClose }) {
               [`순례의 인장(1회 교환 가능) 교환권 수익 (${items.sealVoucher}개)`, breakdown.sealVoucher],
               [`순례의 인장(1회 교환 가능) 교환권 1개 상자 (${items.sealVoucherBox}개)`, breakdown.sealVoucherBox],
               [`순례의 인장(1회 교환 가능) (${items.tradableSeal}개)`, breakdown.tradableSeal],
-              ...(breakdown.tokenProfit ? [['닳아버린 순례의 증표 구매 이득', breakdown.tokenProfit]] : []),
+              ...(breakdown.tokenProfit ? [['닳아버린 순례의 증표 판매 예정가 (미수령)', breakdown.tokenProfit]] : []),
               ...(breakdown.recipeProfit ? [['레시피/답례품 판매 예정가 (미수령)', breakdown.recipeProfit]] : []),
               ...(breakdown.customTradable > 0 ? [['커스텀 추가 항목 (교환)', breakdown.customTradable]] : []),
             ], total: ['교환 가능 합계', totals.tradable, '#38bdf8'] },
@@ -1149,7 +1149,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                             <div style={{ flex: 1, minWidth: '200px' }}>
                               <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>비밀상점 정산 내역</h5>
                               <div style={{ fontSize: '0.7rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                <div>- 닳아버린 순례의 증표 구매 이득: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
+                                <div>- 닳아버린 순례의 증표 판매 예정가: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
                                 <div>- 레시피/답례품 판매 예정가: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
                                 <div>- 레시피 순례의 인장 소모: <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
                               </div>
