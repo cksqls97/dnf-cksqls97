@@ -4,105 +4,66 @@ import { join } from 'path';
 
 export const dynamic = 'force-dynamic';
 
-// tradableSeal / sealVoucher / sealVoucherBox 는 아이콘 동일 → 수동 입력, 자동인식 제외
-const ICON_MAP = [
-  { key: 'seal',          file: 'seal.png',          label: '순례의 인장' },
-  { key: 'condensedCore', file: 'condensedCore.png',  label: '응축된 라이언 코어' },
-  { key: 'flawlessCore',  file: 'flawlessCore.png',   label: '무결점 라이언 코어' },
-  { key: 'crystal',       file: 'crystal.png',        label: '빛나는 조화의 결정체' },
-  { key: 'flawlessCrystal', file: 'flawlessCrystal.png', label: '무결점 조화의 결정체' },
-];
+const GOLD_START = 10_000_000;
+const ITEM_KEYS = ['seal', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal'];
 
-function loadIconBase64(filename) {
+function loadIcon(file) {
   try {
-    const buf = readFileSync(join(process.cwd(), 'public', 'icons', filename));
-    return buf.toString('base64');
-  } catch {
-    return null;
-  }
+    return readFileSync(join(process.cwd(), 'public', 'icons', file)).toString('base64');
+  } catch { return null; }
 }
 
 export async function POST(request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ success: false, error: 'ANTHROPIC_API_KEY 미설정' }, { status: 500 });
-  }
+  if (!apiKey) return NextResponse.json({ success: false, error: 'ANTHROPIC_API_KEY 미설정' }, { status: 500 });
 
   let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ success: false, error: '잘못된 요청 형식' }, { status: 400 });
+  try { body = await request.json(); }
+  catch { return NextResponse.json({ success: false, error: '잘못된 요청 형식' }, { status: 400 }); }
+
+  const { image, positions } = body;
+  if (!image) return NextResponse.json({ success: false, error: 'image 필드 누락' }, { status: 400 });
+
+  const content = [];
+
+  // 골드 아이콘 레퍼런스
+  const goldB64 = loadIcon('gold.png');
+  if (goldB64) {
+    content.push({ type: 'text', text: '골드 아이콘 레퍼런스 (이 아이콘 오른쪽 숫자가 보유 골드):' });
+    content.push({ type: 'image', source: { type: 'base64', media_type: 'image/png', data: goldB64 } });
   }
 
-  const { image } = body;
-  if (!image) {
-    return NextResponse.json({ success: false, error: 'image 필드 누락' }, { status: 400 });
+  content.push({ type: 'text', text: '인벤토리 스크린샷 (픽셀 매칭으로 아이템 슬롯에 색상 테두리 표시됨):' });
+  content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: image } });
+
+  // 슬롯 위치 설명
+  if (positions && Object.keys(positions).length > 0) {
+    const posLines = ITEM_KEYS
+      .filter(k => positions[k])
+      .map(k => `- ${k}: 좌상단 (${positions[k].x}, ${positions[k].y}), 크기 ${positions[k].w}×${positions[k].h}px`)
+      .join('\n');
+    content.push({ type: 'text', text: `각 아이템 슬롯의 픽셀 위치:\n${posLines}` });
   }
 
-  // 레퍼런스 아이콘 로드
-  const iconBlocks = [];
-  const iconDesc = [];
-  for (const { key, file, label } of ICON_MAP) {
-    const b64 = loadIconBase64(file);
-    if (b64) {
-      iconBlocks.push({ type: 'text', text: `[레퍼런스 아이콘: ${label} → JSON 키: "${key}"]` });
-      iconBlocks.push({ type: 'image', source: { type: 'base64', media_type: 'image/png', data: b64 } });
-      iconDesc.push(`- "${key}": 위 레퍼런스 이미지와 같은 아이콘`);
-    }
-  }
-
-  const prompt = `[던전앤파이터 인벤토리 아이템 수량 추출]
-
-게임 화면은 어두운 배경의 격자 인벤토리입니다.
-각 아이템 칸의 모서리(주로 좌상단 또는 우상단)에 흰색 숫자로 수량이 표시됩니다.
-
-[단계 1] 인벤토리에서 레퍼런스 이미지와 시각적으로 가장 유사한 아이콘 칸을 찾으세요.
-- 인벤토리 배경이 어둡기 때문에 아이콘 색상이 레퍼런스보다 어둡거나 다르게 보일 수 있습니다
-- 아이콘의 전체적인 색상 계열과 형태(원형/결정체/구형 등)로 식별하세요
-- 각 아이콘 설명:
-  * seal(순례의 인장): 붉은색/자주색 계열, 원형 인장 문양, 배경이 붉음
-  * condensedCore(응축된 라이언 코어): 파란색 계열 구형 에너지 코어
-  * flawlessCore(무결점 라이언 코어): condensedCore보다 밝고 선명한 구형 코어
-  * crystal(빛나는 조화의 결정체): 보라/분홍 계열 결정체 형태
-  * flawlessCrystal(무결점 조화의 결정체): crystal보다 밝고 빛나는 결정체
-
-[단계 2] 찾은 아이콘 칸의 수량 숫자를 읽으세요.
-- 수량은 아이콘 칸 모서리의 숫자입니다 (보통 두 자리 이상)
-- 강화 수치(+7, +8 등 아이콘 하단의 작은 숫자)와 절대 혼동하지 마세요
-- 해당 아이콘이 없으면 0
-
-[단계 3] 아래 JSON 형식으로만 반환하세요. 다른 텍스트 없음.
-{
-  "pureGold": 0,
-  "seal": 0,
-  "condensedCore": 0,
-  "flawlessCore": 0,
-  "crystal": 0,
-  "flawlessCrystal": 0
-}
-
-(pureGold는 화면 상단 골드 보유량, 없으면 0)`;
-
-  const messageContent = [
-    ...iconBlocks,
-    { type: 'text', text: '[분석할 게임 화면 캡처]' },
-    { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: image } },
-    { type: 'text', text: prompt },
-  ];
+  content.push({
+    type: 'text',
+    text: [
+      '각 슬롯의 좌상단 모서리에 있는 수량 숫자를 읽어주세요 (슬롯에 아이템이 없으면 0).',
+      '골드 아이콘(레퍼런스 참고) 오른쪽의 골드 수량도 읽어주세요 (없으면 0).',
+      'JSON만 출력:',
+      '{"seal":0,"condensedCore":0,"flawlessCore":0,"crystal":0,"flawlessCrystal":0,"gold":0}',
+    ].join('\n'),
+  });
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: messageContent }],
+        max_tokens: 256,
+        system: 'Output ONLY a single JSON object. No explanation.',
+        messages: [{ role: 'user', content }],
       }),
     });
 
@@ -116,17 +77,16 @@ export async function POST(request) {
 
     let parsed;
     try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text);
+      const jsonMatches = [...text.matchAll(/\{[^{}]*\}/g)];
+      parsed = JSON.parse(jsonMatches.length > 0 ? jsonMatches[jsonMatches.length - 1][0] : text);
     } catch {
-      return NextResponse.json({ success: false, error: `JSON 파싱 실패: ${text}` }, { status: 502 });
+      return NextResponse.json({ success: false, error: `JSON 파싱 실패: ${text}`, rawText: text }, { status: 502 });
     }
 
     const data = {};
-    for (const { key } of ICON_MAP) {
-      data[key] = Number(parsed[key] ?? 0);
-    }
-    data.pureGold = Number(parsed.pureGold ?? 0);
+    for (const key of ITEM_KEYS) data[key] = Number(parsed[key] ?? 0);
+    const rawGold = Number(parsed.gold ?? 0);
+    data.pureGold = rawGold > 0 ? rawGold - GOLD_START : 0;
 
     return NextResponse.json({ success: true, data, rawText: text });
   } catch (e) {

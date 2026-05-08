@@ -208,6 +208,8 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const inp = { width: '100%', padding: '0.35rem 0.4rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px', fontSize: '0.75rem', boxSizing: 'border-box' };
   const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
 
+  const activeChar = selectedChars.find(c => c.id === charId);
+
   const takeScreenshot = async () => {
     setScreenshot(null);
     setCaptureStatus('');
@@ -266,7 +268,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       return;
     }
     setIsCapturing(true);
-    setCaptureStatus('Claude 분석 중...');
     try {
       const preview = previewRef.current;
       const scaleX = screenshot.w / preview.offsetWidth;
@@ -279,20 +280,88 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       const img = new Image();
       img.src = screenshot.dataURL;
       await new Promise(res => { img.onload = res; });
-      const cropCanvas = document.createElement('canvas');
-      cropCanvas.width = rw; cropCanvas.height = rh;
-      cropCanvas.getContext('2d').drawImage(img, rx, ry, rw, rh, 0, 0, rw, rh);
-      const cropDataURL = cropCanvas.toDataURL('image/jpeg', 0.9);
-      const base64 = cropDataURL.split(',')[1];
 
-      const res = await fetch('/api/vision', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: base64 }) });
+      // 원본 해상도 크롭 (템플릿 매칭용)
+      const origCanvas = document.createElement('canvas');
+      origCanvas.width = rw; origCanvas.height = rh;
+      origCanvas.getContext('2d').drawImage(img, rx, ry, rw, rh, 0, 0, rw, rh);
+
+      // 2x 업스케일 크롭 (Claude vision 전송용 기반)
+      const scaled = document.createElement('canvas');
+      scaled.width = rw * 2; scaled.height = rh * 2;
+      const sCtx = scaled.getContext('2d');
+      sCtx.imageSmoothingQuality = 'high';
+      sCtx.drawImage(img, rx, ry, rw, rh, 0, 0, rw * 2, rh * 2);
+
+      // ── 1. 격자 분석 + 템플릿 매칭으로 아이콘 위치 탐색 ──────
+      setCaptureStatus('아이콘 위치 탐색 중...');
+      const { findItemPositions } = await import('../lib/templateMatch.js');
+      const ICON_KEYS = ['seal', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal'];
+      const { positions, grid } = await findItemPositions(origCanvas, ICON_KEYS, 0.95);
+
+      // ── 2. 매칭 결과 시각화 (2x 캔버스에 어노테이션) ───────────
+      const ITEM_COLORS = {
+        seal: '#ff6b6b', condensedCore: '#ffa94d',
+        flawlessCore: '#ffd43b', crystal: '#74c0fc', flawlessCrystal: '#b197fc',
+      };
+      const annotated = document.createElement('canvas');
+      annotated.width = rw * 2; annotated.height = rh * 2;
+      const aCtx = annotated.getContext('2d');
+      aCtx.drawImage(scaled, 0, 0);
+
+      // 격자 오버레이 (초록색 반투명)
+      aCtx.strokeStyle = 'rgba(0,255,80,0.55)';
+      aCtx.lineWidth = 1;
+      const gsx = grid.startX * 2, gsy = grid.startY * 2;
+      const gcw = grid.cellW * 2, gch = grid.cellH * 2;
+      for (let x = gsx; x <= rw * 2; x += gcw) {
+        aCtx.beginPath(); aCtx.moveTo(x, 0); aCtx.lineTo(x, rh * 2); aCtx.stroke();
+      }
+      for (let y = gsy; y <= rh * 2; y += gch) {
+        aCtx.beginPath(); aCtx.moveTo(0, y); aCtx.lineTo(rw * 2, y); aCtx.stroke();
+      }
+
+      const positionData = {};
+      for (const key of ICON_KEYS) {
+        const pos = positions[key];
+        if (!pos) continue;
+        const ax = pos.cellX * 2, ay = pos.cellY * 2;
+        const aw = pos.cellW * 2, ah = pos.cellH * 2;
+        const color = ITEM_COLORS[key];
+        // 셀 테두리
+        aCtx.strokeStyle = color;
+        aCtx.lineWidth = 2;
+        aCtx.strokeRect(ax + 1, ay + 1, aw - 2, ah - 2);
+        // 레이블 (하단 — 숫자 영역인 좌상단을 가리지 않도록)
+        aCtx.fillStyle = color + 'cc';
+        aCtx.fillRect(ax + 1, ay + ah - 13, aw - 2, 12);
+        aCtx.fillStyle = '#000';
+        aCtx.font = 'bold 9px monospace';
+        aCtx.fillText(key, ax + 3, ay + ah - 3);
+        positionData[key] = { x: ax, y: ay, w: aw, h: ah };
+      }
+      const annotatedDataURL = annotated.toDataURL('image/jpeg', 0.92);
+      const base64 = annotatedDataURL.split(',')[1];
+
+      // ── 3. Claude Vision: 숫자 읽기 + 골드 탐지 ──────────────
+      setCaptureStatus('숫자 인식 중...');
+      const res = await fetch('/api/vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64, positions: positionData }),
+      });
       const data = await res.json();
-      setDebugInfo({ cropDataURL, rawText: data.rawText ?? data.error ?? '(응답 없음)' });
-      if (!data.success) throw new Error(data.error || '분석 실패');
 
+      const posLog = `격자: cellW=${grid.cellW} cellH=${grid.cellH} startX=${grid.startX} startY=${grid.startY}\n` +
+        Object.entries(positions)
+          .map(([k, v]) => v ? `${k}: row=${v.row} col=${v.col} sim=${(v.sim * 100).toFixed(1)}%` : `${k}: 미발견`)
+          .join('\n');
+      setDebugInfo({ cropDataURL: annotatedDataURL, rawText: `[매칭 위치]\n${posLog}\n\n[Claude 응답]\n${data.rawText ?? data.error ?? '(없음)'}` });
+
+      if (!data.success) throw new Error(data.error || '분석 실패');
       const d = data.data;
       ['pureGold', 'seal', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal']
-        .forEach(k => { if (d[k] > 0) updateCharForm(charId, k, String(d[k])); });
+        .forEach(k => { if (d[k] !== undefined) updateCharForm(charId, k, String(d[k])); });
       setCaptureStatus(`✅ 완료 (${new Date().toLocaleTimeString()})`);
     } catch (e) {
       setCaptureStatus('❌ ' + e.message);
@@ -364,14 +433,32 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
                   )}
                 </div>
               )}
-              {showDebug && debugInfo && (
-                <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '4px', padding: '0.5rem', marginBottom: '0.4rem' }}>
-                  <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.3rem' }}>전송된 크롭 이미지</div>
-                  <img src={debugInfo.cropDataURL} alt="crop" style={{ width: '100%', borderRadius: '3px', marginBottom: '0.4rem', border: '1px solid rgba(255,255,255,0.1)' }} />
-                  <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.2rem' }}>Claude 원본 응답</div>
-                  <pre style={{ fontSize: '0.55rem', color: '#94a3b8', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '3px', maxHeight: '120px', overflowY: 'auto' }}>{debugInfo.rawText}</pre>
-                </div>
-              )}
+              {showDebug && debugInfo && (() => {
+                const raw = debugInfo.rawText || '';
+                const jsonMatch = [...raw.matchAll(/\{[^{}]*\}/g)].pop();
+                const reasoning = jsonMatch ? raw.slice(0, raw.lastIndexOf(jsonMatch[0])).trim() : raw;
+                const jsonPart = jsonMatch ? jsonMatch[0] : '';
+                return (
+                  <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '4px', padding: '0.5rem', marginBottom: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.3rem' }}>전송된 크롭 이미지</div>
+                      <img src={debugInfo.cropDataURL} alt="crop" style={{ width: '100%', borderRadius: '3px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                    </div>
+                    {reasoning && (
+                      <div>
+                        <div style={{ fontSize: '0.6rem', color: '#a78bfa', fontWeight: 'bold', marginBottom: '0.2rem' }}>Claude 매칭 과정</div>
+                        <pre style={{ fontSize: '0.55rem', color: '#cbd5e1', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '3px', maxHeight: '200px', overflowY: 'auto' }}>{reasoning}</pre>
+                      </div>
+                    )}
+                    {jsonPart && (
+                      <div>
+                        <div style={{ fontSize: '0.6rem', color: '#4ade80', fontWeight: 'bold', marginBottom: '0.2rem' }}>최종 JSON</div>
+                        <pre style={{ fontSize: '0.6rem', color: '#4ade80', margin: 0, whiteSpace: 'pre-wrap', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '3px' }}>{jsonPart}</pre>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {screenshot && (
                 <div
                   ref={previewRef}
