@@ -227,21 +227,31 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const [debugInfo, setDebugInfo] = useState(null); // { cropDataURL, rawText }
   const [showDebug, setShowDebug] = useState(false);
   const [winInfo, setWinInfo] = useState({ x: 0, y: 0, w: 0, h: 0 });
+  const [winInput, setWinInput] = useState({ x: '', y: '', w: '', h: '' });
   const previewRef = useRef(null);
 
   useEffect(() => {
     if (!pipWindow) return;
-    const update = () => setWinInfo({
-      x: pipWindow.screenX,
-      y: pipWindow.screenY,
-      w: pipWindow.outerWidth,
-      h: pipWindow.outerHeight,
-    });
+    const update = () => {
+      const info = { x: pipWindow.screenX, y: pipWindow.screenY, w: pipWindow.outerWidth, h: pipWindow.outerHeight };
+      setWinInfo(info);
+      setWinInput(prev => ({ x: String(info.x), y: String(info.y), w: String(info.w), h: String(info.h) }));
+    };
     update();
-    const id = setInterval(update, 200);
+    const id = setInterval(update, 500);
     pipWindow.addEventListener('resize', update);
     return () => { clearInterval(id); pipWindow.removeEventListener('resize', update); };
   }, [pipWindow]);
+
+  const applyWinInput = (field, val) => {
+    const next = { ...winInput, [field]: val };
+    setWinInput(next);
+    const x = Number(next.x), y = Number(next.y), w = Number(next.w), h = Number(next.h);
+    if (!pipWindow || isNaN(x) || isNaN(y) || isNaN(w) || isNaN(h)) return;
+    if (field === 'x' || field === 'y') pipWindow.moveTo(x, y);
+    if (field === 'w' || field === 'h') pipWindow.resizeTo(w, h);
+    localStorage.setItem('DNF_PIP_LAST', JSON.stringify({ x, y, w, h }));
+  };
 
   useEffect(() => {
     if (selectedChars.length > 0 && !selectedChars.find(c => c.id === activeCharId)) {
@@ -667,11 +677,19 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
           </>
         )}
       </div>
-      {/* 창 위치/크기 정보 */}
-      <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.08)', padding: '0.25rem 0.6rem', background: 'rgba(0,0,0,0.35)', display: 'flex', gap: '1rem', fontSize: '0.6rem', color: '#475569', fontFamily: 'monospace' }}>
-        <span>좌상단 <span style={{ color: '#94a3b8' }}>({winInfo.x}, {winInfo.y})</span></span>
-        <span>크기 <span style={{ color: '#94a3b8' }}>{winInfo.w} × {winInfo.h}</span></span>
-      </div>
+      {/* 창 위치/크기 편집 */}
+      {(() => {
+        const iStyle = { width: '52px', padding: '0.1rem 0.25rem', fontSize: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', color: '#94a3b8', borderRadius: '3px', textAlign: 'center', fontFamily: 'monospace' };
+        return (
+          <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.08)', padding: '0.2rem 0.5rem', background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.6rem', color: '#475569', fontFamily: 'monospace', flexWrap: 'wrap' }}>
+            <span>X</span><input style={iStyle} value={winInput.x} onChange={e => applyWinInput('x', e.target.value)} />
+            <span>Y</span><input style={iStyle} value={winInput.y} onChange={e => applyWinInput('y', e.target.value)} />
+            <span style={{ marginLeft: '0.3rem' }}>W</span><input style={iStyle} value={winInput.w} onChange={e => applyWinInput('w', e.target.value)} />
+            <span>H</span><input style={iStyle} value={winInput.h} onChange={e => applyWinInput('h', e.target.value)} />
+            <span style={{ color: '#334155', marginLeft: '0.2rem' }}>실제→({winInfo.x},{winInfo.y}) {winInfo.w}×{winInfo.h}</span>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -746,9 +764,11 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
       return;
     }
     try {
-      const pip = await window.documentPictureInPicture.requestWindow({ width: PIP_NORMAL.w, height: PIP_NORMAL.h });
+      const saved = (() => { try { return JSON.parse(localStorage.getItem('DNF_PIP_LAST')); } catch { return null; } })();
+      const cfg = saved ?? PIP_NORMAL;
+      const pip = await window.documentPictureInPicture.requestWindow({ width: cfg.w, height: cfg.h });
       pipWindowRef.current = pip;
-      pip.moveTo(PIP_NORMAL.x, PIP_NORMAL.y);
+      pip.moveTo(cfg.x, cfg.y);
 
       pip.document.body.style.cssText = 'margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden;height:100vh;';
       document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
