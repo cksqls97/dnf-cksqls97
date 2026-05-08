@@ -1,12 +1,18 @@
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 
-let redis;
-try {
-  redis = Redis.fromEnv();
-} catch (e) {
+const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+let redis = null;
+if (REDIS_URL && REDIS_TOKEN) {
+  try {
+    redis = new Redis({ url: REDIS_URL, token: REDIS_TOKEN });
+  } catch (e) {
+    console.warn("Upstash Redis init failed:", e.message);
+  }
+} else {
   console.warn("Upstash Redis ENV variables missing. Cloud sync will be disabled.");
-  redis = null;
 }
 
 export async function GET(request) {
