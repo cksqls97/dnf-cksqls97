@@ -330,7 +330,10 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   const rows = selectedChars.map((c, idx) => {
     const form = getCharForm(c.id);
     const v = calcCharValues(form, auctionPrices);
-    const hasLootData = ['pureGold', 'seal', 'condensedCore', 'crystal', 'flawlessCore', 'flawlessCrystal', 'sealVoucher', 'sealVoucherBox', 'tradableSeal'].some(k => form[k] && form[k] !== '') || (form.customItems && form.customItems.length > 0);
+    const hasLootData = ['pureGold', 'seal', 'condensedCore', 'crystal', 'flawlessCore', 'flawlessCrystal', 'sealVoucher', 'sealVoucherBox', 'tradableSeal'].some(k => form[k] && form[k] !== '')
+      || (form.customItems && form.customItems.length > 0)
+      || (form.secretTokens || []).some(t => t.buyPrice !== '')
+      || (form.secretRecipes || []).some(r => r.buyPrice !== '' || r.sealCost !== '' || r.sellPrice !== '');
     const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.2s' };
     const totalProfitIncl = v.finalBoundValue + v.finalTradableValue - v.totalConsumedValue;
     const profitExclBound = v.finalTradableValue - v.totalConsumedValue;
