@@ -214,7 +214,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
     setCaptureStatus('');
     setCropRect(null);
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'window' }, audio: false });
       const track = stream.getVideoTracks()[0];
       let bitmap;
       if (typeof ImageCapture !== 'undefined') {
@@ -345,7 +345,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
             <div style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '6px', padding: '0.55rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '0.65rem', color: '#38bdf8', fontWeight: 'bold', flex: 1 }}>📷 화면 캡처 자동 입력</span>
-                <button onClick={takeScreenshot} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <button onClick={takeScreenshot} title="창 선택 창이 열리면 'Dungeon & Fighter' 창을 선택하세요" style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   {screenshot ? '재캡처' : '캡처'}
                 </button>
                 {screenshot && (
