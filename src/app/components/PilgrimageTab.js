@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { getSortedCharacters } from '../lib/gameUtils';
 import { PILGRIMAGE_BASE_ITEMS, DEFAULT_AUCTION_PRICES } from '../lib/constants';
 import LootModal from './LootModal';
@@ -171,7 +171,10 @@ const LOOT_FIELDS_MANUAL = [
   ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
 ];
 
-function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe }) {
+const PIP_NORMAL = { w: 560, h: 720 };
+const PIP_CROP   = { w: 1280, h: 820 };
+
+function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
   const [activeCharId, setActiveCharId] = useState(selectedChars[0]?.id || null);
   const [tab, setTab] = useState('loot');
   const [fetchingItemId, setFetchingItemId] = useState(null);
@@ -204,6 +207,8 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
 
   const takeScreenshot = async () => {
+    pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h);
+    setScreenshot(null);
     setCaptureStatus('');
     setCropRect(null);
     try {
@@ -227,6 +232,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       canvas.width = bitmap.width; canvas.height = bitmap.height;
       canvas.getContext('2d').drawImage(bitmap, 0, 0);
       setScreenshot({ dataURL: canvas.toDataURL('image/png'), w: bitmap.width, h: bitmap.height });
+      pipWindow?.resizeTo(PIP_CROP.w, PIP_CROP.h);
       setCaptureStatus('영역을 드래그해서 선택 후 분석 버튼을 누르세요');
     } catch (e) {
       if (e.name !== 'AbortError') setCaptureStatus('❌ 캡처 실패: ' + e.message);
@@ -290,6 +296,9 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       setCaptureStatus('❌ ' + e.message);
     }
     setIsCapturing(false);
+    pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h);
+    setScreenshot(null);
+    setCropRect(null);
   };
 
   const fetchCustomItemPrice = async (itemName, itemId) => {
@@ -508,23 +517,9 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
   const [calcDetail, setCalcDetail] = useState(null);
   const [activeLootModal, setActiveLootModal] = useState(null);
-  const [showPip, setShowPip] = useState(false);
-  const [pipPos, setPipPos] = useState({ x: 16, y: 16 });
-
-  const startPipDrag = (e) => {
-    const el = e.currentTarget.closest('[data-pip-panel]');
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const ox = e.clientX - rect.left, oy = e.clientY - rect.top;
-    const onMove = ev => {
-      const nx = Math.max(0, Math.min(window.innerWidth - rect.width, ev.clientX - ox));
-      const ny = Math.max(0, Math.min(window.innerHeight - rect.height, ev.clientY - oy));
-      setPipPos({ x: nx, y: ny });
-    };
-    const onUp = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  };
+  const [isPipOpen, setIsPipOpen] = useState(false);
+  const pipWindowRef = useRef(null);
+  const pipRootRef = useRef(null);
 
   useEffect(() => {
     const draft = localStorage.getItem('DNF_PILGRIMAGE_FORM_DRAFT');
@@ -551,10 +546,70 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   const updateCharForm = (id, field, value) => setPilgrimageForm(prev => ({ ...prev, [id]: { ...(prev[id] || EMPTY_CHAR_FORM()), [field]: value } }));
   const togglePilgrimageChar = (id) => updateCharForm(id, 'selected', !getCharForm(id).selected);
 
-  const applyGlobalFatigue = () => {
-    const updated = { ...pilgrimageForm };
-    characters.forEach(c => { updated[c.id] = { ...getCharForm(c.id), startFatigue: globalStartFatigue }; });
-    setPilgrimageForm(updated);
+  // ─── Document PiP ─────────────────────────────────────────────────────────────
+
+  const renderToPip = useCallback((sel, gCF, uCF, ap, ak, aCT, uCT, rCT, aCR, uCR, rCR) => {
+    if (!pipRootRef.current || !pipWindowRef.current) return;
+    pipRootRef.current.render(
+      <PiPContent
+        selectedChars={sel}
+        getCharForm={gCF}
+        updateCharForm={uCF}
+        auctionPrices={ap}
+        apiKey={ak}
+        addCharToken={aCT}
+        updateCharToken={uCT}
+        removeCharToken={rCT}
+        addCharRecipe={aCR}
+        updateCharRecipe={uCR}
+        removeCharRecipe={rCR}
+        pipWindow={pipWindowRef.current}
+      />
+    );
+  }, []);
+
+  const openDocumentPiP = async () => {
+    if (pipWindowRef.current && !pipWindowRef.current.closed) {
+      pipWindowRef.current.close();
+      return;
+    }
+    if (!('documentPictureInPicture' in window)) {
+      alert('Chrome 116 이상에서만 지원됩니다.');
+      return;
+    }
+    try {
+      const pip = await window.documentPictureInPicture.requestWindow({ width: 560, height: 720 });
+      pipWindowRef.current = pip;
+
+      pip.document.body.style.cssText = 'margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden;height:100vh;';
+      document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+        const el = pip.document.createElement('link');
+        el.rel = 'stylesheet'; el.href = link.href;
+        pip.document.head.appendChild(el);
+      });
+      document.querySelectorAll('style').forEach(style => {
+        const el = pip.document.createElement('style');
+        el.textContent = style.textContent;
+        pip.document.head.appendChild(el);
+      });
+
+      const container = pip.document.createElement('div');
+      container.style.cssText = 'height:100vh;display:flex;flex-direction:column;overflow:hidden;';
+      pip.document.body.appendChild(container);
+
+      const root = createRoot(container);
+      pipRootRef.current = root;
+      setIsPipOpen(true);
+
+      pip.addEventListener('pagehide', () => {
+        root.unmount();
+        pipRootRef.current = null;
+        pipWindowRef.current = null;
+        setIsPipOpen(false);
+      });
+    } catch (e) {
+      if (e.name !== 'AbortError') alert('PiP 창 열기 실패: ' + e.message);
+    }
   };
 
   const addCharToken = (charId, buyPrice = '') => {
@@ -576,6 +631,12 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   };
   const removeCharRecipe = (charId, recipeId) => {
     updateCharForm(charId, 'secretRecipes', getCharForm(charId).secretRecipes.filter(r => r.id !== recipeId));
+  };
+
+  const applyGlobalFatigue = () => {
+    const updated = { ...pilgrimageForm };
+    characters.forEach(c => { updated[c.id] = { ...getCharForm(c.id), startFatigue: globalStartFatigue }; });
+    setPilgrimageForm(updated);
   };
 
   const fetchAuctionPrices = async () => {
@@ -646,6 +707,12 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
   const sortedChars = getSortedCharacters(characters);
   const selectedChars = sortedChars.filter(c => getCharForm(c.id).selected);
+
+  // PiP 상태 동기화
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    renderToPip(selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe);
+  }, [pilgrimageForm, auctionPrices, characters, apiKey, isPipOpen]);
 
   const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
 
@@ -737,8 +804,8 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
           <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <button onClick={() => setShowPip(v => !v)} style={{ padding: '0.5rem 1rem', background: showPip ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)', color: showPip ? '#4ade80' : '#cbd5e1', border: showPip ? '1px solid rgba(74,222,128,0.4)' : '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold' }}>
-            {showPip ? '📌 PiP 닫기' : '📌 PiP 입력창'}
+          <button onClick={openDocumentPiP} style={{ padding: '0.5rem 1rem', background: isPipOpen ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)', color: isPipOpen ? '#4ade80' : '#cbd5e1', border: isPipOpen ? '1px solid rgba(74,222,128,0.4)' : '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold' }}>
+            {isPipOpen ? '📌 PiP 닫기' : '📌 PiP 입력창'}
           </button>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
@@ -989,28 +1056,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
       />
       <CalcDetailModal calcDetail={calcDetail} onClose={() => setCalcDetail(null)} />
       {showAuctionPricesModal && <AuctionPricesModal auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} onClose={() => setShowAuctionPricesModal(false)} />}
-      {showPip && createPortal(
-        <div data-pip-panel="1" style={{ position: 'fixed', left: pipPos.x, top: pipPos.y, width: '420px', height: '560px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', boxShadow: '0 20px 60px rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden', resize: 'both' }}>
-          <div onMouseDown={startPipDrag} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.45rem 0.7rem', background: 'rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'grab', userSelect: 'none', flexShrink: 0 }}>
-            <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#4ade80' }}>📌 광휘 PiP 입력창</span>
-            <button onClick={() => setShowPip(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1rem', padding: '0', lineHeight: 1 }}>×</button>
-          </div>
-          <PiPContent
-            selectedChars={selectedChars}
-            getCharForm={getCharForm}
-            updateCharForm={updateCharForm}
-            auctionPrices={auctionPrices}
-            apiKey={apiKey}
-            addCharToken={addCharToken}
-            updateCharToken={updateCharToken}
-            removeCharToken={removeCharToken}
-            addCharRecipe={addCharRecipe}
-            updateCharRecipe={updateCharRecipe}
-            removeCharRecipe={removeCharRecipe}
-          />
-        </div>,
-        document.body
-      )}
     </section>
   );
 }
