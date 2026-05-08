@@ -216,7 +216,7 @@ const PIP_CROP   = { w: 1280, h: 820 };
 
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
   const [activeCharId, setActiveCharId] = useState(selectedChars[selectedChars.length - 1]?.id || null);
-  const [tab, setTab] = useState('loot');
+  const [tab, setTab] = useState('shop');
   const [fetchingItemId, setFetchingItemId] = useState(null);
   const [screenshot, setScreenshot] = useState(null); // { dataURL, w, h }
   const [cropRect, setCropRect] = useState(null);     // { x1,y1,x2,y2 } in display coords
