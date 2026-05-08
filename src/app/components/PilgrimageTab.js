@@ -168,6 +168,9 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const [activeCharId, setActiveCharId] = useState(selectedChars[0]?.id || null);
   const [tab, setTab] = useState('loot');
   const [fetchingItemId, setFetchingItemId] = useState(null);
+  const [captureStream, setCaptureStream] = useState(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [captureStatus, setCaptureStatus] = useState('');
 
   useEffect(() => {
     if (selectedChars.length > 0 && !selectedChars.find(c => c.id === activeCharId)) {
@@ -188,6 +191,65 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
 
   const inp = { width: '100%', padding: '0.35rem 0.4rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px', fontSize: '0.75rem', boxSizing: 'border-box' };
   const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
+
+  const startScreenShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      stream.getVideoTracks()[0].addEventListener('ended', () => { setCaptureStream(null); setCaptureStatus(''); });
+      setCaptureStream(stream);
+      setCaptureStatus('화면 공유 중 — 캡처 버튼을 눌러 분석');
+    } catch (e) {
+      if (e.name !== 'AbortError') setCaptureStatus('화면 공유 실패: ' + e.message);
+    }
+  };
+
+  const stopScreenShare = () => {
+    if (captureStream) { captureStream.getTracks().forEach(t => t.stop()); }
+    setCaptureStream(null);
+    setCaptureStatus('');
+  };
+
+  const captureAndAnalyze = async () => {
+    if (!captureStream) return;
+    setIsCapturing(true);
+    setCaptureStatus('캡처 중...');
+    try {
+      const track = captureStream.getVideoTracks()[0];
+      let bitmap;
+      if (typeof ImageCapture !== 'undefined') {
+        bitmap = await new ImageCapture(track).grabFrame();
+      } else {
+        const video = document.createElement('video');
+        video.srcObject = new MediaStream([track]);
+        await new Promise(res => { video.onloadedmetadata = res; video.play(); });
+        const cv = document.createElement('canvas');
+        cv.width = video.videoWidth; cv.height = video.videoHeight;
+        cv.getContext('2d').drawImage(video, 0, 0);
+        video.srcObject = null;
+        bitmap = cv;
+      }
+      const maxW = 1280;
+      const scale = bitmap.width > maxW ? maxW / bitmap.width : 1;
+      const w = Math.round(bitmap.width * scale), h = Math.round(bitmap.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+      const base64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+
+      setCaptureStatus('Claude 분석 중...');
+      const res = await fetch('/api/vision', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: base64 }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || '분석 실패');
+
+      const d = data.data;
+      ['pureGold', 'seal', 'tradableSeal', 'sealVoucher', 'sealVoucherBox', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal']
+        .forEach(k => { if (d[k] > 0) updateCharForm(charId, k, String(d[k])); });
+      setCaptureStatus(`✅ 완료 (${new Date().toLocaleTimeString()})`);
+    } catch (e) {
+      setCaptureStatus('❌ ' + e.message);
+    }
+    setIsCapturing(false);
+  };
 
   const fetchCustomItemPrice = async (itemName, itemId) => {
     if (!itemName || !apiKey) return;
@@ -225,6 +287,25 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       <div style={{ flex: 1, overflowY: 'auto', padding: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
         {tab === 'loot' ? (
           <>
+            {/* 화면 캡처 자동 입력 */}
+            <div style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '6px', padding: '0.55rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: captureStatus ? '0.4rem' : 0 }}>
+                <span style={{ fontSize: '0.65rem', color: '#38bdf8', fontWeight: 'bold', flex: 1 }}>📷 화면 캡처 자동 입력</span>
+                {!captureStream ? (
+                  <button onClick={startScreenShare} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    화면 공유 시작
+                  </button>
+                ) : (
+                  <>
+                    <button onClick={captureAndAnalyze} disabled={isCapturing} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: isCapturing ? 'rgba(255,255,255,0.05)' : 'rgba(74,222,128,0.2)', color: isCapturing ? '#475569' : '#4ade80', border: `1px solid ${isCapturing ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.4)'}`, borderRadius: '4px', cursor: isCapturing ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
+                      {isCapturing ? '⏳ 분석 중' : '캡처 & 자동 입력'}
+                    </button>
+                    <button onClick={stopScreenShare} style={{ padding: '0.25rem 0.5rem', fontSize: '0.65rem', background: 'rgba(248,113,113,0.15)', color: '#f87171', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '4px', cursor: 'pointer' }}>■</button>
+                  </>
+                )}
+              </div>
+              {captureStatus && <div style={{ fontSize: '0.6rem', color: captureStatus.startsWith('❌') ? '#f87171' : captureStatus.startsWith('✅') ? '#4ade80' : '#94a3b8', lineHeight: 1.4 }}>{captureStatus}</div>}
+            </div>
             <div>
               <label style={lbl}>순 골드 (비밀상점 후 잔여액)</label>
               <input type="number" style={inp} value={form.pureGold || ''} onChange={e => updateCharForm(charId, 'pureGold', e.target.value)} placeholder="0" />
