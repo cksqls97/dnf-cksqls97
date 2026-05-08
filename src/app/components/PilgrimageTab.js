@@ -103,7 +103,7 @@ function CalcDetailModal({ calcDetail, onClose }) {
               ...(breakdown.recipeSealCost > 0 ? [[`레시피 인장 소모`, -breakdown.recipeSealCost]] : []),
             ], total: ['귀속 합계', totals.bound, '#fb923c'] },
             { title: '💰 교환 가능 가치 (Tradable)', color: '#38bdf8', rows: [
-              ['순 골드 (최종 잔여액)', items.pureGold],
+              ['순 골드 (던전 획득, 구매 미포함)', items.pureGold],
               [`무결점 라이언 코어 (${items.flawlessCore}개)`, breakdown.flawlessCore],
               [`무결점 조화의 결정체 (${items.flawlessCrystal}개)`, breakdown.flawlessCrystal],
               [`순례의 인장(1회 교환 가능) 교환권 수익 (${items.sealVoucher}개)`, breakdown.sealVoucher],
@@ -512,7 +512,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
             <div>
               <div style={{ fontSize: '0.6rem', color: '#38bdf8', fontWeight: 'bold', marginBottom: '0.4rem' }}>📷 자동 입력 항목</div>
               <div style={{ marginBottom: '0.5rem' }}>
-                <label style={lbl}>순 골드 (비밀상점 후 잔여액)</label>
+                <label style={lbl}>순 골드 (던전 획득, 구매 미포함)</label>
                 <input type="number" style={inp} value={form.pureGold || ''} onChange={e => updateCharForm(charId, 'pureGold', e.target.value)} placeholder="0" />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
