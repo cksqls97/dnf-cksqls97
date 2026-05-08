@@ -33,33 +33,48 @@ function calcCharValues(form, auctionPrices) {
   const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
   const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
 
-  const tokenCost = runs * (auctionPrices['닳아버린 순례의 증표'] || 0);
+  const marketTokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
+  const tokenCost = runs * marketTokenPrice;
   const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
+
+  // 특별상점: 증표를 시장가보다 싸게 구매한 절약분
+  let tokenProfit = 0;
+  (form.secretTokens || []).forEach(t => {
+    const bp = Number(t.buyPrice || 0);
+    if (bp > 0) tokenProfit += marketTokenPrice - bp;
+  });
+
+  // 특별상점: 레시피 순수익(판매가-구매가) + 선물 구매 비용(음수)
+  let recipeProfit = 0;
+  let recipeSealCostValue = 0;
+  (form.secretRecipes || []).forEach(r => {
+    const bp = Number(r.buyPrice || 0);
+    if (r.type === 'shinyGift' || r.type === 'brilliantGift') {
+      recipeProfit -= bp;
+    } else {
+      const seals = Number(r.sealCost || 0);
+      const sp = Number(r.sellPrice || 0);
+      if (bp > 0 || sp > 0) {
+        recipeSealCostValue += seals * 5000;
+        recipeProfit += sp - bp;
+      }
+    }
+  });
 
   let customTradableValue = 0;
   (form.customItems || []).forEach(item => {
     customTradableValue += Number(item.quantity || 0) * (Number(item.price || 0) || (auctionPrices[item.name] || 0));
   });
 
-  let recipeSealCostValue = 0;
-
-  (form.secretRecipes || []).forEach(r => {
-    if (r.type !== 'shinyGift' && r.type !== 'brilliantGift') {
-      const bp = Number(r.buyPrice || 0);
-      const seals = Number(r.sealCost || 0);
-      const sp = Number(r.sellPrice || 0);
-      if (bp > 0 || sp > 0) recipeSealCostValue += seals * 5000;
-    }
-  });
-
   const totalConsumedValue = tokenCost + potionCost;
-  const finalTradableValue = pureGoldInput + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + customTradableValue;
+  const finalTradableValue = pureGoldInput + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + customTradableValue + tokenProfit + recipeProfit;
   const finalBoundValue = totalBoundValue - recipeSealCostValue;
   const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
 
   return {
     runs, sealValue, boundCoreValue, boundCrystalValue, totalBoundValue, tradableCoreValue, tradableCrystalValue,
     voucherProfitTotal, tradableSealValue, voucherBoxValue, tokenCost, potionCost,
+    tokenProfit, recipeProfit,
     customTradableValue, recipeSealCostValue,
     totalConsumedValue, finalTradableValue, finalBoundValue, totalProfit
   };
