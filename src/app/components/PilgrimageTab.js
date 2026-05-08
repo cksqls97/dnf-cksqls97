@@ -683,7 +683,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
           if (!pipWindow) return;
           pipWindow.moveTo(x, y);
           pipWindow.resizeTo(w, h);
-          localStorage.setItem('DNF_PIP_LAST', JSON.stringify({ x, y, w, h }));
         };
         return (
           <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.06)', padding: '0.2rem 0.5rem', background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.6rem', color: '#475569', fontFamily: 'monospace' }}>
@@ -770,11 +769,13 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
       return;
     }
     try {
-      const saved = (() => { try { return JSON.parse(localStorage.getItem('DNF_PIP_LAST')); } catch { return null; } })();
-      const cfg = saved ?? PIP_NORMAL;
-      const pip = await window.documentPictureInPicture.requestWindow({ width: cfg.w, height: cfg.h });
+      // preferInitialWindowPlacement: false(기본값) → Chrome이 직전 드래그 위치/크기를 자동 복원
+      const pip = await window.documentPictureInPicture.requestWindow({
+        width: PIP_NORMAL.w,
+        height: PIP_NORMAL.h,
+        preferInitialWindowPlacement: false,
+      });
       pipWindowRef.current = pip;
-      pip.moveTo(cfg.x, cfg.y);
 
       pip.document.body.style.cssText = 'margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden;height:100vh;';
       document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
