@@ -211,7 +211,7 @@ const LOOT_FIELDS_MANUAL = [
   ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
 ];
 
-const PIP_NORMAL = { w: 560, h: 720 };
+const PIP_NORMAL = { w: 560, h: 900 };
 const PIP_CROP   = { w: 1280, h: 820 };
 
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
@@ -428,9 +428,9 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f172a', color: '#e2e8f0', fontFamily: 'system-ui, sans-serif', fontSize: '0.8rem' }}>
       {/* 캐릭터 탭 */}
-      <div style={{ display: 'flex', overflowX: 'auto', background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0.35rem 0.35rem 0', gap: '0.25rem', flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0.3rem', gap: '0.25rem', flexShrink: 0 }}>
         {selectedChars.map(c => (
-          <button key={c.id} onClick={() => setActiveCharId(c.id)} style={{ padding: '0.3rem 0.55rem', fontSize: '0.7rem', borderRadius: '4px 4px 0 0', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', background: c.id === charId ? '#1e293b' : 'transparent', color: c.id === charId ? '#38bdf8' : '#64748b', fontWeight: c.id === charId ? 'bold' : 'normal', borderBottom: c.id === charId ? '2px solid #38bdf8' : '2px solid transparent' }}>
+          <button key={c.id} onClick={() => setActiveCharId(c.id)} style={{ width: 'calc(25% - 0.2rem)', padding: '0.3rem 0.2rem', fontSize: '0.65rem', borderRadius: '4px', border: c.id === charId ? '1px solid rgba(56,189,248,0.5)' : '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: c.id === charId ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.04)', color: c.id === charId ? '#38bdf8' : '#94a3b8', fontWeight: c.id === charId ? 'bold' : 'normal', textAlign: 'center' }}>
             {c.base.charName}
           </button>
         ))}
@@ -726,8 +726,10 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
       return;
     }
     try {
-      const pip = await window.documentPictureInPicture.requestWindow({ width: 560, height: 720 });
+      const pipH = Math.min(PIP_NORMAL.h, window.screen.availHeight - 60);
+      const pip = await window.documentPictureInPicture.requestWindow({ width: PIP_NORMAL.w, height: pipH });
       pipWindowRef.current = pip;
+      pip.moveTo(window.screen.availWidth - PIP_NORMAL.w, 0);
 
       pip.document.body.style.cssText = 'margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden;height:100vh;';
       document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
