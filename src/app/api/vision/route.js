@@ -52,14 +52,27 @@ export async function POST(request) {
     }
   }
 
-  const prompt = `위 레퍼런스 아이콘들을 참고해서, 마지막 이미지(게임 캡처 화면)에서 각 아이콘을 찾고 우상단에 표시된 수량 숫자를 읽으세요.
+  const prompt = `[던전앤파이터 인벤토리 아이템 수량 추출]
 
-규칙:
-- 아이콘이 없거나 수량 숫자가 없으면 0
-- pureGold는 화면에 보이는 골드(G) 보유량 (숫자만, 콤마 제거)
-- 반드시 JSON만 반환, 다른 텍스트 없음
+게임 화면은 어두운 배경의 격자 인벤토리입니다.
+각 아이템 칸의 모서리(주로 좌상단 또는 우상단)에 흰색 숫자로 수량이 표시됩니다.
 
-반환 형식:
+[단계 1] 인벤토리에서 레퍼런스 이미지와 시각적으로 가장 유사한 아이콘 칸을 찾으세요.
+- 인벤토리 배경이 어둡기 때문에 아이콘 색상이 레퍼런스보다 어둡거나 다르게 보일 수 있습니다
+- 아이콘의 전체적인 색상 계열과 형태(원형/결정체/구형 등)로 식별하세요
+- 각 아이콘 설명:
+  * seal(순례의 인장): 붉은색/자주색 계열, 원형 인장 문양, 배경이 붉음
+  * condensedCore(응축된 라이언 코어): 파란색 계열 구형 에너지 코어
+  * flawlessCore(무결점 라이언 코어): condensedCore보다 밝고 선명한 구형 코어
+  * crystal(빛나는 조화의 결정체): 보라/분홍 계열 결정체 형태
+  * flawlessCrystal(무결점 조화의 결정체): crystal보다 밝고 빛나는 결정체
+
+[단계 2] 찾은 아이콘 칸의 수량 숫자를 읽으세요.
+- 수량은 아이콘 칸 모서리의 숫자입니다 (보통 두 자리 이상)
+- 강화 수치(+7, +8 등 아이콘 하단의 작은 숫자)와 절대 혼동하지 마세요
+- 해당 아이콘이 없으면 0
+
+[단계 3] 아래 JSON 형식으로만 반환하세요. 다른 텍스트 없음.
 {
   "pureGold": 0,
   "seal": 0,
@@ -69,9 +82,7 @@ export async function POST(request) {
   "flawlessCrystal": 0
 }
 
-각 키 설명:
-- "pureGold": 보유 골드
-${iconDesc.join('\n')}`;
+(pureGold는 화면 상단 골드 보유량, 없으면 0)`;
 
   const messageContent = [
     ...iconBlocks,
@@ -89,8 +100,8 @@ ${iconDesc.join('\n')}`;
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 512,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
         messages: [{ role: 'user', content: messageContent }],
       }),
     });
