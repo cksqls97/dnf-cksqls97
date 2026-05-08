@@ -37,20 +37,25 @@ function calcCharValues(form, auctionPrices) {
   const tokenCost = runs * marketTokenPrice;
   const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
 
-  // 특별상점: 증표를 시장가보다 싸게 구매한 절약분
+  // 특별상점: 증표 구매 이득 (시장가 - 구매가)
   let tokenProfit = 0;
   (form.secretTokens || []).forEach(t => {
     const bp = Number(t.buyPrice || 0);
     if (bp > 0) tokenProfit += marketTokenPrice - bp;
   });
 
-  // 특별상점: 레시피 순수익(판매가-구매가) + 선물 구매 비용(음수)
+  // 특별상점: 레시피/답례품 수익
+  // - 일반 레시피: 판매가 - 구매가 (인장 소모는 recipeSealCostValue로 별도 차감)
+  // - 빛나는 답례품: 증표 5개 획득 → 5 × 시장가 - 구매가
+  // - 화려한 답례품: 증표 20개 획득 → 20 × 시장가 - 구매가
   let recipeProfit = 0;
   let recipeSealCostValue = 0;
   (form.secretRecipes || []).forEach(r => {
     const bp = Number(r.buyPrice || 0);
-    if (r.type === 'shinyGift' || r.type === 'brilliantGift') {
-      recipeProfit -= bp;
+    if (r.type === 'shinyGift') {
+      if (bp > 0) recipeProfit += 5 * marketTokenPrice - bp;
+    } else if (r.type === 'brilliantGift') {
+      if (bp > 0) recipeProfit += 20 * marketTokenPrice - bp;
     } else {
       const seals = Number(r.sealCost || 0);
       const sp = Number(r.sellPrice || 0);
