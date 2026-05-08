@@ -73,7 +73,7 @@ function calcCharValues(form, auctionPrices) {
         if (bp > 0) secretShopGoldSpent += bp;
         const sealVal = seals * 5000;
         recipeSealCostValue += sealVal;
-        secretShopCostValue += (bp + sealVal);
+        secretShopCostValue += bp;
         secretShopRewardValue += sp;
         recipeProfit += (sp - bp - sealVal);
       }
@@ -81,7 +81,7 @@ function calcCharValues(form, auctionPrices) {
   });
 
   const totalConsumedValue = tokenCost + potionCost + secretShopCostValue;
-  const restoredPureGold = pureGoldInput + secretShopGoldSpent;
+  const restoredPureGold = pureGoldInput;
   const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + secretShopRewardValue + customTradableValue;
   const finalBoundValue = totalBoundValue - recipeSealCostValue;
   const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
@@ -108,10 +108,10 @@ function CalcDetailModal({ calcDetail, onClose }) {
               [`순례의 인장 (${items.seal}개)`, breakdown.seal],
               [`응축된 라이언 코어 (${items.core}개)`, breakdown.core],
               [`빛나는 조화의 결정체 (${items.crystal}개)`, breakdown.crystal],
+              ...(breakdown.recipeSealCost > 0 ? [[`레시피 인장 소모`, -breakdown.recipeSealCost]] : []),
             ], total: ['귀속 합계', totals.bound, '#fb923c'] },
             { title: '💰 교환 가능 가치 (Tradable)', color: '#38bdf8', rows: [
-              ['순 골드 (입력값)', items.pureGold],
-              ...(breakdown.secretShopGoldSpent > 0 ? [['비밀상점 지출액 보정', `+${breakdown.secretShopGoldSpent.toLocaleString()}`]] : []),
+              ['순 골드 (수령 기준)', items.pureGold],
               [`무결점 라이언 코어 (${items.flawlessCore}개)`, breakdown.flawlessCore],
               [`무결점 조화의 결정체 (${items.flawlessCrystal}개)`, breakdown.flawlessCrystal],
               [`순례의 인장(1회 교환 가능) 교환권 수익 (${items.sealVoucher}개)`, breakdown.sealVoucher],
@@ -123,6 +123,8 @@ function CalcDetailModal({ calcDetail, onClose }) {
             ], total: ['교환 가능 합계', totals.tradable, '#38bdf8'] },
             { title: '📉 소모 비용 (Costs)', color: '#f87171', rows: [
               [`닳아버린 순례의 증표 소모 (${items.runs}개)`, `-${breakdown.tokenCost.toLocaleString()}`],
+              ...(breakdown.potionCost > 0 ? [[`피로 회복의 영약 (1개)`, `-${breakdown.potionCost.toLocaleString()}`]] : []),
+              ...(breakdown.shopGoldCost > 0 ? [[`비밀상점 금 지출`, `-${breakdown.shopGoldCost.toLocaleString()}`]] : []),
             ], total: ['소모 합계', `-${totals.consumed.toLocaleString()}`, '#f87171'] },
           ].map(({ title, color, rows, total }) => (
             <div key={title}>
@@ -348,7 +350,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     const clickDetail = hasLootData ? {
       charName: c.base.charName,
       items: { seal: Number(form.seal || 0), core: Number(form.condensedCore || 0), crystal: Number(form.crystal || 0), pureGold: Number(form.pureGold || 0), flawlessCore: Number(form.flawlessCore || 0), flawlessCrystal: Number(form.flawlessCrystal || 0), sealVoucher: Number(form.sealVoucher || 0), sealVoucherBox: Number(form.sealVoucherBox || 0), tradableSeal: Number(form.tradableSeal || 0), runs: v.runs },
-      breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, sealVoucher: v.voucherProfitTotal, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, recipeProfit: v.recipeProfit, tokenProfit: v.tokenProfit, tokenCost: v.tokenCost, secretShopGoldSpent: v.secretShopGoldSpent, customTradable: v.customTradableValue, recipeSoulCrystalCost: v.recipeSoulCrystalCost, recipeGiftRewardValue: v.recipeGiftRewardValue },
+      breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, sealVoucher: v.voucherProfitTotal, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, recipeProfit: v.recipeProfit, tokenProfit: v.tokenProfit, tokenCost: v.tokenCost, potionCost: v.potionCost, shopGoldCost: v.secretShopCostValue, recipeSealCost: v.recipeSealCostValue, secretShopGoldSpent: v.secretShopGoldSpent, customTradable: v.customTradableValue, recipeSoulCrystalCost: v.recipeSoulCrystalCost, recipeGiftRewardValue: v.recipeGiftRewardValue },
       totals: { bound: v.finalBoundValue, tradable: v.finalTradableValue, consumed: v.totalConsumedValue },
       final: { includingBound: totalProfitIncl, excludingBound: profitExclBound }
     } : null;
@@ -363,7 +365,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
           <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: 'rgba(74,222,128,0.2)', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
         </td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={v.secretShopGoldSpent > 0 ? `보정된 실제 드랍 골드: ${v.restoredPureGold.toLocaleString()}` : ''}>{v.restoredPureGold > 0 ? v.restoredPureGold.toLocaleString() : '-'}</td>
+        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{v.restoredPureGold > 0 ? v.restoredPureGold.toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal > 0 ? Number(form.seal).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal > 0 ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher > 0 ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
