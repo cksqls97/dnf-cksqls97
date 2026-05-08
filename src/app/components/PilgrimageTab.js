@@ -900,7 +900,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
     return (
       <tr key={c.id} style={rowStyle}>
-        <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '72px' }} onClick={() => togglePilgrimageChar(c.id)} title={`${c.base.charName} - 클릭 시 목록에서 제거`}>
+        <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title={`${c.base.charName} - 클릭 시 목록에서 제거`}>
           <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span><span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontWeight: 'normal' }}>✕</span>
         </td>
         <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
@@ -982,28 +982,28 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
       {/* Main Table */}
       <div style={{ overflowX: 'auto', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap', tableLayout: 'fixed' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap', tableLayout: 'auto' }}>
           <colgroup>
-            <col style={{ width: '72px' }} />{/* 캐릭터 */}
-            <col style={{ width: '52px' }} />{/* 피로도 */}
-            <col style={{ width: '32px' }} />{/* 판수 */}
-            <col style={{ width: '54px' }} />{/* 재화입력 */}
-            <col style={{ width: '72px' }} />{/* 순골드 */}
-            <col style={{ width: '28px' }} />{/* 인장 */}
-            <col style={{ width: '32px' }} />{/* 교환인장 */}
-            <col style={{ width: '32px' }} />{/* 교환권 */}
-            <col style={{ width: '42px' }} />{/* 교환권상자 */}
-            <col style={{ width: '28px' }} />{/* 응축코어 */}
-            <col style={{ width: '28px' }} />{/* 무결점코어 */}
-            <col style={{ width: '32px' }} />{/* 빛결정 */}
-            <col style={{ width: '32px' }} />{/* 무결점결정 */}
-            <col style={{ width: '28px' }} />{/* 증표 */}
-            <col style={{ width: '40px' }} />{/* 포션 */}
-            <col style={{ width: '76px' }} />{/* 특별상점 */}
-            <col style={{ width: '64px' }} />{/* 귀속가치 */}
-            <col style={{ width: '64px' }} />{/* 교환가치 */}
-            <col style={{ width: '64px' }} />{/* 순수익포함 */}
-            <col style={{ width: '64px' }} />{/* 순수익제외 */}
+            <col style={{ minWidth: '72px' }} />{/* 캐릭터 */}
+            <col style={{ minWidth: '52px' }} />{/* 피로도 */}
+            <col style={{ minWidth: '32px' }} />{/* 판수 */}
+            <col style={{ minWidth: '54px' }} />{/* 재화입력 */}
+            <col style={{ minWidth: '72px' }} />{/* 순골드 */}
+            <col style={{ minWidth: '28px' }} />{/* 인장 */}
+            <col style={{ minWidth: '32px' }} />{/* 교환인장 */}
+            <col style={{ minWidth: '32px' }} />{/* 교환권 */}
+            <col style={{ minWidth: '42px' }} />{/* 교환권상자 */}
+            <col style={{ minWidth: '28px' }} />{/* 응축코어 */}
+            <col style={{ minWidth: '28px' }} />{/* 무결점코어 */}
+            <col style={{ minWidth: '32px' }} />{/* 빛결정 */}
+            <col style={{ minWidth: '32px' }} />{/* 무결점결정 */}
+            <col style={{ minWidth: '28px' }} />{/* 증표 */}
+            <col style={{ minWidth: '40px' }} />{/* 포션 */}
+            <col style={{ minWidth: '76px' }} />{/* 특별상점 */}
+            <col style={{ minWidth: '64px' }} />{/* 귀속가치 */}
+            <col style={{ minWidth: '64px' }} />{/* 교환가치 */}
+            <col style={{ minWidth: '64px' }} />{/* 순수익포함 */}
+            <col style={{ minWidth: '64px' }} />{/* 순수익제외 */}
           </colgroup>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.05)', fontSize: '0.7rem' }}>
