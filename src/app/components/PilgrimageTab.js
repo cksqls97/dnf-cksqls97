@@ -211,7 +211,7 @@ const LOOT_FIELDS_MANUAL = [
   ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
 ];
 
-const PIP_NORMAL = { w: 353, h: 931, x: 1703, y: 82 };
+const PIP_NORMAL = { w: 336, h: 939, x: 1743, y: 0 };
 const PIP_CROP   = { w: 1280, h: 820 };
 
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
