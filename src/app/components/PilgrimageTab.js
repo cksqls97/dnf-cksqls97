@@ -158,10 +158,10 @@ function AuctionPricesModal({ auctionPrices, setAuctionPrices, onClose }) {
 }
 
 const LOOT_FIELDS_PIP = [
-  ['seal', '순례의 인장'], ['tradableSeal', '교환 가능 인장'],
-  ['sealVoucher', '교환권'], ['sealVoucherBox', '교환권 상자'],
-  ['condensedCore', '응축 코어'], ['flawlessCore', '무결점 코어'],
-  ['crystal', '빛나는 결정체'], ['flawlessCrystal', '무결점 결정체'],
+  ['seal', '순례의 인장'], ['tradableSeal', '순례의 인장(1회 교환 가능)'],
+  ['sealVoucher', '순례의 인장(1회 교환 가능) 교환권'], ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
+  ['condensedCore', '응축된 라이언 코어'], ['flawlessCore', '무결점 라이언 코어'],
+  ['crystal', '빛나는 조화의 결정체'], ['flawlessCrystal', '무결점 조화의 결정체'],
 ];
 
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe }) {
@@ -187,7 +187,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const form = getCharForm(charId);
 
   const inp = { width: '100%', padding: '0.35rem 0.4rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px', fontSize: '0.75rem', boxSizing: 'border-box' };
-  const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.65rem', color: '#94a3b8' };
+  const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
 
   const fetchCustomItemPrice = async (itemName, itemId) => {
     if (!itemName || !apiKey) return;
@@ -832,7 +832,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
       <CalcDetailModal calcDetail={calcDetail} onClose={() => setCalcDetail(null)} />
       {showAuctionPricesModal && <AuctionPricesModal auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} onClose={() => setShowAuctionPricesModal(false)} />}
       {showPip && createPortal(
-        <div data-pip-panel="1" style={{ position: 'fixed', left: pipPos.x, top: pipPos.y, width: '360px', height: '520px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', boxShadow: '0 20px 60px rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden', resize: 'both' }}>
+        <div data-pip-panel="1" style={{ position: 'fixed', left: pipPos.x, top: pipPos.y, width: '420px', height: '560px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', boxShadow: '0 20px 60px rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden', resize: 'both' }}>
           <div onMouseDown={startPipDrag} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.45rem 0.7rem', background: 'rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'grab', userSelect: 'none', flexShrink: 0 }}>
             <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#4ade80' }}>📌 광휘 PiP 입력창</span>
             <button onClick={() => setShowPip(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1rem', padding: '0', lineHeight: 1 }}>×</button>
