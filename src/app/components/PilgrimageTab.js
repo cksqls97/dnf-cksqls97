@@ -44,24 +44,26 @@ function calcCharValues(form, auctionPrices) {
     if (bp > 0) tokenProfit += marketTokenPrice - bp;
   });
 
-  // 특별상점: 레시피/답례품 수익
-  // - 일반 레시피: 판매가 - 구매가 (인장 소모는 recipeSealCostValue로 별도 차감)
-  // - 빛나는 답례품: 증표 5개 획득 → 5 × 시장가 - 구매가
-  // - 화려한 답례품: 증표 20개 획득 → 20 × 시장가 - 구매가
+  // 특별상점: 레시피/답례품 판매 예정가
+  // 구매가(buyPrice)는 이미 지갑에서 지출되어 pureGold에 반영됨.
+  // 판매가(sellPrice)는 거래소 등록 중 → pureGold 미반영 → 전액 추가.
+  // - 일반 레시피: sellPrice (구매가 중복 차감 방지)
+  // - 빛나는 답례품: 증표 5개 × 시장가 (구매가는 pureGold에 포함)
+  // - 화려한 답례품: 증표 20개 × 시장가
   let recipeProfit = 0;
   let recipeSealCostValue = 0;
   (form.secretRecipes || []).forEach(r => {
     const bp = Number(r.buyPrice || 0);
     if (r.type === 'shinyGift') {
-      if (bp > 0) recipeProfit += 5 * marketTokenPrice - bp;
+      if (bp > 0) recipeProfit += 5 * marketTokenPrice;
     } else if (r.type === 'brilliantGift') {
-      if (bp > 0) recipeProfit += 20 * marketTokenPrice - bp;
+      if (bp > 0) recipeProfit += 20 * marketTokenPrice;
     } else {
       const seals = Number(r.sealCost || 0);
       const sp = Number(r.sellPrice || 0);
       if (bp > 0 || sp > 0) {
         recipeSealCostValue += seals * 5000;
-        recipeProfit += sp - bp;
+        recipeProfit += sp;
       }
     }
   });
@@ -108,7 +110,7 @@ function CalcDetailModal({ calcDetail, onClose }) {
               [`순례의 인장(1회 교환 가능) 교환권 1개 상자 (${items.sealVoucherBox}개)`, breakdown.sealVoucherBox],
               [`순례의 인장(1회 교환 가능) (${items.tradableSeal}개)`, breakdown.tradableSeal],
               ...(breakdown.tokenProfit ? [['닳아버린 순례의 증표 구매 이득', breakdown.tokenProfit]] : []),
-              ...(breakdown.recipeProfit ? [['레시피/답례품 수익', breakdown.recipeProfit]] : []),
+              ...(breakdown.recipeProfit ? [['레시피/답례품 판매 예정가 (미수령)', breakdown.recipeProfit]] : []),
               ...(breakdown.customTradable > 0 ? [['커스텀 추가 항목 (교환)', breakdown.customTradable]] : []),
             ], total: ['교환 가능 합계', totals.tradable, '#38bdf8'] },
             { title: '📉 소모 비용 (Costs)', color: '#f87171', rows: [
@@ -1148,7 +1150,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                               <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>비밀상점 정산 내역</h5>
                               <div style={{ fontSize: '0.7rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                                 <div>- 닳아버린 순례의 증표 구매 이득: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
-                                <div>- 레시피 순수익: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
+                                <div>- 레시피/답례품 판매 예정가: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
                                 <div>- 레시피 순례의 인장 소모: <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
                               </div>
                             </div>
