@@ -226,24 +226,8 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const [captureStatus, setCaptureStatus] = useState('');
   const [debugInfo, setDebugInfo] = useState(null); // { cropDataURL, rawText }
   const [showDebug, setShowDebug] = useState(false);
-  const [winInfo, setWinInfo] = useState({ x: 0, y: 0, w: 0, h: 0 });
-  const [winInput, setWinInput] = useState({ x: '', y: '', w: '', h: '' });
   const previewRef = useRef(null);
 
-  useEffect(() => {
-    if (!pipWindow) return;
-    const update = () => {
-      const info = { x: pipWindow.screenX, y: pipWindow.screenY, w: pipWindow.outerWidth, h: pipWindow.outerHeight };
-      setWinInfo(info);
-    };
-    // 오픈 시 1회만 input 초기화
-    const init = { x: pipWindow.screenX, y: pipWindow.screenY, w: pipWindow.outerWidth, h: pipWindow.outerHeight };
-    setWinInput({ x: String(init.x), y: String(init.y), w: String(init.w), h: String(init.h) });
-    update();
-    const id = setInterval(update, 500);
-    pipWindow.addEventListener('resize', update);
-    return () => { clearInterval(id); pipWindow.removeEventListener('resize', update); };
-  }, [pipWindow]);
 
 
   useEffect(() => {
@@ -455,7 +439,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       </div>
       {/* 탭 전환 */}
       <div style={{ display: 'flex', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-        {[['loot', '📦 재화 입력'], ['shop', '🛒 특별상점']].map(([t, label]) => (
+        {[['shop', '🛒 특별상점'], ['loot', '📦 재화 입력']].map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '0.45rem', fontSize: '0.7rem', border: 'none', cursor: 'pointer', background: tab === t ? 'rgba(56,189,248,0.12)' : 'transparent', color: tab === t ? '#38bdf8' : '#64748b', borderBottom: tab === t ? '2px solid #38bdf8' : '2px solid transparent', fontWeight: tab === t ? 'bold' : 'normal' }}>
             {label}
           </button>
@@ -670,31 +654,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
           </>
         )}
       </div>
-      {/* 실시간 현황 바 */}
-      <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.08)', padding: '0.2rem 0.6rem', background: 'rgba(0,0,0,0.3)', display: 'flex', gap: '1rem', fontSize: '0.6rem', color: '#475569', fontFamily: 'monospace' }}>
-        <span>좌상단 <span style={{ color: '#94a3b8' }}>({winInfo.x}, {winInfo.y})</span></span>
-        <span>크기 <span style={{ color: '#94a3b8' }}>{winInfo.w} × {winInfo.h}</span></span>
-      </div>
-      {/* 설정 입력 바 */}
-      {(() => {
-        const iStyle = { width: '48px', padding: '0.1rem 0.2rem', fontSize: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', color: '#e2e8f0', borderRadius: '3px', textAlign: 'center', fontFamily: 'monospace' };
-        const apply = () => {
-          const x = Number(winInput.x), y = Number(winInput.y), w = Number(winInput.w), h = Number(winInput.h);
-          if (!pipWindow) return;
-          pipWindow.moveTo(x, y);
-          pipWindow.resizeTo(w, h);
-        };
-        return (
-          <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.06)', padding: '0.2rem 0.5rem', background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.6rem', color: '#475569', fontFamily: 'monospace' }}>
-            <span style={{ color: '#334155' }}>설정</span>
-            <span>X</span><input style={iStyle} value={winInput.x} onChange={e => setWinInput(p => ({ ...p, x: e.target.value }))} onKeyDown={e => e.key === 'Enter' && apply()} />
-            <span>Y</span><input style={iStyle} value={winInput.y} onChange={e => setWinInput(p => ({ ...p, y: e.target.value }))} onKeyDown={e => e.key === 'Enter' && apply()} />
-            <span>W</span><input style={iStyle} value={winInput.w} onChange={e => setWinInput(p => ({ ...p, w: e.target.value }))} onKeyDown={e => e.key === 'Enter' && apply()} />
-            <span>H</span><input style={iStyle} value={winInput.h} onChange={e => setWinInput(p => ({ ...p, h: e.target.value }))} onKeyDown={e => e.key === 'Enter' && apply()} />
-            <button onClick={apply} style={{ padding: '0.1rem 0.4rem', fontSize: '0.6rem', background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.3)', color: '#38bdf8', borderRadius: '3px', cursor: 'pointer' }}>적용</button>
-          </div>
-        );
-      })()}
     </div>
   );
 }
