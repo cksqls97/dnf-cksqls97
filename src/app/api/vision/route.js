@@ -2,12 +2,10 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+// tradableSeal / sealVoucher / sealVoucherBox 는 아이콘 동일 → 수동 입력, 자동인식 제외
 const FIELD_NAMES = {
   pureGold: '순 골드 (비밀상점 이후 잔여액)',
   seal: '순례의 인장',
-  tradableSeal: '순례의 인장(1회 교환 가능)',
-  sealVoucher: '순례의 인장(1회 교환 가능) 교환권',
-  sealVoucherBox: '순례의 인장(1회 교환 가능) 교환권 1개 상자',
   condensedCore: '응축된 라이언 코어',
   flawlessCore: '무결점 라이언 코어',
   crystal: '빛나는 조화의 결정체',
@@ -32,36 +30,28 @@ export async function POST(request) {
     return NextResponse.json({ success: false, error: 'image 필드 누락' }, { status: 400 });
   }
 
-  const prompt = `이 이미지는 던전앤파이터(DNF) 게임의 순례 보상 화면입니다.
-아래 항목들의 수량을 이미지에서 읽어서 JSON으로 반환하세요.
-수량이 보이지 않거나 해당 항목이 없으면 0을 반환하세요.
-골드(pureGold)는 정수값으로 반환하세요 (예: 1234567).
-다른 항목들도 정수값으로 반환하세요.
+  const prompt = `이 이미지는 던전앤파이터(DNF) 게임 화면의 일부입니다.
+아이템 아이콘 우상단에 표시된 수량 숫자를 읽어 JSON으로 반환하세요.
+수량이 보이지 않거나 해당 아이콘이 없으면 0을 반환하세요.
 반드시 JSON만 반환하고 다른 텍스트는 포함하지 마세요.
 
 반환 형식:
 {
   "pureGold": 0,
   "seal": 0,
-  "tradableSeal": 0,
-  "sealVoucher": 0,
-  "sealVoucherBox": 0,
   "condensedCore": 0,
   "flawlessCore": 0,
   "crystal": 0,
   "flawlessCrystal": 0
 }
 
-항목 설명:
-- pureGold: 보유 골드 또는 획득 골드 수량
-- seal: 순례의 인장 수량
-- tradableSeal: 순례의 인장(1회 교환 가능) 수량
-- sealVoucher: 순례의 인장(1회 교환 가능) 교환권 수량
-- sealVoucherBox: 순례의 인장(1회 교환 가능) 교환권 1개 상자 수량
-- condensedCore: 응축된 라이언 코어 수량
-- flawlessCore: 무결점 라이언 코어 수량
-- crystal: 빛나는 조화의 결정체 수량
-- flawlessCrystal: 무결점 조화의 결정체 수량`;
+항목 설명 (아이콘 우상단 숫자를 읽으세요):
+- pureGold: 화면에 표시된 골드(G) 수량. 숫자+G 형태이거나 골드 아이콘 옆 숫자.
+- seal: 순례의 인장. 붉은/자주색 원형 문양 아이콘.
+- condensedCore: 응축된 라이언 코어. 파란 보석/코어 형태 아이콘.
+- flawlessCore: 무결점 라이언 코어. 밝게 빛나는 코어 아이콘.
+- crystal: 빛나는 조화의 결정체. 결정체/크리스탈 형태 아이콘.
+- flawlessCrystal: 무결점 조화의 결정체. 더 밝게 빛나는 결정체 아이콘.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {

@@ -157,11 +157,18 @@ function AuctionPricesModal({ auctionPrices, setAuctionPrices, onClose }) {
   );
 }
 
-const LOOT_FIELDS_PIP = [
-  ['seal', '순례의 인장'], ['tradableSeal', '순례의 인장(1회 교환 가능)'],
-  ['sealVoucher', '순례의 인장(1회 교환 가능) 교환권'], ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
+// 자동 캡처 인식 대상 (아이콘 구별 가능)
+const LOOT_FIELDS_AUTO = [
+  ['seal', '순례의 인장'],
   ['condensedCore', '응축된 라이언 코어'], ['flawlessCore', '무결점 라이언 코어'],
   ['crystal', '빛나는 조화의 결정체'], ['flawlessCrystal', '무결점 조화의 결정체'],
+];
+
+// 아이콘이 동일해 자동 구별 불가 → 직접 입력
+const LOOT_FIELDS_MANUAL = [
+  ['tradableSeal', '순례의 인장(1회 교환 가능)'],
+  ['sealVoucher', '순례의 인장(1회 교환 가능) 교환권'],
+  ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
 ];
 
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe }) {
@@ -242,7 +249,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       if (!data.success) throw new Error(data.error || '분석 실패');
 
       const d = data.data;
-      ['pureGold', 'seal', 'tradableSeal', 'sealVoucher', 'sealVoucherBox', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal']
+      ['pureGold', 'seal', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal']
         .forEach(k => { if (d[k] > 0) updateCharForm(charId, k, String(d[k])); });
       setCaptureStatus(`✅ 완료 (${new Date().toLocaleTimeString()})`);
     } catch (e) {
@@ -306,17 +313,33 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
               </div>
               {captureStatus && <div style={{ fontSize: '0.6rem', color: captureStatus.startsWith('❌') ? '#f87171' : captureStatus.startsWith('✅') ? '#4ade80' : '#94a3b8', lineHeight: 1.4 }}>{captureStatus}</div>}
             </div>
+            {/* 자동 입력 항목 */}
             <div>
-              <label style={lbl}>순 골드 (비밀상점 후 잔여액)</label>
-              <input type="number" style={inp} value={form.pureGold || ''} onChange={e => updateCharForm(charId, 'pureGold', e.target.value)} placeholder="0" />
+              <div style={{ fontSize: '0.6rem', color: '#38bdf8', fontWeight: 'bold', marginBottom: '0.4rem' }}>📷 자동 입력 항목</div>
+              <div style={{ marginBottom: '0.5rem' }}>
+                <label style={lbl}>순 골드 (비밀상점 후 잔여액)</label>
+                <input type="number" style={inp} value={form.pureGold || ''} onChange={e => updateCharForm(charId, 'pureGold', e.target.value)} placeholder="0" />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                {LOOT_FIELDS_AUTO.map(([key, label]) => (
+                  <div key={key}>
+                    <label style={lbl}>{label}</label>
+                    <input type="number" style={inp} value={form[key] || ''} onChange={e => updateCharForm(charId, key, e.target.value)} placeholder="0" />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-              {LOOT_FIELDS_PIP.map(([key, label]) => (
-                <div key={key}>
-                  <label style={lbl}>{label}</label>
-                  <input type="number" style={inp} value={form[key] || ''} onChange={e => updateCharForm(charId, key, e.target.value)} placeholder="0" />
-                </div>
-              ))}
+            {/* 소모품 직접 입력 */}
+            <div style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.15)', borderRadius: '6px', padding: '0.55rem' }}>
+              <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.45rem' }}>✏️ 소모품 (직접 입력)</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {LOOT_FIELDS_MANUAL.map(([key, label]) => (
+                  <div key={key}>
+                    <label style={lbl}>{label}</label>
+                    <input type="number" style={inp} value={form[key] || ''} onChange={e => updateCharForm(charId, key, e.target.value)} placeholder="0" />
+                  </div>
+                ))}
+              </div>
             </div>
             {/* 커스텀 아이템 */}
             <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.55rem' }}>
