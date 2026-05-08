@@ -235,8 +235,10 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
     const update = () => {
       const info = { x: pipWindow.screenX, y: pipWindow.screenY, w: pipWindow.outerWidth, h: pipWindow.outerHeight };
       setWinInfo(info);
-      setWinInput(prev => ({ x: String(info.x), y: String(info.y), w: String(info.w), h: String(info.h) }));
     };
+    // 오픈 시 1회만 input 초기화
+    const init = { x: pipWindow.screenX, y: pipWindow.screenY, w: pipWindow.outerWidth, h: pipWindow.outerHeight };
+    setWinInput({ x: String(init.x), y: String(init.y), w: String(init.w), h: String(init.h) });
     update();
     const id = setInterval(update, 500);
     pipWindow.addEventListener('resize', update);
