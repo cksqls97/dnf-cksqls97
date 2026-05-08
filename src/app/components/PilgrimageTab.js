@@ -226,7 +226,22 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const [captureStatus, setCaptureStatus] = useState('');
   const [debugInfo, setDebugInfo] = useState(null); // { cropDataURL, rawText }
   const [showDebug, setShowDebug] = useState(false);
+  const [winInfo, setWinInfo] = useState({ x: 0, y: 0, w: 0, h: 0 });
   const previewRef = useRef(null);
+
+  useEffect(() => {
+    if (!pipWindow) return;
+    const update = () => setWinInfo({
+      x: pipWindow.screenX,
+      y: pipWindow.screenY,
+      w: pipWindow.outerWidth,
+      h: pipWindow.outerHeight,
+    });
+    update();
+    const id = setInterval(update, 200);
+    pipWindow.addEventListener('resize', update);
+    return () => { clearInterval(id); pipWindow.removeEventListener('resize', update); };
+  }, [pipWindow]);
 
   useEffect(() => {
     if (selectedChars.length > 0 && !selectedChars.find(c => c.id === activeCharId)) {
@@ -651,6 +666,11 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
             </div>
           </>
         )}
+      </div>
+      {/* 창 위치/크기 정보 */}
+      <div style={{ flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.08)', padding: '0.25rem 0.6rem', background: 'rgba(0,0,0,0.35)', display: 'flex', gap: '1rem', fontSize: '0.6rem', color: '#475569', fontFamily: 'monospace' }}>
+        <span>좌상단 <span style={{ color: '#94a3b8' }}>({winInfo.x}, {winInfo.y})</span></span>
+        <span>크기 <span style={{ color: '#94a3b8' }}>{winInfo.w} × {winInfo.h}</span></span>
       </div>
     </div>
   );
