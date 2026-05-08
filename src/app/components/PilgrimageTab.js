@@ -209,7 +209,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
 
   const takeScreenshot = async () => {
-    pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h);
     setScreenshot(null);
     setCaptureStatus('');
     setCropRect(null);
@@ -234,7 +233,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       canvas.width = bitmap.width; canvas.height = bitmap.height;
       canvas.getContext('2d').drawImage(bitmap, 0, 0);
       setScreenshot({ dataURL: canvas.toDataURL('image/png'), w: bitmap.width, h: bitmap.height });
-      pipWindow?.resizeTo(PIP_CROP.w, PIP_CROP.h);
       setCaptureStatus('영역을 드래그해서 선택 후 분석 버튼을 누르세요');
     } catch (e) {
       if (e.name !== 'AbortError') setCaptureStatus('❌ 캡처 실패: ' + e.message);
@@ -300,7 +298,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       setCaptureStatus('❌ ' + e.message);
     }
     setIsCapturing(false);
-    pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h);
     setScreenshot(null);
     setCropRect(null);
   };
@@ -345,13 +342,16 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
             <div style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '6px', padding: '0.55rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '0.65rem', color: '#38bdf8', fontWeight: 'bold', flex: 1 }}>📷 화면 캡처 자동 입력</span>
-                <button onClick={takeScreenshot} title="창 선택 창이 열리면 'Dungeon & Fighter' 창을 선택하세요" style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <button onClick={() => { pipWindow?.resizeTo(PIP_CROP.w, PIP_CROP.h); takeScreenshot(); }} title="창 선택 창이 열리면 'Dungeon & Fighter' 창을 선택하세요" style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   {screenshot ? '재캡처' : '캡처'}
                 </button>
                 {screenshot && (
-                  <button onClick={analyzeSelection} disabled={isCapturing || !cropRect} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: (isCapturing || !cropRect) ? 'rgba(255,255,255,0.05)' : 'rgba(74,222,128,0.2)', color: (isCapturing || !cropRect) ? '#475569' : '#4ade80', border: `1px solid ${(isCapturing || !cropRect) ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.4)'}`, borderRadius: '4px', cursor: (isCapturing || !cropRect) ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
-                    {isCapturing ? '⏳' : '분석'}
-                  </button>
+                  <>
+                    <button onClick={() => { pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h); analyzeSelection(); }} disabled={isCapturing || !cropRect} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: (isCapturing || !cropRect) ? 'rgba(255,255,255,0.05)' : 'rgba(74,222,128,0.2)', color: (isCapturing || !cropRect) ? '#475569' : '#4ade80', border: `1px solid ${(isCapturing || !cropRect) ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.4)'}`, borderRadius: '4px', cursor: (isCapturing || !cropRect) ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
+                      {isCapturing ? '⏳' : '분석'}
+                    </button>
+                    <button onClick={() => { pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h); setScreenshot(null); setCropRect(null); setCaptureStatus(''); }} style={{ padding: '0.25rem 0.4rem', fontSize: '0.65rem', background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
+                  </>
                 )}
               </div>
               {captureStatus && (
