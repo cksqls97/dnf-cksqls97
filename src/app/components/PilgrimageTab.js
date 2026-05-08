@@ -81,7 +81,7 @@ function calcCharValues(form, auctionPrices) {
   });
 
   const totalConsumedValue = tokenCost + potionCost + secretShopCostValue;
-  const restoredPureGold = pureGoldInput;
+  const restoredPureGold = pureGoldInput + secretShopGoldSpent;
   const finalTradableValue = restoredPureGold + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + secretShopRewardValue + customTradableValue;
   const finalBoundValue = totalBoundValue - recipeSealCostValue;
   const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
@@ -111,7 +111,8 @@ function CalcDetailModal({ calcDetail, onClose }) {
               ...(breakdown.recipeSealCost > 0 ? [[`레시피 인장 소모`, -breakdown.recipeSealCost]] : []),
             ], total: ['귀속 합계', totals.bound, '#fb923c'] },
             { title: '💰 교환 가능 가치 (Tradable)', color: '#38bdf8', rows: [
-              ['순 골드 (수령 기준)', items.pureGold],
+              ['순 골드 (최종 잔여액)', items.pureGold],
+              ...(breakdown.secretShopGoldSpent > 0 ? [['비밀상점 지출액 복원', breakdown.secretShopGoldSpent]] : []),
               [`무결점 라이언 코어 (${items.flawlessCore}개)`, breakdown.flawlessCore],
               [`무결점 조화의 결정체 (${items.flawlessCrystal}개)`, breakdown.flawlessCrystal],
               [`순례의 인장(1회 교환 가능) 교환권 수익 (${items.sealVoucher}개)`, breakdown.sealVoucher],
@@ -368,7 +369,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
           <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: 'rgba(74,222,128,0.2)', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
         </td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{v.restoredPureGold > 0 ? v.restoredPureGold.toLocaleString() : '-'}</td>
+        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }} title={v.secretShopGoldSpent > 0 ? `입력값: ${Number(form.pureGold||0).toLocaleString()} + 비밀상점 지출 복원: ${v.secretShopGoldSpent.toLocaleString()}` : ''}>{v.restoredPureGold > 0 ? v.restoredPureGold.toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal > 0 ? Number(form.seal).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal > 0 ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher > 0 ? Number(form.sealVoucher).toLocaleString() : '-'}</td>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function LootModal({ activeLootModal, setActiveLootModal, characters, getCharForm, updateCharForm, apiKey, auctionPrices, setAuctionPrices }) {
+export default function LootModal({ activeLootModal, setActiveLootModal, characters, getCharForm, updateCharForm, apiKey, setAuctionPrices }) {
   const [fetchingItemId, setFetchingItemId] = useState(null);
   const [focusedItemId, setFocusedItemId] = useState(null);
 
@@ -57,7 +57,7 @@ export default function LootModal({ activeLootModal, setActiveLootModal, charact
   const labelStyle = { display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem', color: '#cbd5e1' };
 
   const FIELDS = [
-    ['pureGold', '순 골드 (비밀상점 전 수령액)'], ['seal', '순례의 인장'], ['tradableSeal', '순례의 인장(1회 교환 가능)'],
+    ['pureGold', '순 골드 (비밀상점 후 잔여액)'], ['seal', '순례의 인장'], ['tradableSeal', '순례의 인장(1회 교환 가능)'],
     ['condensedCore', '응축된 라이언 코어'], ['flawlessCore', '무결점 라이언 코어'],
     ['crystal', '빛나는 조화의 결정체'], ['flawlessCrystal', '무결점 조화의 결정체'],
     ['sealVoucher', '순례의 인장(1회 교환 가능) 교환권'],
