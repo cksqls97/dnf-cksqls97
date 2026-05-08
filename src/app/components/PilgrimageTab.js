@@ -211,7 +211,7 @@ const LOOT_FIELDS_MANUAL = [
   ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
 ];
 
-const PIP_NORMAL = { w: 960, h: 900 };
+const PIP_NORMAL = { w: 353, h: 931, x: 1703, y: 82 };
 const PIP_CROP   = { w: 1280, h: 820 };
 
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
@@ -746,10 +746,9 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
       return;
     }
     try {
-      const pipH = Math.min(PIP_NORMAL.h, window.screen.availHeight - 60);
-      const pip = await window.documentPictureInPicture.requestWindow({ width: PIP_NORMAL.w, height: pipH });
+      const pip = await window.documentPictureInPicture.requestWindow({ width: PIP_NORMAL.w, height: PIP_NORMAL.h });
       pipWindowRef.current = pip;
-      pip.moveTo(window.screen.availWidth - PIP_NORMAL.w, 0);
+      pip.moveTo(PIP_NORMAL.x, PIP_NORMAL.y);
 
       pip.document.body.style.cssText = 'margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden;height:100vh;';
       document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
