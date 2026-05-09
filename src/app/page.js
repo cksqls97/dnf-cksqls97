@@ -83,11 +83,16 @@ export default function Home() {
     } catch (e) { console.error(e); }
   };
 
-  const syncDownCloudData = async (targetKey, localChars, localLogs, localOpts) => {
+  const syncDownCloudData = async (targetKey, localChars, localLogs, localOpts, { silent = false } = {}) => {
     if (!targetKey) return;
     setIsCloudSyncing(true);
     try {
       const res = await fetch(`/api/sync?apiKey=${targetKey}`).then(r => r.json());
+      if (!res.success) {
+        if (!silent) alert(`☁️ 클라우드 동기화 실패: ${res.error || '알 수 없는 오류'}\nUpstash Redis 환경변수가 Vercel에 설정되어 있는지 확인해주세요.`);
+        setIsCloudSyncing(false);
+        return false;
+      }
       if (res.success && res.data) {
         const cData = res.data;
         if (cData.lastUpdateAt) lastCloudUpdateAtRef.current = cData.lastUpdateAt;
@@ -113,16 +118,30 @@ export default function Home() {
           localStorage.setItem('DNF_PILGRIMAGE_HISTORY', JSON.stringify(cData.pilgrimage));
           modified = true;
         }
+        if (cData.merc) {
+          if (cData.merc.level) setMercLevel(cData.merc.level);
+          if (cData.merc.target) setMercNextLevelTarget(cData.merc.target);
+          localStorage.setItem('DNF_MERC', JSON.stringify(cData.merc));
+          modified = true;
+        }
+        if (modified) {
+          if (!silent) alert(`☁️ 클라우드 데이터 복원 완료!\n캐릭터 ${cData.characters?.length ?? 0}명 / 기록 ${cData.historyLogs?.length ?? 0}건`);
+          setIsCloudSyncing(false);
+          return true;
+        }
         if (!modified && (localChars?.length > 0 || localLogs?.length > 0)) {
           await syncUpCloudData(targetKey, localChars, localLogs, localOpts, mercRef.current);
         }
-        if (modified) { setIsCloudSyncing(false); return true; }
       } else if (res.success && !res.data) {
+        if (!silent) alert('☁️ 클라우드에 저장된 데이터가 없습니다.\n이 기기의 데이터가 있으면 수동 백업을 먼저 해주세요.');
         if (localChars?.length > 0 || localLogs?.length > 0) {
           await syncUpCloudData(targetKey, localChars, localLogs, localOpts, mercRef.current);
         }
       }
-    } catch (e) { console.error("Cloud Sync Failed:", e); }
+    } catch (e) {
+      console.error("Cloud Sync Failed:", e);
+      if (!silent) alert(`☁️ 클라우드 연결 오류: ${e.message}`);
+    }
     setIsCloudSyncing(false);
     return false;
   };
@@ -199,7 +218,7 @@ export default function Home() {
     };
 
     if (key) {
-      syncDownCloudData(key, loadedChars, loadedLogs, loadedOpts).then((cloudHydrated) => {
+      syncDownCloudData(key, loadedChars, loadedLogs, loadedOpts, { silent: true }).then((cloudHydrated) => {
         if (!cloudHydrated) triggerLocalMountRefresh();
       });
     }
@@ -216,11 +235,11 @@ export default function Home() {
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
     localStorage.setItem("DNF_API_KEY", apiKeyInput);
     setApiKeyState(apiKeyInput);
     setShowSettings(false);
-    syncDownCloudData(apiKeyInput, characters, historyLogs, customOptions);
+    await syncDownCloudData(apiKeyInput, characters, historyLogs, customOptions);
   };
 
   const fetchCharacterData = async (srv, name) => {
