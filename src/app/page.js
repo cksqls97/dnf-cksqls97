@@ -37,7 +37,6 @@ export default function Home() {
   const [optionsFormText, setOptionsFormText] = useState({});
 
   // Stale-closure guards
-  const autoRefreshDone = React.useRef(false);
   const charsRef = React.useRef(characters);
   const logsRef = React.useRef(historyLogs);
   const optsRef = React.useRef(customOptions);
@@ -194,32 +193,9 @@ export default function Home() {
     const savedPilgrimage = localStorage.getItem('DNF_PILGRIMAGE_HISTORY');
     if (savedPilgrimage) { try { setPilgrimageHistory(JSON.parse(savedPilgrimage)); } catch (e) {} }
 
-    const triggerLocalMountRefresh = () => {
-      if (loadedChars.length > 0 && key && !autoRefreshDone.current) {
-        autoRefreshDone.current = true;
-        setIsRefreshing(true);
-        Promise.all(loadedChars.map(async (c) => {
-          const res = await fetch('/api/character', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ server: c.base.server, charName: c.base.charName, apiKey: key })
-          }).then(r => r.json());
-          if (res.success) {
-            if (res.base.fame < (c.base.fame || 0)) return c;
-            return { ...res, manual: c.manual };
-          }
-          return c;
-        })).then((updatedList) => {
-          setCharacters(updatedList);
-          localStorage.setItem('DNF_CHARACTERS', JSON.stringify(updatedList));
-          setIsRefreshing(false);
-        });
-      }
-    };
-
     if (key) {
       syncDownCloudData(key, loadedChars, loadedLogs, loadedOpts, { silent: true }).then((cloudHydrated) => {
-        if (!cloudHydrated) triggerLocalMountRefresh();
+        if (!cloudHydrated) handleRefreshAll(loadedChars, key);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -242,11 +218,11 @@ export default function Home() {
     await syncDownCloudData(apiKeyInput, characters, historyLogs, customOptions);
   };
 
-  const fetchCharacterData = async (srv, name) => {
+  const fetchCharacterData = async (srv, name, key = apiKey) => {
     const res = await fetch('/api/character', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ server: srv, charName: name, apiKey })
+      body: JSON.stringify({ server: srv, charName: name, apiKey: key })
     });
     return res.json();
   };
