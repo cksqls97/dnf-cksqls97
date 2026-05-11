@@ -274,7 +274,7 @@ function CustomItemRow({ item, charId, updateCharForm, fetchCustomItemPrice, fet
   );
 }
 
-function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
+function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pilgrimageHistory = [], pipWindow }) {
   const [activeCharId, setActiveCharId] = useState(selectedChars[selectedChars.length - 1]?.id || null);
   const [tab, setTab] = useState('shop');
   const [fetchingItemId, setFetchingItemId] = useState(null);
@@ -312,6 +312,13 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
     selectedChars.forEach(c => {
       (getCharForm(c.id).customItems || []).forEach(it => {
         if (it.name?.trim()) freq[it.name.trim()] = (freq[it.name.trim()] || 0) + 1;
+      });
+    });
+    pilgrimageHistory.forEach(record => {
+      (record.details || []).forEach(d => {
+        (d.customItems || []).forEach(it => {
+          if (it.name?.trim()) freq[it.name.trim()] = (freq[it.name.trim()] || 0) + 1;
+        });
       });
     });
     return Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([name]) => name);
@@ -762,7 +769,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
   // ─── Document PiP ─────────────────────────────────────────────────────────────
 
-  const renderToPip = useCallback((sel, gCF, uCF, ap, ak, aCT, uCT, rCT, aCR, uCR, rCR) => {
+  const renderToPip = useCallback((sel, gCF, uCF, ap, ak, aCT, uCT, rCT, aCR, uCR, rCR, hist) => {
     if (!pipRootRef.current || !pipWindowRef.current) return;
     pipRootRef.current.render(
       <PiPContent
@@ -777,6 +784,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         addCharRecipe={aCR}
         updateCharRecipe={uCR}
         removeCharRecipe={rCR}
+        pilgrimageHistory={hist}
         pipWindow={pipWindowRef.current}
       />
     );
@@ -930,8 +938,8 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   // PiP 상태 동기화
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    renderToPip(selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe);
-  }, [pilgrimageForm, auctionPrices, characters, apiKey, isPipOpen]);
+    renderToPip(selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pilgrimageHistory);
+  }, [pilgrimageForm, auctionPrices, characters, apiKey, isPipOpen, pilgrimageHistory]);
 
   const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
 
