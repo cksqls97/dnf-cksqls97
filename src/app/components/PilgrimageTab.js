@@ -219,25 +219,40 @@ const PIP_NORMAL = { w: 336, h: 947, x: 1743, y: 0 };
 const PIP_CROP   = { w: 1280, h: 820 };
 
 // PiP 커스텀 아이템 한 행 — 로컬 state로 입력 관리해 외부 re-render와 독립
-function CustomItemRow({ item, charId, updateCharForm, fetchCustomItemPrice, fetchingItemId }) {
+function CustomItemRow({ item, charId, updateCharForm, fetchCustomItemPrice, fetchingItemId, suggestions = [] }) {
   const [localName, setLocalName] = React.useState(item.name);
   const [localQty, setLocalQty] = React.useState(item.quantity);
+  const [showSug, setShowSug] = React.useState(false);
   const nameFocused = React.useRef(false);
   const qtyFocused = React.useRef(false);
 
   React.useEffect(() => { if (!nameFocused.current) setLocalName(item.name); }, [item.name]);
   React.useEffect(() => { if (!qtyFocused.current) setLocalQty(item.quantity); }, [item.quantity]);
 
+  const filtered = suggestions.filter(s => s !== localName && (!localName || s.toLowerCase().includes(localName.toLowerCase())));
   const inp = { padding: '0.25rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '3px', fontSize: '0.7rem' };
 
   return (
     <div style={{ marginBottom: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.4rem', borderRadius: '4px' }}>
       <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginBottom: '0.25rem' }}>
-        <input type="text" placeholder="아이템명" style={{ ...inp, flex: 1 }} value={localName}
-          onFocus={() => { nameFocused.current = true; }}
-          onChange={e => { const val = e.target.value; const id = item.id; setLocalName(val); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name: val } : i)); }}
-          onBlur={e => { nameFocused.current = false; if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id); }}
-        />
+        <div style={{ flex: 1, position: 'relative' }}>
+          <input type="text" placeholder="아이템명" style={{ ...inp, width: '100%', boxSizing: 'border-box' }} value={localName}
+            onFocus={() => { nameFocused.current = true; setShowSug(true); }}
+            onChange={e => { const val = e.target.value; const id = item.id; setLocalName(val); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name: val } : i)); }}
+            onBlur={e => { nameFocused.current = false; setTimeout(() => setShowSug(false), 150); if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id); }}
+          />
+          {showSug && filtered.length > 0 && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#1e293b', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', maxHeight: '120px', overflowY: 'auto', marginTop: '2px' }}>
+              {filtered.map(name => (
+                <div key={name} style={{ padding: '0.3rem 0.5rem', fontSize: '0.65rem', color: '#cbd5e1', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                  onMouseDown={() => { const id = item.id; setLocalName(name); setShowSug(false); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name } : i)); fetchCustomItemPrice(name, item.id); }}
+                  onMouseEnter={e => e.target.style.background = 'rgba(96,165,250,0.2)'}
+                  onMouseLeave={e => e.target.style.background = 'transparent'}
+                >{name}</div>
+              ))}
+            </div>
+          )}
+        </div>
         <input type="number" placeholder="수량" style={{ ...inp, width: '52px', flex: 'none' }} value={localQty}
           onFocus={() => { qtyFocused.current = true; }}
           onChange={e => { const val = e.target.value; const id = item.id; setLocalQty(val); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, quantity: val } : i)); }}
@@ -291,6 +306,16 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
 
   const charId = (activeCharId && selectedChars.find(c => c.id === activeCharId)) ? activeCharId : selectedChars[0].id;
   const form = getCharForm(charId);
+
+  const customItemSuggestions = (() => {
+    const freq = {};
+    selectedChars.forEach(c => {
+      (getCharForm(c.id).customItems || []).forEach(it => {
+        if (it.name?.trim()) freq[it.name.trim()] = (freq[it.name.trim()] || 0) + 1;
+      });
+    });
+    return Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([name]) => name);
+  })();
 
   const inp = { width: '100%', padding: '0.35rem 0.4rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px', fontSize: '0.75rem', boxSizing: 'border-box' };
   const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
@@ -606,7 +631,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
                 <button onClick={() => updateCharForm(charId, 'customItems', cur => [...(cur || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: '', quantity: '', price: 0 }])} style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: 'rgba(96,165,250,0.18)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: '3px', cursor: 'pointer' }}>+ 추가</button>
               </div>
               {(form.customItems || []).map(item => (
-                <CustomItemRow key={item.id} item={item} charId={charId} updateCharForm={updateCharForm} fetchCustomItemPrice={fetchCustomItemPrice} fetchingItemId={fetchingItemId} />
+                <CustomItemRow key={item.id} item={item} charId={charId} updateCharForm={updateCharForm} fetchCustomItemPrice={fetchCustomItemPrice} fetchingItemId={fetchingItemId} suggestions={customItemSuggestions} />
               ))}
               {(form.customItems || []).length === 0 && <div style={{ fontSize: '0.65rem', color: '#475569', textAlign: 'center' }}>없음</div>}
             </div>
