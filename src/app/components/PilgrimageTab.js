@@ -11,10 +11,10 @@ const EMPTY_CHAR_FORM = () => ({
   selected: false, startFatigue: '', pureGold: '',
   seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
   sealVoucher: '', tradableSeal: '', sealVoucherBox: '', memo: '',
-  secretTokens: [], secretRecipes: [], customItems: [], usePotion: false, useVoucherExchange: true
+  secretTokens: [], secretRecipes: [], customItems: [], usePotion: false
 });
 
-function calcCharValues(form, auctionPrices) {
+function calcCharValues(form, auctionPrices, useVoucherExchange = true) {
   const fatigue = Number(form.startFatigue || 0);
   const runs = Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0);
 
@@ -29,7 +29,7 @@ function calcCharValues(form, auctionPrices) {
 
   const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
   const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
-  const voucherProfitTotal = form.useVoucherExchange !== false
+  const voucherProfitTotal = useVoucherExchange
     ? Number(form.sealVoucher || 0) * ((3 * priceTradableSeal) - 75000)
     : 0;
   const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
@@ -550,20 +550,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {LOOT_FIELDS_MANUAL.map(([key, label]) => (
                   <div key={key}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                      <label style={{ ...lbl, marginBottom: 0 }}>{label}</label>
-                      {key === 'sealVoucher' && (
-                        <button
-                          onClick={() => updateCharForm(charId, 'useVoucherExchange', !(form.useVoucherExchange !== false))}
-                          style={{ padding: '0.1rem 0.4rem', fontSize: '0.6rem', borderRadius: '3px', border: '1px solid', cursor: 'pointer',
-                            background: form.useVoucherExchange !== false ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)',
-                            color: form.useVoucherExchange !== false ? '#4ade80' : '#f87171',
-                            borderColor: form.useVoucherExchange !== false ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.4)' }}
-                        >
-                          {form.useVoucherExchange !== false ? '교환 O' : '교환 X'}
-                        </button>
-                      )}
-                    </div>
+                    <label style={lbl}>{label}</label>
                     <input type="number" style={inp} value={form[key] || ''} onChange={e => updateCharForm(charId, key, e.target.value)} placeholder="0" />
                   </div>
                 ))}
@@ -675,6 +662,7 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
 
 export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePilgrimage, onDeletePilgrimage, apiKey }) {
   const [pilgrimageForm, setPilgrimageForm] = useState({});
+  const [useVoucherExchange, setUseVoucherExchange] = useState(true);
   const [globalStartFatigue, setGlobalStartFatigue] = useState('');
   const [auctionPrices, setAuctionPrices] = useState(DEFAULT_AUCTION_PRICES);
   const [isFetchingPrices, setIsFetchingPrices] = useState(false);
@@ -840,7 +828,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     const recordDetails = selectedIds.map(id => {
       const c = characters.find(char => char.id === id);
       const form = getCharForm(id);
-      const v = calcCharValues(form, auctionPrices);
+      const v = calcCharValues(form, auctionPrices, useVoucherExchange);
       return {
         charId: id,
         charName: c ? c.base.charName : '알 수 없음',
@@ -892,7 +880,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
   const rows = selectedChars.map((c, idx) => {
     const form = getCharForm(c.id);
-    const v = calcCharValues(form, auctionPrices);
+    const v = calcCharValues(form, auctionPrices, useVoucherExchange);
     const hasLootData = ['pureGold', 'seal', 'condensedCore', 'crystal', 'flawlessCore', 'flawlessCrystal', 'sealVoucher', 'sealVoucherBox', 'tradableSeal'].some(k => form[k] && form[k] !== '')
       || (form.customItems && form.customItems.length > 0)
       || (form.secretTokens || []).some(t => t.buyPrice !== '')
@@ -914,7 +902,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
     const clickDetail = hasLootData ? {
       charName: c.base.charName,
-      items: { seal: Number(form.seal || 0), core: Number(form.condensedCore || 0), crystal: Number(form.crystal || 0), pureGold: Number(form.pureGold || 0), flawlessCore: Number(form.flawlessCore || 0), flawlessCrystal: Number(form.flawlessCrystal || 0), sealVoucher: Number(form.sealVoucher || 0), sealVoucherBox: Number(form.sealVoucherBox || 0), tradableSeal: Number(form.tradableSeal || 0), runs: v.runs, useVoucherExchange: form.useVoucherExchange !== false },
+      items: { seal: Number(form.seal || 0), core: Number(form.condensedCore || 0), crystal: Number(form.crystal || 0), pureGold: Number(form.pureGold || 0), flawlessCore: Number(form.flawlessCore || 0), flawlessCrystal: Number(form.flawlessCrystal || 0), sealVoucher: Number(form.sealVoucher || 0), sealVoucherBox: Number(form.sealVoucherBox || 0), tradableSeal: Number(form.tradableSeal || 0), runs: v.runs, useVoucherExchange },
       breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, sealVoucher: v.voucherProfitTotal, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, tokenCost: v.tokenCost, potionCost: v.potionCost, recipeSealCost: v.recipeSealCostValue, customTradable: v.customTradableValue, tokenProfit: v.tokenProfit, recipeProfit: v.recipeProfit, giftSoulCost: v.giftSoulCost, grossPureGold: v.grossPureGold, tokenSpend: v.tokenSpend, recipeSpend: v.recipeSpend },
       totals: { bound: v.finalBoundValue, tradable: v.finalTradableValue, consumed: v.totalConsumedValue },
       final: { includingBound: totalProfitIncl, excludingBound: profitExclBound }
@@ -977,7 +965,13 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
           <button onClick={openDocumentPiP} style={{ padding: '0.5rem 1rem', background: isPipOpen ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)', color: isPipOpen ? '#4ade80' : '#cbd5e1', border: isPipOpen ? '1px solid rgba(74,222,128,0.4)' : '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold' }}>
             {isPipOpen ? '📌 PiP 닫기' : '📌 PiP 입력창'}
           </button>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button onClick={() => setUseVoucherExchange(v => !v)} style={{ padding: '0.5rem 0.9rem', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+              background: useVoucherExchange ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)',
+              color: useVoucherExchange ? '#4ade80' : '#f87171',
+              borderColor: useVoucherExchange ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.4)' }}>
+              교환권 {useVoucherExchange ? '교환 O' : '교환 X'}
+            </button>
             <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
               {isFetchingPrices ? '불러오는 중...' : '단가 새로고침'}
             </button>
