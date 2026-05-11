@@ -29,9 +29,10 @@ function calcCharValues(form, auctionPrices, useVoucherExchange = true) {
 
   const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
   const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
-  const voucherProfitTotal = useVoucherExchange
-    ? Number(form.sealVoucher || 0) * ((3 * priceTradableSeal) - 75000)
-    : 0;
+  const voucherCount = Number(form.sealVoucher || 0);
+  const voucherTradableGain = useVoucherExchange ? voucherCount * 3 * priceTradableSeal : 0;
+  const voucherBoundCost   = useVoucherExchange ? voucherCount * 75000 : 0; // 15인장×5000
+  const voucherProfitTotal = voucherTradableGain - voucherBoundCost; // 호환성용 net
   const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
   const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
 
@@ -88,13 +89,13 @@ function calcCharValues(form, auctionPrices, useVoucherExchange = true) {
   });
 
   const totalConsumedValue = tokenCost + potionCost;
-  const finalTradableValue = pureGoldInput + tradableCoreValue + tradableCrystalValue + voucherProfitTotal + tradableSealValue + voucherBoxValue + customTradableValue + tokenProfit + recipeProfit - giftSoulCost;
-  const finalBoundValue = totalBoundValue - recipeSealCostValue;
+  const finalTradableValue = pureGoldInput + tradableCoreValue + tradableCrystalValue + voucherTradableGain + tradableSealValue + voucherBoxValue + customTradableValue + tokenProfit + recipeProfit - giftSoulCost;
+  const finalBoundValue = totalBoundValue - recipeSealCostValue - voucherBoundCost;
   const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
 
   return {
     runs, sealValue, boundCoreValue, boundCrystalValue, totalBoundValue, tradableCoreValue, tradableCrystalValue,
-    voucherProfitTotal, tradableSealValue, voucherBoxValue, tokenCost, potionCost,
+    voucherTradableGain, voucherBoundCost, voucherProfitTotal, tradableSealValue, voucherBoxValue, tokenCost, potionCost,
     tokenSpend, recipeSpend, grossPureGold,
     tokenProfit, recipeProfit, giftSoulCost,
     customTradableValue, recipeSealCostValue,
@@ -116,6 +117,7 @@ function CalcDetailModal({ calcDetail, onClose }) {
               [`응축된 라이언 코어 (${items.core}개)`, breakdown.core],
               [`빛나는 조화의 결정체 (${items.crystal}개)`, breakdown.crystal],
               ...(breakdown.recipeSealCost > 0 ? [[`레시피 인장 소모`, -breakdown.recipeSealCost]] : []),
+              ...(breakdown.voucherBoundCost > 0 ? [[`교환권 인장 소모 (${items.sealVoucher}×15개)`, -breakdown.voucherBoundCost]] : []),
             ], total: ['귀속 합계', totals.bound, '#fb923c'] },
             { title: '💰 교환 가능 가치 (Tradable)', color: '#38bdf8', rows: [
               ['순 골드 (던전 획득, 구매 미포함)', breakdown.grossPureGold ?? items.pureGold],
@@ -123,7 +125,7 @@ function CalcDetailModal({ calcDetail, onClose }) {
               ...(breakdown.recipeSpend > 0 ? [['  └ 특별상점 레시피/답례품 구매 지출', -breakdown.recipeSpend]] : []),
               [`무결점 라이언 코어 (${items.flawlessCore}개)`, breakdown.flawlessCore],
               [`무결점 조화의 결정체 (${items.flawlessCrystal}개)`, breakdown.flawlessCrystal],
-              [`순례의 인장(1회 교환 가능) 교환권 (${items.sealVoucher}개, ${items.useVoucherExchange ? '교환 O' : '교환 X'})`, breakdown.sealVoucher],
+              ...(breakdown.voucherTradableGain > 0 ? [[`교환권 → 교환인장 (${items.sealVoucher}×3개, ${items.useVoucherExchange ? '교환 O' : '교환 X'})`, breakdown.voucherTradableGain]] : []),
               [`순례의 인장(1회 교환 가능) 교환권 1개 상자 (${items.sealVoucherBox}개)`, breakdown.sealVoucherBox],
               [`순례의 인장(1회 교환 가능) (${items.tradableSeal}개)`, breakdown.tradableSeal],
               ...(breakdown.tokenProfit ? [['닳아버린 순례의 증표 판매 예정가 (미수령)', breakdown.tokenProfit]] : []),
@@ -422,8 +424,8 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       const res = await fetch('/api/auction', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, itemNames: [itemName] }) });
       const data = await res.json();
       if (data.success && data.data[itemName] !== undefined) {
-        const items = getCharForm(charId).customItems || [];
-        updateCharForm(charId, 'customItems', items.map(i => i.id === itemId ? { ...i, price: data.data[itemName] } : i));
+        const price = data.data[itemName];
+        updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === itemId ? { ...i, price } : i));
       }
     } catch (e) { console.error(e); }
     setFetchingItemId(null);
@@ -565,11 +567,11 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
               {(form.customItems || []).map(item => (
                 <div key={item.id} style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginBottom: '0.3rem' }}>
                   <input type="text" placeholder="아이템명" style={{ ...inp, flex: 1 }} value={item.name}
-                    onChange={e => { const items = form.customItems || []; updateCharForm(charId, 'customItems', items.map(i => i.id === item.id ? { ...i, name: e.target.value } : i)); }}
+                    onChange={e => { const val = e.target.value; const id = item.id; updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name: val } : i)); }}
                     onBlur={e => { if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id); }}
                   />
                   <input type="number" placeholder="수량" style={{ ...inp, width: '52px', flex: 'none' }} value={item.quantity}
-                    onChange={e => { const items = form.customItems || []; updateCharForm(charId, 'customItems', items.map(i => i.id === item.id ? { ...i, quantity: e.target.value } : i)); }}
+                    onChange={e => { const val = e.target.value; const id = item.id; updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, quantity: val } : i)); }}
                   />
                   {fetchingItemId === item.id ? <span style={{ fontSize: '0.65rem', color: '#fbbf24' }}>⏳</span> : null}
                   <button onClick={() => { const items = form.customItems || []; updateCharForm(charId, 'customItems', items.filter(i => i.id !== item.id)); }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0', flexShrink: 0 }}>×</button>
@@ -696,7 +698,10 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   }, [pilgrimageForm]);
 
   const getCharForm = (id) => pilgrimageForm[id] || EMPTY_CHAR_FORM();
-  const updateCharForm = (id, field, value) => setPilgrimageForm(prev => ({ ...prev, [id]: { ...(prev[id] || EMPTY_CHAR_FORM()), [field]: value } }));
+  const updateCharForm = (id, field, value) => setPilgrimageForm(prev => {
+    const existing = prev[id] || EMPTY_CHAR_FORM();
+    return { ...prev, [id]: { ...existing, [field]: typeof value === 'function' ? value(existing[field]) : value } };
+  });
   const togglePilgrimageChar = (id) => updateCharForm(id, 'selected', !getCharForm(id).selected);
 
   // ─── Document PiP ─────────────────────────────────────────────────────────────
@@ -903,7 +908,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     const clickDetail = hasLootData ? {
       charName: c.base.charName,
       items: { seal: Number(form.seal || 0), core: Number(form.condensedCore || 0), crystal: Number(form.crystal || 0), pureGold: Number(form.pureGold || 0), flawlessCore: Number(form.flawlessCore || 0), flawlessCrystal: Number(form.flawlessCrystal || 0), sealVoucher: Number(form.sealVoucher || 0), sealVoucherBox: Number(form.sealVoucherBox || 0), tradableSeal: Number(form.tradableSeal || 0), runs: v.runs, useVoucherExchange },
-      breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, sealVoucher: v.voucherProfitTotal, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, tokenCost: v.tokenCost, potionCost: v.potionCost, recipeSealCost: v.recipeSealCostValue, customTradable: v.customTradableValue, tokenProfit: v.tokenProfit, recipeProfit: v.recipeProfit, giftSoulCost: v.giftSoulCost, grossPureGold: v.grossPureGold, tokenSpend: v.tokenSpend, recipeSpend: v.recipeSpend },
+      breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, voucherTradableGain: v.voucherTradableGain, voucherBoundCost: v.voucherBoundCost, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, tokenCost: v.tokenCost, potionCost: v.potionCost, recipeSealCost: v.recipeSealCostValue, customTradable: v.customTradableValue, tokenProfit: v.tokenProfit, recipeProfit: v.recipeProfit, giftSoulCost: v.giftSoulCost, grossPureGold: v.grossPureGold, tokenSpend: v.tokenSpend, recipeSpend: v.recipeSpend },
       totals: { bound: v.finalBoundValue, tradable: v.finalTradableValue, consumed: v.totalConsumedValue },
       final: { includingBound: totalProfitIncl, excludingBound: profitExclBound }
     } : null;
