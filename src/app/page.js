@@ -334,6 +334,59 @@ export default function Home() {
     });
   };
 
+  const handleReconcileLogs = async () => {
+    if (!apiKey || characters.length === 0) return;
+    if (!window.confirm('현재 API 값과 성장일지 마지막 기록을 비교해 누락된 변경사항을 추가합니다. 계속할까요?')) return;
+    setIsRefreshing(true);
+    const newLogs = [];
+    const updatedList = await Promise.all(
+      characters.map(async (c) => {
+        const lastLog = [...logsRef.current]
+          .filter(l => l.charId === c.id)
+          .sort((a, b) => b.timestamp - a.timestamp)[0];
+        const base = lastLog?.afterSnapshot || c;
+        const res = await fetchCharacterData(c.base.server, c.base.charName, apiKey);
+        if (!res.success) return c;
+        if (res.base.fame < (base.base?.fame || 0)) return c;
+        let changed = false;
+        const logEntry = {
+          id: Date.now() + Math.random().toString(36).slice(2, 11),
+          timestamp: Date.now(),
+          charId: c.id, charName: c.base.charName, job: c.base.jobGrowName, server: c.base.server,
+          fameChange: null, equipChange: null, oathChange: null,
+          beforeSnapshot: JSON.parse(JSON.stringify(base)),
+          afterSnapshot: JSON.parse(JSON.stringify(res)),
+        };
+        if (base.base?.fame !== res.base.fame) { logEntry.fameChange = { old: base.base?.fame, new: res.base.fame }; changed = true; }
+        if (base.equipment?.points !== res.equipment.points || base.equipment?.setName !== res.equipment.setName) {
+          logEntry.equipChange = { old: base.equipment?.points, new: res.equipment.points, oldSet: base.equipment?.setName, newSet: res.equipment.setName };
+          changed = true;
+        }
+        if (base.oath?.points !== res.oath.points || base.oath?.setName !== res.oath.setName) {
+          logEntry.oathChange = { old: base.oath?.points, new: res.oath.points, oldSet: base.oath?.setName, newSet: res.oath.setName };
+          changed = true;
+        }
+        if (changed) newLogs.push(logEntry);
+        const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
+        return { ...res, manual: latestManual };
+      })
+    );
+    setCharacters(updatedList);
+    localStorage.setItem('DNF_CHARACTERS', JSON.stringify(updatedList));
+    if (newLogs.length > 0) {
+      setHistoryLogs(prev => {
+        const merged = [...newLogs, ...prev].slice(0, 1000);
+        localStorage.setItem('DNF_HISTORY', JSON.stringify(merged));
+        if (apiKey) syncUpCloudData(apiKey, updatedList, merged, optsRef.current, mercRef.current);
+        return merged;
+      });
+      alert(`✅ ${newLogs.length}건의 누락 기록이 추가되었습니다.`);
+    } else {
+      alert('변경사항이 없습니다. 성장일지 마지막 기록과 현재 값이 동일합니다.');
+    }
+    setIsRefreshing(false);
+  };
+
   const handleSaveMerc = (level, target) => {
     setMercLevel(level);
     setMercNextLevelTarget(target);
@@ -391,6 +444,7 @@ export default function Home() {
           <button onClick={handleManualCloudSync} disabled={isCloudSyncing} style={{ background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.3)', color: '#38bdf8' }}>
             {isCloudSyncing ? '☁️ 동기화 중...' : '☁️ 수동 클라우드 백업'}
           </button>
+          <button onClick={handleReconcileLogs} disabled={isRefreshing || !apiKey} style={{ background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>📋 기록 보정</button>
           <button onClick={openOptionsModal}>🛠️ 옵션 편집</button>
           <button onClick={() => setShowSettings(true)}>⚙️ API 설정</button>
         </div>
