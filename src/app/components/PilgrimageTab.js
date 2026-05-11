@@ -218,6 +218,47 @@ const LOOT_FIELDS_MANUAL = [
 const PIP_NORMAL = { w: 336, h: 947, x: 1743, y: 0 };
 const PIP_CROP   = { w: 1280, h: 820 };
 
+// PiP 커스텀 아이템 한 행 — 로컬 state로 입력 관리해 외부 re-render와 독립
+function CustomItemRow({ item, charId, updateCharForm, fetchCustomItemPrice, fetchingItemId }) {
+  const [localName, setLocalName] = React.useState(item.name);
+  const [localQty, setLocalQty] = React.useState(item.quantity);
+  const nameFocused = React.useRef(false);
+  const qtyFocused = React.useRef(false);
+
+  React.useEffect(() => { if (!nameFocused.current) setLocalName(item.name); }, [item.name]);
+  React.useEffect(() => { if (!qtyFocused.current) setLocalQty(item.quantity); }, [item.quantity]);
+
+  const inp = { padding: '0.25rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '3px', fontSize: '0.7rem' };
+
+  return (
+    <div style={{ marginBottom: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.4rem', borderRadius: '4px' }}>
+      <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginBottom: '0.25rem' }}>
+        <input type="text" placeholder="아이템명" style={{ ...inp, flex: 1 }} value={localName}
+          onFocus={() => { nameFocused.current = true; }}
+          onChange={e => { const val = e.target.value; const id = item.id; setLocalName(val); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name: val } : i)); }}
+          onBlur={e => { nameFocused.current = false; if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id); }}
+        />
+        <input type="number" placeholder="수량" style={{ ...inp, width: '52px', flex: 'none' }} value={localQty}
+          onFocus={() => { qtyFocused.current = true; }}
+          onChange={e => { const val = e.target.value; const id = item.id; setLocalQty(val); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, quantity: val } : i)); }}
+          onBlur={() => { qtyFocused.current = false; }}
+        />
+        {fetchingItemId === item.id ? <span style={{ fontSize: '0.65rem', color: '#fbbf24' }}>⏳</span> : null}
+        <button onClick={() => updateCharForm(charId, 'customItems', cur => (cur || []).filter(i => i.id !== item.id))} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0', flexShrink: 0 }}>×</button>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#94a3b8' }}>
+        {fetchingItemId === item.id
+          ? <span style={{ color: '#fbbf24' }}>⏳ 조회 중...</span>
+          : <span>단가: <span style={{ color: Number(item.price || 0) > 0 ? '#fbbf24' : '#475569', fontWeight: 'bold' }}>{Number(item.price || 0) > 0 ? `${Number(item.price).toLocaleString()} G` : '미조회'}</span></span>
+        }
+        {localName && Number(localQty || 0) > 0 && Number(item.price || 0) > 0 && (
+          <span style={{ color: '#4ade80' }}>= {(Number(localQty) * Number(item.price)).toLocaleString()} G</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pipWindow }) {
   const [activeCharId, setActiveCharId] = useState(selectedChars[selectedChars.length - 1]?.id || null);
   const [tab, setTab] = useState('shop');
@@ -562,20 +603,10 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
             <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.55rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '0.65rem', color: '#60a5fa', fontWeight: 'bold' }}>커스텀 추가 항목</span>
-                <button onClick={() => { const items = form.customItems || []; updateCharForm(charId, 'customItems', [...items, { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: '', quantity: '', price: 0 }]); }} style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: 'rgba(96,165,250,0.18)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: '3px', cursor: 'pointer' }}>+ 추가</button>
+                <button onClick={() => updateCharForm(charId, 'customItems', cur => [...(cur || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: '', quantity: '', price: 0 }])} style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: 'rgba(96,165,250,0.18)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: '3px', cursor: 'pointer' }}>+ 추가</button>
               </div>
               {(form.customItems || []).map(item => (
-                <div key={item.id} style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginBottom: '0.3rem' }}>
-                  <input type="text" placeholder="아이템명" style={{ ...inp, flex: 1 }} value={item.name}
-                    onChange={e => { const val = e.target.value; const id = item.id; updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name: val } : i)); }}
-                    onBlur={e => { if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id); }}
-                  />
-                  <input type="number" placeholder="수량" style={{ ...inp, width: '52px', flex: 'none' }} value={item.quantity}
-                    onChange={e => { const val = e.target.value; const id = item.id; updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, quantity: val } : i)); }}
-                  />
-                  {fetchingItemId === item.id ? <span style={{ fontSize: '0.65rem', color: '#fbbf24' }}>⏳</span> : null}
-                  <button onClick={() => { const items = form.customItems || []; updateCharForm(charId, 'customItems', items.filter(i => i.id !== item.id)); }} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0', flexShrink: 0 }}>×</button>
-                </div>
+                <CustomItemRow key={item.id} item={item} charId={charId} updateCharForm={updateCharForm} fetchCustomItemPrice={fetchCustomItemPrice} fetchingItemId={fetchingItemId} />
               ))}
               {(form.customItems || []).length === 0 && <div style={{ fontSize: '0.65rem', color: '#475569', textAlign: 'center' }}>없음</div>}
             </div>
