@@ -243,7 +243,8 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                             {(() => {
                               const score = c.manual?.dundamScore;
                               const scoreAt = c.manual?.dundamUpdatedAt;
-                              const needsUpdate = score && scoreAt && c.refreshedAt && c.refreshedAt > scoreAt;
+                              const fameAtEntry = c.manual?.dundamFameAtEntry;
+                              const needsUpdate = score && fameAtEntry !== undefined && c.base.fame > fameAtEntry;
                               if (editingDundamId === c.id) {
                                 return (
                                   <input
@@ -254,7 +255,7 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                     onBlur={() => {
                                       const raw = Number(editingDundamValue.replace(/,/g, ''));
                                       if (!isNaN(raw) && raw > 0) {
-                                        onSaveManual(c.id, { ...c.manual, dundamScore: raw, dundamUpdatedAt: Date.now() });
+                                        onSaveManual(c.id, { ...c.manual, dundamScore: raw, dundamUpdatedAt: Date.now(), dundamFameAtEntry: c.base.fame });
                                       }
                                       setEditingDundamId(null);
                                       setEditingDundamValue('');
@@ -263,7 +264,7 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                       if (e.key === 'Enter') e.target.blur();
                                       if (e.key === 'Escape') { setEditingDundamId(null); setEditingDundamValue(''); }
                                     }}
-                                    style={{ width: '100px', padding: '0.2rem 0.3rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(56,189,248,0.5)', color: '#fff', borderRadius: '4px', textAlign: 'center' }}
+                                    style={{ width: '100px', padding: '0.2rem 0.3rem', fontSize: '0.85rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(56,189,248,0.5)', color: '#fff', borderRadius: '4px', textAlign: 'center' }}
                                   />
                                 );
                               }
@@ -276,22 +277,22 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                   >
                                     {score ? (
                                       <>
-                                        <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: needsUpdate ? '#fbbf24' : '#e2e8f0' }}>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: needsUpdate ? '#fbbf24' : '#e2e8f0' }}>
                                           {c.manual?.role === 'buffer' ? score.toLocaleString() : formatDundamScore(score)}
                                         </div>
                                         {needsUpdate && (
-                                          <div style={{ fontSize: '0.6rem', color: '#fbbf24', lineHeight: 1.2 }}>⚠️ 갱신 필요</div>
+                                          <div style={{ fontSize: '0.65rem', color: '#fbbf24', lineHeight: 1.2 }}>⚠️ 갱신 필요</div>
                                         )}
                                         {scoreAt && (
-                                          <div style={{ fontSize: '0.58rem', color: '#475569', marginTop: '1px' }}>{formatTimestamp(scoreAt)}</div>
+                                          <div style={{ fontSize: '0.62rem', color: '#475569', marginTop: '1px' }}>{formatTimestamp(scoreAt)}</div>
                                         )}
                                       </>
                                     ) : (
-                                      <span style={{ fontSize: '0.65rem', color: '#334155' }}>클릭 입력</span>
+                                      <span style={{ fontSize: '0.7rem', color: '#334155' }}>클릭 입력</span>
                                     )}
                                   </div>
                                   {c.charId && (
-                                    <a href={`https://dundam.xyz/character?server=${c.base.server}&key=${c.charId}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '0.6rem', color: '#38bdf8', textDecoration: 'none' }}>조회 🔗</a>
+                                    <a href={`https://dundam.xyz/character?server=${c.base.server}&key=${c.charId}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '0.65rem', color: '#38bdf8', textDecoration: 'none' }}>조회 🔗</a>
                                   )}
                                 </div>
                               );

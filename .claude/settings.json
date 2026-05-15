@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+      "PowerShell(cd c:\\Users\\Steve\\my-dnf; git add *)",
+      "PowerShell(cd c:\\Users\\Steve\\my-dnf; git commit *)",
+      "PowerShell(cd c:\\Users\\Steve\\my-dnf; git push)",
+      "PowerShell(cd c:\\Users\\Steve\\my-dnf; git push *)",
+      "PowerShell(cd c:\\Users\\Steve\\my-dnf; git diff *)",
+      "PowerShell(cd c:\\Users\\Steve\\my-dnf; git status)",
+      "PowerShell(cd c:\\Users\\Steve\\my-dnf; git log *)"
+    ]
+  }
+}
