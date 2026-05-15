@@ -249,7 +249,7 @@ export default function Home() {
     if (apiKey) syncUpCloudData(apiKey, newList, historyLogs, customOptions, mercRef.current, true);
   };
 
-  const handleRefreshAll = async (charsToRefresh = characters, overrideKey = null) => {
+  const handleRefreshAll = async (charsToRefresh = characters, overrideKey = null, force = false) => {
     const targetChars = Array.isArray(charsToRefresh) ? charsToRefresh : characters;
     const keyToUse = overrideKey || apiKey;
     if (targetChars.length === 0 || !keyToUse) return;
@@ -260,7 +260,7 @@ export default function Home() {
       targetChars.map(async (c) => {
         const res = await fetchCharacterData(c.base.server, c.base.charName, keyToUse);
         if (res.success) {
-          if (res.base.fame < (c.base.fame || 0)) return c;
+          if (!force && res.base.fame < (c.base.fame || 0)) return c;
           let changed = false;
           let logEntry = {
             id: Date.now() + Math.random().toString(36).slice(2, 11),
@@ -471,6 +471,7 @@ export default function Home() {
           customOptions={customOptions}
           onAdd={handleAdd}
           onRefreshAll={handleRefreshAll}
+          onForceRefreshAll={() => handleRefreshAll(characters, null, true)}
           onDelete={handleDelete}
           onSaveManual={handleSaveManual}
         />

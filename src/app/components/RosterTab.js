@@ -94,7 +94,7 @@ function formatTimestamp(ts) {
 
 // ─── RosterOverview ──────────────────────────────────────────────────────────
 
-function RosterOverview({ characters, isAdding, isRefreshing, server, charName, setServer, setCharName, onAdd, onRefreshAll, onDelete, onOpenManual, onSaveManual }) {
+function RosterOverview({ characters, isAdding, isRefreshing, server, charName, setServer, setCharName, onAdd, onRefreshAll, onForceRefreshAll, onDelete, onSaveManual }) {
   const [editingDundamId, setEditingDundamId] = React.useState(null);
   const [editingDundamValue, setEditingDundamValue] = React.useState('');
   const groups = buildGroups(characters);
@@ -111,6 +111,9 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
             <button type="button" onClick={() => onRefreshAll()} disabled={isRefreshing || characters.length === 0} style={{ background: '#475569' }}>
               {isRefreshing ? <div className="loader" /> : "🔄 전체 갱신"}
+            </button>
+            <button type="button" onClick={() => onForceRefreshAll()} disabled={isRefreshing || characters.length === 0} style={{ background: '#7c3aed' }} title="명성 감소 여부 무시하고 API 최신값으로 강제 덮어쓰기">
+              {isRefreshing ? <div className="loader" /> : "⚡ 강제 갱신"}
             </button>
           </div>
         </form>
@@ -418,7 +421,7 @@ function RosterItems({ characters, onOpenManual }) {
 
 export default function RosterTab({
   characters, isAdding, isRefreshing, server, charName, setServer, setCharName,
-  customOptions, onAdd, onRefreshAll, onDelete, onSaveManual
+  customOptions, onAdd, onRefreshAll, onForceRefreshAll, onDelete, onSaveManual
 }) {
   const [subTab, setSubTab] = useState('overview');
   const [manualChar, setManualChar] = useState(null);
@@ -456,7 +459,7 @@ export default function RosterTab({
         <RosterOverview
           characters={characters} isAdding={isAdding} isRefreshing={isRefreshing}
           server={server} charName={charName} setServer={setServer} setCharName={setCharName}
-          onAdd={onAdd} onRefreshAll={onRefreshAll} onDelete={onDelete} onOpenManual={openManualModal}
+          onAdd={onAdd} onRefreshAll={onRefreshAll} onForceRefreshAll={onForceRefreshAll} onDelete={onDelete}
           onSaveManual={onSaveManual}
         />
       )}
