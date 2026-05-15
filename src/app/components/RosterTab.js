@@ -79,11 +79,13 @@ function ManualModal({ char, form, setForm, customOptions, onSave, onClose }) {
 function formatDundamScore(n) {
   if (!n || n <= 0) return '';
   const rounded = Math.round(n / 100_000_000) * 100_000_000;
+  if (rounded === 0) return n.toLocaleString();
   const jo = Math.floor(rounded / 1_000_000_000_000);
   const eok = Math.floor((rounded % 1_000_000_000_000) / 100_000_000);
   if (jo > 0 && eok > 0) return `${jo}조 ${eok}억`;
   if (jo > 0) return `${jo}조`;
-  return `${eok}억`;
+  if (eok > 0) return `${eok}억`;
+  return n.toLocaleString();
 }
 
 function formatTimestamp(ts) {
