@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { SERVER_LIST, ADVANCED_DUNGEONS, RAIDS } from '../lib/constants';
-import { getRole, getTierClass, buildGroups, getSortedCharacters } from '../lib/gameUtils';
+import { getTierClass, buildGroups } from '../lib/gameUtils';
 
 // ─── ManualModal ────────────────────────────────────────────────────────────
 
@@ -277,7 +277,7 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                     {score ? (
                                       <>
                                         <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: needsUpdate ? '#fbbf24' : '#e2e8f0' }}>
-                                          {formatDundamScore(score)}
+                                          {c.manual?.role === 'buffer' ? score.toLocaleString() : formatDundamScore(score)}
                                         </div>
                                         {needsUpdate && (
                                           <div style={{ fontSize: '0.6rem', color: '#fbbf24', lineHeight: 1.2 }}>⚠️ 갱신 필요</div>
