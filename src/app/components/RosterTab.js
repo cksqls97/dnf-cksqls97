@@ -268,25 +268,30 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                 );
                               }
                               return (
-                                <div
-                                  onClick={() => { setEditingDundamId(c.id); setEditingDundamValue(score ? score.toLocaleString() : ''); }}
-                                  style={{ cursor: 'pointer', padding: '0.2rem' }}
-                                  title="클릭하여 던담 수치 입력"
-                                >
-                                  {score ? (
-                                    <>
-                                      <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: needsUpdate ? '#fbbf24' : '#e2e8f0' }}>
-                                        {formatDundamScore(score)}
-                                      </div>
-                                      {needsUpdate && (
-                                        <div style={{ fontSize: '0.6rem', color: '#fbbf24', lineHeight: 1.2 }}>⚠️ 갱신 필요</div>
-                                      )}
-                                      {scoreAt && (
-                                        <div style={{ fontSize: '0.58rem', color: '#475569', marginTop: '1px' }}>{formatTimestamp(scoreAt)}</div>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <span style={{ fontSize: '0.65rem', color: '#334155' }}>클릭 입력</span>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                  <div
+                                    onClick={() => { setEditingDundamId(c.id); setEditingDundamValue(score ? score.toLocaleString() : ''); }}
+                                    style={{ cursor: 'pointer', padding: '0.1rem 0.2rem' }}
+                                    title="클릭하여 던담 수치 입력"
+                                  >
+                                    {score ? (
+                                      <>
+                                        <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: needsUpdate ? '#fbbf24' : '#e2e8f0' }}>
+                                          {formatDundamScore(score)}
+                                        </div>
+                                        {needsUpdate && (
+                                          <div style={{ fontSize: '0.6rem', color: '#fbbf24', lineHeight: 1.2 }}>⚠️ 갱신 필요</div>
+                                        )}
+                                        {scoreAt && (
+                                          <div style={{ fontSize: '0.58rem', color: '#475569', marginTop: '1px' }}>{formatTimestamp(scoreAt)}</div>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <span style={{ fontSize: '0.65rem', color: '#334155' }}>클릭 입력</span>
+                                    )}
+                                  </div>
+                                  {c.charId && (
+                                    <a href={`https://dundam.xyz/character?server=${c.base.server}&key=${c.charId}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '0.6rem', color: '#38bdf8', textDecoration: 'none' }}>조회 🔗</a>
                                   )}
                                 </div>
                               );
