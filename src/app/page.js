@@ -239,6 +239,7 @@ export default function Home() {
     const bufferKeywords = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
     const jobName = data.base?.jobGrowName || data.base?.jobName || '';
     data.manual = { role: bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer' };
+    data.refreshedAt = Date.now();
 
     if (characters.some(c => c.id === data.id)) { alert("이미 등록된 캐릭터입니다."); return; }
     const newList = [...characters, data];
@@ -280,7 +281,7 @@ export default function Home() {
           }
           if (changed) newLogs.push(logEntry);
           const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
-          return { ...res, manual: latestManual };
+          return { ...res, manual: latestManual, refreshedAt: Date.now() };
         }
         return c;
       })
@@ -368,7 +369,7 @@ export default function Home() {
         }
         if (changed) newLogs.push(logEntry);
         const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
-        return { ...res, manual: latestManual };
+        return { ...res, manual: latestManual, refreshedAt: Date.now() };
       })
     );
     setCharacters(updatedList);

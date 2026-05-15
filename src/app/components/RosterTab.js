@@ -74,9 +74,29 @@ function ManualModal({ char, form, setForm, customOptions, onSave, onClose }) {
   );
 }
 
+// ─── 던담 수치 포맷 헬퍼 ──────────────────────────────────────────────────────
+
+function formatDundamScore(n) {
+  if (!n || n <= 0) return '';
+  const rounded = Math.round(n / 100_000_000) * 100_000_000;
+  const jo = Math.floor(rounded / 1_000_000_000_000);
+  const eok = Math.floor((rounded % 1_000_000_000_000) / 100_000_000);
+  if (jo > 0 && eok > 0) return `${jo}조 ${eok}억`;
+  if (jo > 0) return `${jo}조`;
+  return `${eok}억`;
+}
+
+function formatTimestamp(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 // ─── RosterOverview ──────────────────────────────────────────────────────────
 
-function RosterOverview({ characters, isAdding, isRefreshing, server, charName, setServer, setCharName, onAdd, onRefreshAll, onDelete, onOpenManual }) {
+function RosterOverview({ characters, isAdding, isRefreshing, server, charName, setServer, setCharName, onAdd, onRefreshAll, onDelete, onOpenManual, onSaveManual }) {
+  const [editingDundamId, setEditingDundamId] = React.useState(null);
+  const [editingDundamValue, setEditingDundamValue] = React.useState('');
   const groups = buildGroups(characters);
 
   return (
@@ -108,15 +128,15 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                   <thead>
                     <tr>
                       <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
-                      <th style={{ width: '8%', textAlign: 'center' }}>직업</th>
-                      <th style={{ width: '16%', textAlign: 'center' }}>캐릭터명</th>
+                      <th style={{ width: '7%', textAlign: 'center' }}>직업</th>
+                      <th style={{ width: '14%', textAlign: 'center' }}>캐릭터명</th>
                       <th style={{ width: '6%', textAlign: 'center' }}>명성</th>
                       <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
                       <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
                       <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
                       <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
                       <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
-                      <th style={{ width: '7%', textAlign: 'center' }}>던담</th>
+                      <th style={{ width: '10%', textAlign: 'center' }}>던담</th>
                       <th style={{ width: '7%', textAlign: 'center' }}>관리</th>
                     </tr>
                   </thead>
@@ -216,10 +236,58 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                               {c.oath.gradeDesc} ({c.oath.points})
                             </div>
                           </td>
-                          <td data-label="던담" style={{ textAlign: 'center' }}>
-                            {c.charId ? (
-                              <a href={`https://dundam.xyz/character?server=${c.base.server}&key=${c.charId}`} target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', textDecoration: 'none', fontWeight: 'bold' }}>조회 🔗</a>
-                            ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                          <td data-label="던담" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                            {(() => {
+                              const score = c.manual?.dundamScore;
+                              const scoreAt = c.manual?.dundamUpdatedAt;
+                              const needsUpdate = score && scoreAt && c.refreshedAt && c.refreshedAt > scoreAt;
+                              if (editingDundamId === c.id) {
+                                return (
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    value={editingDundamValue}
+                                    onChange={e => setEditingDundamValue(e.target.value)}
+                                    onBlur={() => {
+                                      const raw = Number(editingDundamValue.replace(/,/g, ''));
+                                      if (!isNaN(raw) && raw > 0) {
+                                        onSaveManual(c.id, { ...c.manual, dundamScore: raw, dundamUpdatedAt: Date.now() });
+                                      }
+                                      setEditingDundamId(null);
+                                      setEditingDundamValue('');
+                                    }}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') e.target.blur();
+                                      if (e.key === 'Escape') { setEditingDundamId(null); setEditingDundamValue(''); }
+                                    }}
+                                    style={{ width: '100px', padding: '0.2rem 0.3rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(56,189,248,0.5)', color: '#fff', borderRadius: '4px', textAlign: 'center' }}
+                                  />
+                                );
+                              }
+                              return (
+                                <div
+                                  onClick={() => { setEditingDundamId(c.id); setEditingDundamValue(score ? score.toLocaleString() : ''); }}
+                                  style={{ cursor: 'pointer', padding: '0.2rem' }}
+                                  title="클릭하여 던담 수치 입력"
+                                >
+                                  {score ? (
+                                    <>
+                                      <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: needsUpdate ? '#fbbf24' : '#e2e8f0' }}>
+                                        {formatDundamScore(score)}
+                                      </div>
+                                      {needsUpdate && (
+                                        <div style={{ fontSize: '0.6rem', color: '#fbbf24', lineHeight: 1.2 }}>⚠️ 갱신 필요</div>
+                                      )}
+                                      {scoreAt && (
+                                        <div style={{ fontSize: '0.58rem', color: '#475569', marginTop: '1px' }}>{formatTimestamp(scoreAt)}</div>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <span style={{ fontSize: '0.65rem', color: '#334155' }}>클릭 입력</span>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td data-label="관리" style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
@@ -389,6 +457,7 @@ export default function RosterTab({
           characters={characters} isAdding={isAdding} isRefreshing={isRefreshing}
           server={server} charName={charName} setServer={setServer} setCharName={setCharName}
           onAdd={onAdd} onRefreshAll={onRefreshAll} onDelete={onDelete} onOpenManual={openManualModal}
+          onSaveManual={onSaveManual}
         />
       )}
       {subTab === 'items' && (
