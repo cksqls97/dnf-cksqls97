@@ -281,7 +281,11 @@ export default function Home() {
           }
           if (changed) newLogs.push(logEntry);
           const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
-          return { ...res, manual: latestManual, refreshedAt: Date.now() };
+          // dundamFameAtEntry 미기입 구형 데이터 자동 보정: 이전 명성을 기준점으로 설정
+          const patchedManual = (latestManual?.dundamScore && latestManual?.dundamFameAtEntry === undefined)
+            ? { ...latestManual, dundamFameAtEntry: c.base.fame }
+            : latestManual;
+          return { ...res, manual: patchedManual, refreshedAt: Date.now() };
         }
         return c;
       })
