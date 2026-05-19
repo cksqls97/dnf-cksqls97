@@ -223,7 +223,7 @@ const MATERIAL_FIELDS = [
   ['flawlessCrystal', '무결점\n결정체'],
 ];
 const MATERIAL_KEYS = MATERIAL_FIELDS.map(([k]) => k);
-const EMPTY_SNAP = () => ({ goldByChar: {}, ...Object.fromEntries(MATERIAL_KEYS.map(k => [k, ''])) });
+const EMPTY_SNAP = () => ({ gold: '', ...Object.fromEntries(MATERIAL_KEYS.map(k => [k, ''])) });
 
 const PIP_NORMAL = { w: 336, h: 947, x: 1743, y: 0 };
 
@@ -470,6 +470,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
   const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
   const [calcDetail, setCalcDetail] = useState(null);
+  const [saveResult, setSaveResult] = useState(null);
   const [isPipOpen, setIsPipOpen] = useState(false);
   const pipWindowRef = useRef(null);
   const pipRootRef = useRef(null);
@@ -515,7 +516,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     const ratio = totalRuns > 0 ? charRuns / totalRuns : (n > 0 ? 1 / n : 0);
     return {
       ...form,
-      pureGold: String(Math.max(0, Number(snapAfter.goldByChar?.[charId] || 0) - Number(snapBefore.goldByChar?.[charId] || 0))),
+      pureGold: String(Math.round(Math.max(0, Number(snapAfter.gold || 0) - Number(snapBefore.gold || 0)) * ratio)),
       ...Object.fromEntries(MATERIAL_KEYS.map(k => [k, String(Math.round(Math.max(0, Number(snapAfter[k] || 0) - Number(snapBefore[k] || 0)) * ratio))])),
     };
   };
@@ -687,6 +688,17 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
     onSavePilgrimage(newRecord);
 
+    setSaveResult({
+      count: recordDetails.length,
+      totalBound: totalBound,
+      totalTradable: totalTradable,
+      totalConsumed: totalConsumed,
+      totalProfit: totalBound + totalTradable - totalConsumed,
+      profitExclBound: totalTradable - totalConsumed,
+      goldDelta: Math.max(0, Number(snapAfter.gold || 0) - Number(snapBefore.gold || 0)),
+      materialDeltas: Object.fromEntries(MATERIAL_KEYS.map(k => [k, Math.max(0, Number(snapAfter[k] || 0) - Number(snapBefore[k] || 0))])),
+    });
+
     const resetForm = { ...pilgrimageForm };
     selectedIds.forEach(id => { resetForm[id] = EMPTY_CHAR_FORM(); });
     setPilgrimageForm(resetForm);
@@ -707,8 +719,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
 
   const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
 
-  let countWithData = 0, sumFatigue = 0, sumRuns = 0, sumPureGold = 0, sumSeal = 0, sumCondensedCore = 0, sumCrystal = 0;
-  let sumFlawlessCore = 0, sumFlawlessCrystal = 0, sumSealVoucher = 0, sumTradableSeal = 0, sumSealVoucherBox = 0;
+  let countWithData = 0, sumFatigue = 0, sumRuns = 0;
   let sumTokens = 0, sumPotions = 0, sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0, sumProfitExclBound = 0;
 
   const rows = selectedChars.map((c, idx) => {
@@ -725,12 +736,8 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     const profitExclBound = v.finalTradableValue - v.totalConsumedValue;
 
     if (hasLootData) {
-      countWithData++; sumFatigue += Number(form.startFatigue || 0); sumRuns += v.runs;
-      sumPureGold += Number(form.pureGold || 0); sumSeal += Number(form.seal || 0); sumCondensedCore += Number(form.condensedCore || 0);
-      sumCrystal += Number(form.crystal || 0); sumFlawlessCore += Number(form.flawlessCore || 0);
-      sumFlawlessCrystal += Number(form.flawlessCrystal || 0); sumSealVoucher += Number(form.sealVoucher || 0);
-      sumTradableSeal += Number(form.tradableSeal || 0); sumSealVoucherBox += Number(form.sealVoucherBox || 0);
-      sumTokens += v.runs; sumPotions += (form.usePotion ? 1 : 0);
+      countWithData++; sumFatigue += Number(rawForm.startFatigue || 0); sumRuns += v.runs;
+      sumTokens += v.runs; sumPotions += (rawForm.usePotion ? 1 : 0);
       sumBoundValue += v.finalBoundValue; sumTradableValue += v.finalTradableValue;
       sumTotalProfit += totalProfitIncl; sumProfitExclBound += profitExclBound;
     }
@@ -750,15 +757,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         </td>
         <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={rawForm.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
         <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{v.runs}</td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{Number(form.pureGold || 0) > 0 ? Number(form.pureGold).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal > 0 ? Number(form.seal).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal > 0 ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucher > 0 ? Number(form.sealVoucher).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem' }}>{form.sealVoucherBox > 0 ? Number(form.sealVoucherBox).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.condensedCore > 0 ? Number(form.condensedCore).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCore > 0 ? Number(form.flawlessCore).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{form.crystal > 0 ? Number(form.crystal).toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal > 0 ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{v.runs > 0 ? v.runs : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>
           <button onClick={() => updateCharForm(c.id, 'usePotion', !rawForm.usePotion)} style={{ padding: '0.1rem 0.3rem', fontSize: '0.65rem', background: rawForm.usePotion ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.05)', border: rawForm.usePotion ? '1px solid rgba(248,113,113,0.4)' : '1px solid rgba(255,255,255,0.1)', color: rawForm.usePotion ? '#f87171' : '#64748b', borderRadius: '3px', cursor: 'pointer' }}>
@@ -869,26 +867,19 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                 </tbody>
               </table>
             </div>
-            {/* 캐릭별 골드 */}
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '0.65rem', color: '#94a3b8', paddingTop: '0.55rem', flexShrink: 0 }}>💰 캐릭별 골드</span>
-              {selectedChars.map(c => {
-                const before = Number(snapBefore.goldByChar?.[c.id] || 0);
-                const after = Number(snapAfter.goldByChar?.[c.id] || 0);
-                const delta = after - before;
-                return (
-                  <div key={c.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.6rem', color: '#38bdf8', fontWeight: 'bold' }}>{c.base.charName}</span>
-                    <div style={{ display: 'flex', gap: '0.2rem', alignItems: 'center' }}>
-                      <input type="number" placeholder="초기" value={snapBefore.goldByChar?.[c.id] || ''} onChange={e => setSnapBefore(p => ({ ...p, goldByChar: { ...p.goldByChar, [c.id]: e.target.value } }))} style={{ ...snapInp, width: '72px' }} />
-                      <span style={{ color: '#475569', fontSize: '0.65rem' }}>→</span>
-                      <input type="number" placeholder="최종" value={snapAfter.goldByChar?.[c.id] || ''} onChange={e => setSnapAfter(p => ({ ...p, goldByChar: { ...p.goldByChar, [c.id]: e.target.value } }))} style={{ ...snapInp, width: '72px' }} />
-                    </div>
-                    <span style={{ fontSize: '0.65rem', color: delta > 0 ? '#4ade80' : '#475569', fontWeight: 'bold' }}>{delta > 0 ? `+${delta.toLocaleString()}` : '-'}</span>
-                  </div>
-                );
-              })}
-            </div>
+            {/* 전체 골드 */}
+            {(() => {
+              const goldDelta = Math.max(0, Number(snapAfter.gold || 0) - Number(snapBefore.gold || 0));
+              return (
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.65rem', color: '#94a3b8', flexShrink: 0 }}>💰 골드 (전체 합산)</span>
+                  <input type="number" placeholder="초기" value={snapBefore.gold} onChange={e => setSnapBefore(p => ({ ...p, gold: e.target.value }))} style={{ ...snapInp, width: '90px' }} />
+                  <span style={{ color: '#475569', fontSize: '0.65rem' }}>→</span>
+                  <input type="number" placeholder="최종" value={snapAfter.gold} onChange={e => setSnapAfter(p => ({ ...p, gold: e.target.value }))} style={{ ...snapInp, width: '90px' }} />
+                  <span style={{ fontSize: '0.7rem', color: goldDelta > 0 ? '#4ade80' : '#475569', fontWeight: 'bold' }}>{goldDelta > 0 ? `+${goldDelta.toLocaleString()}` : '-'}</span>
+                </div>
+              );
+            })()}
           </div>
         );
       })()}
@@ -900,15 +891,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
             <col style={{ minWidth: '72px' }} />{/* 캐릭터 */}
             <col style={{ minWidth: '52px' }} />{/* 피로도 */}
             <col style={{ minWidth: '32px' }} />{/* 판수 */}
-            <col style={{ minWidth: '72px' }} />{/* 순골드 */}
-            <col style={{ minWidth: '28px' }} />{/* 인장 */}
-            <col style={{ minWidth: '32px' }} />{/* 교환인장 */}
-            <col style={{ minWidth: '32px' }} />{/* 교환권 */}
-            <col style={{ minWidth: '42px' }} />{/* 교환권상자 */}
-            <col style={{ minWidth: '28px' }} />{/* 응축코어 */}
-            <col style={{ minWidth: '28px' }} />{/* 무결점코어 */}
-            <col style={{ minWidth: '32px' }} />{/* 빛결정 */}
-            <col style={{ minWidth: '32px' }} />{/* 무결점결정 */}
             <col style={{ minWidth: '28px' }} />{/* 증표 */}
             <col style={{ minWidth: '40px' }} />{/* 포션 */}
             <col style={{ minWidth: '76px' }} />{/* 특별상점 */}
@@ -919,22 +901,15 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
           </colgroup>
           <thead>
             <tr style={{ background: 'rgba(255,255,255,0.05)', fontSize: '0.7rem' }}>
-              <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>캐릭터</th>
-              <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>시작 피로도</th>
-              <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
-              <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>획득 재화 (스냅샷 분배)</th>
+              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>캐릭터</th>
+              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>시작 피로도</th>
+              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
               <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>소모 재화</th>
-              <th colSpan="1" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점</th>
+              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점</th>
               <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가치 산출 (골드)</th>
             </tr>
             <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem', lineHeight: '1.2' }}>
-              {['순 골드', '인장', '교환 인장', '교환권', '교환권 상자'].map((h, i) => (
-                <th key={i} style={{ padding: '0.2rem 0.1rem', ...(i === 0 ? { borderLeft: '1px solid rgba(255,255,255,0.1)' } : {}), fontSize: '0.7rem' }}>{h}</th>
-              ))}
-              <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>응축<br />코어</th>
-              <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점<br />코어</th>
-              <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>빛나는<br />결정체</th>
-              <th style={{ padding: '0.2rem 0.1rem', fontSize: '0.7rem' }}>무결점<br />결정체</th>
+              <th colSpan="3" />
               {['증표', '포션'].map((h, i) => (
                 <th key={h} style={{ padding: '0.2rem 0.1rem', ...(i === 0 ? { borderLeft: '1px solid rgba(255,255,255,0.1)' } : {}), color: '#fca5a5', fontSize: '0.7rem' }}>{h}</th>
               ))}
@@ -956,15 +931,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                   <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>총합계 ({countWithData})</td>
                   <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>{sumFatigue > 0 ? sumFatigue : '-'}</td>
                   <td style={{ padding: '0.5rem', color: '#fbbf24' }}>{sumRuns > 0 ? sumRuns : '-'}</td>
-                  <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem' }}>{sumSeal > 0 ? sumSeal.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem' }}>{sumTradableSeal > 0 ? sumTradableSeal.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem' }}>{sumSealVoucher > 0 ? sumSealVoucher.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem' }}>{sumSealVoucherBox > 0 ? sumSealVoucherBox.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumCondensedCore > 0 ? sumCondensedCore.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem' }}>{sumFlawlessCore > 0 ? sumFlawlessCore.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumCrystal > 0 ? sumCrystal.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem' }}>{sumFlawlessCrystal > 0 ? sumFlawlessCrystal.toLocaleString() : '-'}</td>
                   <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
                   <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
                   <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
@@ -972,27 +938,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                   <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
                   <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : sumTotalProfit < 0 ? '#f87171' : '#cbd5e1' }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
                   <td style={{ padding: '0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : sumProfitExclBound < 0 ? '#f87171' : '#cbd5e1' }}>{sumProfitExclBound !== 0 ? sumProfitExclBound.toLocaleString() : '-'}</td>
-                </tr>
-                <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.65rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                  <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>평균 (캐릭터당)</td>
-                  <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumFatigue / countWithData) : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumRuns / countWithData) : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumPureGold / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumSeal / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumTradableSeal / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumSealVoucher / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumSealVoucherBox / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumCondensedCore / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumFlawlessCore / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumCrystal / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumFlawlessCrystal / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumTokens / countWithData) : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumPotions / countWithData) : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>-</td>
-                  <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumBoundValue / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumTradableValue / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : '#f87171' }}>{countWithData > 0 ? Math.round(sumTotalProfit / countWithData).toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : '#f87171' }}>{countWithData > 0 ? Math.round(sumProfitExclBound / countWithData).toLocaleString() : '-'}</td>
                 </tr>
               </>
             )}
@@ -1106,6 +1051,43 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         updateCharForm={updateCharForm}
       />
       <CalcDetailModal calcDetail={calcDetail} onClose={() => setCalcDetail(null)} />
+      {saveResult && (
+        <div className="modal-overlay">
+          <div className="modal-content glass-panel" style={{ maxWidth: '480px', width: '95%' }}>
+            <h3 style={{ marginTop: 0, color: '#4ade80', fontSize: '1.1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.6rem' }}>✅ 순례 결과 ({saveResult.count}캐릭터)</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem', marginBottom: '1.2rem' }}>
+              <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.8rem' }}>
+                <div style={{ fontSize: '0.65rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.4rem' }}>💰 골드 획득</div>
+                <div style={{ fontSize: '0.85rem', color: '#4ade80', fontWeight: 'bold' }}>+{saveResult.goldDelta.toLocaleString()} G</div>
+                <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '0.2rem' }}>캐릭터당 평균: {saveResult.count > 0 ? Math.round(saveResult.goldDelta / saveResult.count).toLocaleString() : '-'} G</div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.8rem' }}>
+                <div style={{ fontSize: '0.65rem', color: '#38bdf8', fontWeight: 'bold', marginBottom: '0.4rem' }}>📦 획득 재료 (전체)</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  {MATERIAL_FIELDS.map(([k, label]) => saveResult.materialDeltas[k] > 0 ? (
+                    <span key={k} style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.7rem', color: '#38bdf8' }}>
+                      {label.replace('\n', ' ')} ×{saveResult.materialDeltas[k]}
+                    </span>
+                  ) : null)}
+                </div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.8rem' }}>
+                <div style={{ fontSize: '0.65rem', color: '#fb923c', fontWeight: 'bold', marginBottom: '0.4rem' }}>📊 수익 산출</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>귀속 가치</span><span style={{ color: '#fb923c' }}>{saveResult.totalBound.toLocaleString()} G</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>교환 가치</span><span style={{ color: '#fb923c' }}>{saveResult.totalTradable.toLocaleString()} G</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '0.3rem', fontWeight: 'bold' }}><span>순수익 (귀속 포함)</span><span style={{ color: saveResult.totalProfit >= 0 ? '#4ade80' : '#f87171' }}>{saveResult.totalProfit.toLocaleString()} G</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}><span>순수익 (귀속 제외)</span><span style={{ color: saveResult.profitExclBound >= 0 ? '#38bdf8' : '#f87171' }}>{saveResult.profitExclBound.toLocaleString()} G</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '0.3rem', fontSize: '0.65rem', color: '#64748b' }}><span>캐릭터당 평균 순수익</span><span>{saveResult.count > 0 ? Math.round(saveResult.totalProfit / saveResult.count).toLocaleString() : '-'} G</span></div>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setSaveResult(null)} style={{ padding: '0.5rem 1.5rem', background: '#4ade80', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>확인</button>
+            </div>
+          </div>
+        </div>
+      )}
       {showAuctionPricesModal && <AuctionPricesModal auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} onClose={() => setShowAuctionPricesModal(false)} />}
     </section>
   );
