@@ -4,13 +4,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { getSortedCharacters } from '../lib/gameUtils';
 import { PILGRIMAGE_BASE_ITEMS, DEFAULT_AUCTION_PRICES } from '../lib/constants';
-import LootModal from './LootModal';
 import SecretShopModal from './SecretShopModal';
 
 const EMPTY_CHAR_FORM = () => ({
-  selected: false, startFatigue: '', pureGold: '',
-  seal: '', condensedCore: '', crystal: '', flawlessCore: '', flawlessCrystal: '',
-  sealVoucher: '', tradableSeal: '', sealVoucherBox: '', memo: '',
+  selected: false, startFatigue: '', memo: '',
   secretTokens: [], secretRecipes: [], customItems: [], usePotion: false
 });
 
@@ -215,8 +212,20 @@ const LOOT_FIELDS_MANUAL = [
   ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
 ];
 
+const MATERIAL_FIELDS = [
+  ['seal', '인장'],
+  ['tradableSeal', '교환\n인장'],
+  ['sealVoucher', '교환권'],
+  ['sealVoucherBox', '교환권\n상자'],
+  ['condensedCore', '응축\n코어'],
+  ['flawlessCore', '무결점\n코어'],
+  ['crystal', '빛나는\n결정체'],
+  ['flawlessCrystal', '무결점\n결정체'],
+];
+const MATERIAL_KEYS = MATERIAL_FIELDS.map(([k]) => k);
+const EMPTY_SNAP = () => ({ goldByChar: {}, ...Object.fromEntries(MATERIAL_KEYS.map(k => [k, ''])) });
+
 const PIP_NORMAL = { w: 336, h: 947, x: 1743, y: 0 };
-const PIP_CROP   = { w: 1280, h: 820 };
 
 // PiP 커스텀 아이템 한 행 — 로컬 state로 입력 관리해 외부 re-render와 독립
 function CustomItemRow({ item, charId, updateCharForm, fetchCustomItemPrice, fetchingItemId, suggestions = [] }) {
@@ -278,15 +287,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
   const [activeCharId, setActiveCharId] = useState(selectedChars[selectedChars.length - 1]?.id || null);
   const [tab, setTab] = useState('shop');
   const [fetchingItemId, setFetchingItemId] = useState(null);
-  const [screenshot, setScreenshot] = useState(null); // { dataURL, w, h }
-  const [cropRect, setCropRect] = useState(null);     // { x1,y1,x2,y2 } in display coords
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(null);
-  const [isCapturing, setIsCapturing] = useState(false);
-  const [captureStatus, setCaptureStatus] = useState('');
-  const [debugInfo, setDebugInfo] = useState(null); // { cropDataURL, rawText }
-  const [showDebug, setShowDebug] = useState(false);
-  const previewRef = useRef(null);
 
 
 
@@ -329,167 +329,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
 
   const activeChar = selectedChars.find(c => c.id === charId);
 
-  const takeScreenshot = async () => {
-    setScreenshot(null);
-    setCaptureStatus('');
-    setCropRect(null);
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'window' }, audio: false });
-      const track = stream.getVideoTracks()[0];
-      let bitmap;
-      if (typeof ImageCapture !== 'undefined') {
-        bitmap = await new ImageCapture(track).grabFrame();
-      } else {
-        const video = document.createElement('video');
-        video.srcObject = new MediaStream([track]);
-        await new Promise(res => { video.onloadedmetadata = () => { video.play(); res(); }; });
-        const cv = document.createElement('canvas');
-        cv.width = video.videoWidth; cv.height = video.videoHeight;
-        cv.getContext('2d').drawImage(video, 0, 0);
-        video.srcObject = null;
-        bitmap = cv;
-      }
-      stream.getTracks().forEach(t => t.stop());
-      const canvas = document.createElement('canvas');
-      canvas.width = bitmap.width; canvas.height = bitmap.height;
-      canvas.getContext('2d').drawImage(bitmap, 0, 0);
-      setScreenshot({ dataURL: canvas.toDataURL('image/png'), w: bitmap.width, h: bitmap.height });
-      setCaptureStatus('영역을 드래그해서 선택 후 분석 버튼을 누르세요');
-    } catch (e) {
-      if (e.name !== 'AbortError') setCaptureStatus('❌ 캡처 실패: ' + e.message);
-    }
-  };
-
-  const onPreviewMouseDown = useCallback((e) => {
-    const rect = previewRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = e.clientX - rect.left, y = e.clientY - rect.top;
-    setDragStart({ x, y });
-    setCropRect({ x1: x, y1: y, x2: x, y2: y });
-    setIsDragging(true);
-  }, []);
-
-  const onPreviewMouseMove = useCallback((e) => {
-    if (!isDragging || !dragStart || !previewRef.current) return;
-    const rect = previewRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-    setCropRect({ x1: dragStart.x, y1: dragStart.y, x2: x, y2: y });
-  }, [isDragging, dragStart]);
-
-  const onPreviewMouseUp = useCallback(() => { setIsDragging(false); }, []);
-
-  const analyzeSelection = async () => {
-    if (!screenshot || !cropRect) return;
-    const { x1, y1, x2, y2 } = cropRect;
-    if (Math.abs(x2 - x1) < 5 || Math.abs(y2 - y1) < 5) {
-      setCaptureStatus('❌ 영역을 더 크게 선택해주세요');
-      return;
-    }
-    setIsCapturing(true);
-    try {
-      const preview = previewRef.current;
-      const scaleX = screenshot.w / preview.offsetWidth;
-      const scaleY = screenshot.h / preview.offsetHeight;
-      const rx = Math.round(Math.min(x1, x2) * scaleX);
-      const ry = Math.round(Math.min(y1, y2) * scaleY);
-      const rw = Math.round(Math.abs(x2 - x1) * scaleX);
-      const rh = Math.round(Math.abs(y2 - y1) * scaleY);
-
-      const img = new Image();
-      img.src = screenshot.dataURL;
-      await new Promise(res => { img.onload = res; });
-
-      // 원본 해상도 크롭 (템플릿 매칭용)
-      const origCanvas = document.createElement('canvas');
-      origCanvas.width = rw; origCanvas.height = rh;
-      origCanvas.getContext('2d').drawImage(img, rx, ry, rw, rh, 0, 0, rw, rh);
-
-      // 2x 업스케일 크롭 (Claude vision 전송용 기반)
-      const scaled = document.createElement('canvas');
-      scaled.width = rw * 2; scaled.height = rh * 2;
-      const sCtx = scaled.getContext('2d');
-      sCtx.imageSmoothingQuality = 'high';
-      sCtx.drawImage(img, rx, ry, rw, rh, 0, 0, rw * 2, rh * 2);
-
-      // ── 1. 격자 분석 + 템플릿 매칭으로 아이콘 위치 탐색 ──────
-      setCaptureStatus('아이콘 위치 탐색 중...');
-      const { findItemPositions } = await import('../lib/templateMatch.js');
-      const ICON_KEYS = ['seal', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal'];
-      const { positions, grid } = await findItemPositions(origCanvas, ICON_KEYS, 0.95);
-
-      // ── 2. 매칭 결과 시각화 (2x 캔버스에 어노테이션) ───────────
-      const ITEM_COLORS = {
-        seal: '#ff6b6b', condensedCore: '#ffa94d',
-        flawlessCore: '#ffd43b', crystal: '#74c0fc', flawlessCrystal: '#b197fc',
-      };
-      const annotated = document.createElement('canvas');
-      annotated.width = rw * 2; annotated.height = rh * 2;
-      const aCtx = annotated.getContext('2d');
-      aCtx.drawImage(scaled, 0, 0);
-
-      // 격자 오버레이 (초록색 반투명)
-      aCtx.strokeStyle = 'rgba(0,255,80,0.55)';
-      aCtx.lineWidth = 1;
-      const gsx = grid.startX * 2, gsy = grid.startY * 2;
-      const gcw = grid.cellW * 2, gch = grid.cellH * 2;
-      for (let x = gsx; x <= rw * 2; x += gcw) {
-        aCtx.beginPath(); aCtx.moveTo(x, 0); aCtx.lineTo(x, rh * 2); aCtx.stroke();
-      }
-      for (let y = gsy; y <= rh * 2; y += gch) {
-        aCtx.beginPath(); aCtx.moveTo(0, y); aCtx.lineTo(rw * 2, y); aCtx.stroke();
-      }
-
-      const positionData = {};
-      for (const key of ICON_KEYS) {
-        const pos = positions[key];
-        if (!pos) continue;
-        const ax = pos.cellX * 2, ay = pos.cellY * 2;
-        const aw = pos.cellW * 2, ah = pos.cellH * 2;
-        const color = ITEM_COLORS[key];
-        // 셀 테두리
-        aCtx.strokeStyle = color;
-        aCtx.lineWidth = 2;
-        aCtx.strokeRect(ax + 1, ay + 1, aw - 2, ah - 2);
-        // 레이블 (하단 — 숫자 영역인 좌상단을 가리지 않도록)
-        aCtx.fillStyle = color + 'cc';
-        aCtx.fillRect(ax + 1, ay + ah - 13, aw - 2, 12);
-        aCtx.fillStyle = '#000';
-        aCtx.font = 'bold 9px monospace';
-        aCtx.fillText(key, ax + 3, ay + ah - 3);
-        positionData[key] = { x: ax, y: ay, w: aw, h: ah };
-      }
-      const annotatedDataURL = annotated.toDataURL('image/jpeg', 0.92);
-      const base64 = annotatedDataURL.split(',')[1];
-
-      // ── 3. Claude Vision: 숫자 읽기 + 골드 탐지 ──────────────
-      setCaptureStatus('숫자 인식 중...');
-      const res = await fetch('/api/vision', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64, positions: positionData }),
-      });
-      const data = await res.json();
-
-      const posLog = `격자: cellW=${grid.cellW} cellH=${grid.cellH} startX=${grid.startX} startY=${grid.startY}\n` +
-        Object.entries(positions)
-          .map(([k, v]) => v ? `${k}: row=${v.row} col=${v.col} sim=${(v.sim * 100).toFixed(1)}%` : `${k}: 미발견`)
-          .join('\n');
-      setDebugInfo({ cropDataURL: annotatedDataURL, rawText: `[매칭 위치]\n${posLog}\n\n[Claude 응답]\n${data.rawText ?? data.error ?? '(없음)'}` });
-
-      if (!data.success) throw new Error(data.error || '분석 실패');
-      const d = data.data;
-      ['pureGold', 'seal', 'condensedCore', 'flawlessCore', 'crystal', 'flawlessCrystal']
-        .forEach(k => { if (d[k] !== undefined) updateCharForm(charId, k, String(d[k])); });
-      setCaptureStatus(`✅ 완료 (${new Date().toLocaleTimeString()})`);
-    } catch (e) {
-      setCaptureStatus('❌ ' + e.message);
-    }
-    setIsCapturing(false);
-    setScreenshot(null);
-    setCropRect(null);
-  };
-
   const fetchCustomItemPrice = async (itemName, itemId) => {
     if (!itemName || !apiKey) return;
     setFetchingItemId(itemId);
@@ -526,111 +365,6 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       <div style={{ flex: 1, overflowY: 'auto', padding: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
         {tab === 'loot' ? (
           <>
-            {/* 화면 캡처 자동 입력 */}
-            <div style={{ background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '6px', padding: '0.55rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
-                <span style={{ fontSize: '0.65rem', color: '#38bdf8', fontWeight: 'bold', flex: 1 }}>📷 화면 캡처 자동 입력</span>
-                <button onClick={() => { pipWindow?.resizeTo(PIP_CROP.w, PIP_CROP.h); takeScreenshot(); }} title="창 선택 창이 열리면 'Dungeon & Fighter' 창을 선택하세요" style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  {screenshot ? '재캡처' : '캡처'}
-                </button>
-                {screenshot && (
-                  <>
-                    <button onClick={() => { pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h); analyzeSelection(); }} disabled={isCapturing || !cropRect} style={{ padding: '0.25rem 0.6rem', fontSize: '0.65rem', background: (isCapturing || !cropRect) ? 'rgba(255,255,255,0.05)' : 'rgba(74,222,128,0.2)', color: (isCapturing || !cropRect) ? '#475569' : '#4ade80', border: `1px solid ${(isCapturing || !cropRect) ? 'rgba(255,255,255,0.1)' : 'rgba(74,222,128,0.4)'}`, borderRadius: '4px', cursor: (isCapturing || !cropRect) ? 'default' : 'pointer', whiteSpace: 'nowrap' }}>
-                      {isCapturing ? '⏳' : '분석'}
-                    </button>
-                    <button onClick={() => { pipWindow?.resizeTo(PIP_NORMAL.w, PIP_NORMAL.h); setScreenshot(null); setCropRect(null); setCaptureStatus(''); }} style={{ padding: '0.25rem 0.4rem', fontSize: '0.65rem', background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '4px', cursor: 'pointer' }}>✕</button>
-                  </>
-                )}
-              </div>
-              {captureStatus && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: screenshot ? '0.4rem' : 0 }}>
-                  <span style={{ fontSize: '0.6rem', color: captureStatus.startsWith('❌') ? '#f87171' : captureStatus.startsWith('✅') ? '#4ade80' : '#94a3b8', lineHeight: 1.4, flex: 1 }}>{captureStatus}</span>
-                  {debugInfo && (
-                    <button onClick={() => setShowDebug(v => !v)} style={{ padding: '0.15rem 0.4rem', fontSize: '0.6rem', background: showDebug ? 'rgba(251,191,36,0.2)' : 'rgba(255,255,255,0.06)', color: showDebug ? '#fbbf24' : '#64748b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '3px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                      {showDebug ? '디버그 닫기' : '🔍 디버그'}
-                    </button>
-                  )}
-                </div>
-              )}
-              {showDebug && debugInfo && (() => {
-                const raw = debugInfo.rawText || '';
-                const jsonMatch = [...raw.matchAll(/\{[^{}]*\}/g)].pop();
-                const reasoning = jsonMatch ? raw.slice(0, raw.lastIndexOf(jsonMatch[0])).trim() : raw;
-                const jsonPart = jsonMatch ? jsonMatch[0] : '';
-                return (
-                  <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '4px', padding: '0.5rem', marginBottom: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <div>
-                      <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.3rem' }}>전송된 크롭 이미지</div>
-                      <img src={debugInfo.cropDataURL} alt="crop" style={{ width: '100%', borderRadius: '3px', border: '1px solid rgba(255,255,255,0.1)' }} />
-                    </div>
-                    {reasoning && (
-                      <div>
-                        <div style={{ fontSize: '0.6rem', color: '#a78bfa', fontWeight: 'bold', marginBottom: '0.2rem' }}>Claude 매칭 과정</div>
-                        <pre style={{ fontSize: '0.55rem', color: '#cbd5e1', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '3px', maxHeight: '200px', overflowY: 'auto' }}>{reasoning}</pre>
-                      </div>
-                    )}
-                    {jsonPart && (
-                      <div>
-                        <div style={{ fontSize: '0.6rem', color: '#4ade80', fontWeight: 'bold', marginBottom: '0.2rem' }}>최종 JSON</div>
-                        <pre style={{ fontSize: '0.6rem', color: '#4ade80', margin: 0, whiteSpace: 'pre-wrap', background: 'rgba(0,0,0,0.3)', padding: '0.3rem', borderRadius: '3px' }}>{jsonPart}</pre>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-              {screenshot && (
-                <div
-                  ref={previewRef}
-                  onMouseDown={onPreviewMouseDown}
-                  onMouseMove={onPreviewMouseMove}
-                  onMouseUp={onPreviewMouseUp}
-                  onMouseLeave={onPreviewMouseUp}
-                  style={{ position: 'relative', width: '100%', aspectRatio: `${screenshot.w}/${screenshot.h}`, cursor: 'crosshair', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.15)', userSelect: 'none' }}
-                >
-                  <img src={screenshot.dataURL} alt="capture" style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }} />
-                  {cropRect && (
-                    <div style={{
-                      position: 'absolute',
-                      left: Math.min(cropRect.x1, cropRect.x2),
-                      top: Math.min(cropRect.y1, cropRect.y2),
-                      width: Math.abs(cropRect.x2 - cropRect.x1),
-                      height: Math.abs(cropRect.y2 - cropRect.y1),
-                      border: '2px solid #4ade80',
-                      background: 'rgba(74,222,128,0.1)',
-                      pointerEvents: 'none',
-                    }} />
-                  )}
-                </div>
-              )}
-            </div>
-            {/* 자동 입력 항목 */}
-            <div>
-              <div style={{ fontSize: '0.6rem', color: '#38bdf8', fontWeight: 'bold', marginBottom: '0.4rem' }}>📷 자동 입력 항목</div>
-              <div style={{ marginBottom: '0.5rem' }}>
-                <label style={lbl}>순 골드 (던전 획득, 구매 미포함)</label>
-                <input type="number" style={inp} value={form.pureGold || ''} onChange={e => updateCharForm(charId, 'pureGold', e.target.value)} placeholder="0" />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                {LOOT_FIELDS_AUTO.map(([key, label]) => (
-                  <div key={key}>
-                    <label style={lbl}>{label}</label>
-                    <input type="number" style={inp} value={form[key] || ''} onChange={e => updateCharForm(charId, key, e.target.value)} placeholder="0" />
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* 소모품 직접 입력 */}
-            <div style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.15)', borderRadius: '6px', padding: '0.55rem' }}>
-              <div style={{ fontSize: '0.6rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.45rem' }}>✏️ 소모품 (직접 입력)</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {LOOT_FIELDS_MANUAL.map(([key, label]) => (
-                  <div key={key}>
-                    <label style={lbl}>{label}</label>
-                    <input type="number" style={inp} value={form[key] || ''} onChange={e => updateCharForm(charId, key, e.target.value)} placeholder="0" />
-                  </div>
-                ))}
-              </div>
-            </div>
             {/* 커스텀 아이템 */}
             <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.55rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
@@ -727,6 +461,8 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
 
 export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePilgrimage, onDeletePilgrimage, apiKey }) {
   const [pilgrimageForm, setPilgrimageForm] = useState({});
+  const [snapBefore, setSnapBefore] = useState(EMPTY_SNAP());
+  const [snapAfter, setSnapAfter] = useState(EMPTY_SNAP());
   const [useVoucherExchange, setUseVoucherExchange] = useState(true);
   const [globalStartFatigue, setGlobalStartFatigue] = useState('');
   const [auctionPrices, setAuctionPrices] = useState(DEFAULT_AUCTION_PRICES);
@@ -734,7 +470,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
   const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
   const [calcDetail, setCalcDetail] = useState(null);
-  const [activeLootModal, setActiveLootModal] = useState(null);
   const [isPipOpen, setIsPipOpen] = useState(false);
   const pipWindowRef = useRef(null);
   const pipRootRef = useRef(null);
@@ -746,6 +481,10 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     if (draftFatigue) setGlobalStartFatigue(Number(draftFatigue));
     const draftPrices = localStorage.getItem('DNF_PILGRIMAGE_AUCTION_PRICES');
     if (draftPrices) { try { setAuctionPrices(prev => ({ ...prev, ...JSON.parse(draftPrices) })); } catch (e) {} }
+    const snapB = localStorage.getItem('DNF_SNAP_BEFORE');
+    if (snapB) { try { setSnapBefore(JSON.parse(snapB)); } catch (e) {} }
+    const snapA = localStorage.getItem('DNF_SNAP_AFTER');
+    if (snapA) { try { setSnapAfter(JSON.parse(snapA)); } catch (e) {} }
   }, []);
 
   useEffect(() => {
@@ -760,7 +499,27 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     if (Object.keys(pilgrimageForm).length > 0) localStorage.setItem('DNF_PILGRIMAGE_FORM_DRAFT', JSON.stringify(pilgrimageForm));
   }, [pilgrimageForm]);
 
+  useEffect(() => { localStorage.setItem('DNF_SNAP_BEFORE', JSON.stringify(snapBefore)); }, [snapBefore]);
+  useEffect(() => { localStorage.setItem('DNF_SNAP_AFTER', JSON.stringify(snapAfter)); }, [snapAfter]);
+
   const getCharForm = (id) => pilgrimageForm[id] || EMPTY_CHAR_FORM();
+
+  const getEffectiveForm = (charId, allSelectedChars) => {
+    const form = getCharForm(charId);
+    const charRuns = Math.ceil(Number(form.startFatigue || 0) / 8) + (form.usePotion ? 4 : 0);
+    const totalRuns = (allSelectedChars || []).reduce((sum, c) => {
+      const f = getCharForm(c.id);
+      return sum + Math.ceil(Number(f.startFatigue || 0) / 8) + (f.usePotion ? 4 : 0);
+    }, 0);
+    const n = (allSelectedChars || []).length;
+    const ratio = totalRuns > 0 ? charRuns / totalRuns : (n > 0 ? 1 / n : 0);
+    return {
+      ...form,
+      pureGold: String(Math.max(0, Number(snapAfter.goldByChar?.[charId] || 0) - Number(snapBefore.goldByChar?.[charId] || 0))),
+      ...Object.fromEntries(MATERIAL_KEYS.map(k => [k, String(Math.round(Math.max(0, Number(snapAfter[k] || 0) - Number(snapBefore[k] || 0)) * ratio))])),
+    };
+  };
+
   const updateCharForm = (id, field, value) => setPilgrimageForm(prev => {
     const existing = prev[id] || EMPTY_CHAR_FORM();
     return { ...prev, [id]: { ...existing, [field]: typeof value === 'function' ? value(existing[field]) : value } };
@@ -891,12 +650,13 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   };
 
   const handleSavePilgrimage = () => {
-    const selectedIds = characters.filter(c => getCharForm(c.id).selected).map(c => c.id);
+    const selectedCharsForSave = characters.filter(c => getCharForm(c.id).selected);
+    const selectedIds = selectedCharsForSave.map(c => c.id);
     if (selectedIds.length === 0) { alert('돌 캐릭터를 하나 이상 선택해주세요.'); return; }
 
     const recordDetails = selectedIds.map(id => {
       const c = characters.find(char => char.id === id);
-      const form = getCharForm(id);
+      const form = getEffectiveForm(id, selectedCharsForSave);
       const v = calcCharValues(form, auctionPrices, useVoucherExchange);
       return {
         charId: id,
@@ -930,6 +690,10 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
     const resetForm = { ...pilgrimageForm };
     selectedIds.forEach(id => { resetForm[id] = EMPTY_CHAR_FORM(); });
     setPilgrimageForm(resetForm);
+    setSnapBefore(EMPTY_SNAP());
+    setSnapAfter(EMPTY_SNAP());
+    localStorage.removeItem('DNF_SNAP_BEFORE');
+    localStorage.removeItem('DNF_SNAP_AFTER');
   };
 
   const sortedChars = getSortedCharacters(characters);
@@ -948,9 +712,11 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
   let sumTokens = 0, sumPotions = 0, sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0, sumProfitExclBound = 0;
 
   const rows = selectedChars.map((c, idx) => {
-    const form = getCharForm(c.id);
+    const rawForm = getCharForm(c.id);
+    const form = getEffectiveForm(c.id, selectedChars);
     const v = calcCharValues(form, auctionPrices, useVoucherExchange);
-    const hasLootData = ['pureGold', 'seal', 'condensedCore', 'crystal', 'flawlessCore', 'flawlessCrystal', 'sealVoucher', 'sealVoucherBox', 'tradableSeal'].some(k => form[k] && form[k] !== '')
+    const hasLootData = MATERIAL_KEYS.some(k => Number(form[k] || 0) > 0)
+      || Number(form.pureGold || 0) > 0
       || (form.customItems && form.customItems.length > 0)
       || (form.secretTokens || []).some(t => t.buyPrice !== '')
       || (form.secretRecipes || []).some(r => r.buyPrice !== '' || r.sealCost !== '' || r.sellPrice !== '');
@@ -982,11 +748,8 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title={`${c.base.charName} - 클릭 시 목록에서 제거`}>
           <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span><span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontWeight: 'normal' }}>✕</span>
         </td>
-        <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={form.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
+        <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={rawForm.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
         <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{v.runs}</td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-          <button onClick={() => setActiveLootModal({ charId: c.id })} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', background: 'rgba(74,222,128,0.2)', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', borderRadius: '4px', cursor: 'pointer' }}>재화 입력</button>
-        </td>
         <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{Number(form.pureGold || 0) > 0 ? Number(form.pureGold).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.seal > 0 ? Number(form.seal).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.tradableSeal > 0 ? Number(form.tradableSeal).toLocaleString() : '-'}</td>
@@ -998,8 +761,8 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         <td style={{ padding: '0.2rem 0.1rem' }}>{form.flawlessCrystal > 0 ? Number(form.flawlessCrystal).toLocaleString() : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{v.runs > 0 ? v.runs : '-'}</td>
         <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>
-          <button onClick={() => updateCharForm(c.id, 'usePotion', !form.usePotion)} style={{ padding: '0.1rem 0.3rem', fontSize: '0.65rem', background: form.usePotion ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.05)', border: form.usePotion ? '1px solid rgba(248,113,113,0.4)' : '1px solid rgba(255,255,255,0.1)', color: form.usePotion ? '#f87171' : '#64748b', borderRadius: '3px', cursor: 'pointer' }}>
-            {form.usePotion ? '사용' : '미사용'}
+          <button onClick={() => updateCharForm(c.id, 'usePotion', !rawForm.usePotion)} style={{ padding: '0.1rem 0.3rem', fontSize: '0.65rem', background: rawForm.usePotion ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.05)', border: rawForm.usePotion ? '1px solid rgba(248,113,113,0.4)' : '1px solid rgba(255,255,255,0.1)', color: rawForm.usePotion ? '#f87171' : '#64748b', borderRadius: '3px', cursor: 'pointer' }}>
+            {rawForm.usePotion ? '사용' : '미사용'}
           </button>
         </td>
         <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle' }}>
@@ -1065,6 +828,71 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         </div>
       </div>
 
+      {/* 재화 스냅샷 패널 */}
+      {selectedChars.length > 0 && (() => {
+        const snapInp = { width: '54px', padding: '0.2rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px' };
+        return (
+          <div style={{ marginBottom: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '0.9rem 1rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.7rem' }}>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold' }}>📦 재화 스냅샷 (운영 전 / 후 수량 직접 입력)</span>
+              <button onClick={() => { setSnapBefore(EMPTY_SNAP()); setSnapAfter(EMPTY_SNAP()); }} style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem', background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '3px', cursor: 'pointer' }}>초기화</button>
+            </div>
+            {/* 공유 재료 스냅샷 */}
+            <div style={{ overflowX: 'auto', marginBottom: '0.8rem' }}>
+              <table style={{ borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <th style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color: '#64748b', fontSize: '0.65rem', width: '44px' }}></th>
+                    {MATERIAL_FIELDS.map(([k, label]) => (
+                      <th key={k} style={{ padding: '0.2rem 0.3rem', color: '#94a3b8', fontSize: '0.6rem', whiteSpace: 'pre-line', minWidth: '58px' }}>{label}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[['초기', snapBefore, setSnapBefore, '#64748b'], ['최종', snapAfter, setSnapAfter, '#4ade80']].map(([label, snap, setSnap, color]) => (
+                    <tr key={label}>
+                      <td style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color, fontSize: '0.65rem', fontWeight: 'bold' }}>{label}</td>
+                      {MATERIAL_FIELDS.map(([k]) => (
+                        <td key={k} style={{ padding: '0.15rem 0.2rem' }}>
+                          <input type="number" value={snap[k]} onChange={e => setSnap(p => ({ ...p, [k]: e.target.value }))} style={snapInp} placeholder="0" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <td style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color: '#fbbf24', fontSize: '0.65rem', fontWeight: 'bold' }}>+획득</td>
+                    {MATERIAL_FIELDS.map(([k]) => {
+                      const delta = Math.max(0, Number(snapAfter[k] || 0) - Number(snapBefore[k] || 0));
+                      return <td key={k} style={{ padding: '0.15rem 0.2rem', fontWeight: 'bold', color: delta > 0 ? '#4ade80' : '#475569', fontSize: '0.7rem' }}>{delta > 0 ? `+${delta}` : '-'}</td>;
+                    })}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            {/* 캐릭별 골드 */}
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '0.65rem', color: '#94a3b8', paddingTop: '0.55rem', flexShrink: 0 }}>💰 캐릭별 골드</span>
+              {selectedChars.map(c => {
+                const before = Number(snapBefore.goldByChar?.[c.id] || 0);
+                const after = Number(snapAfter.goldByChar?.[c.id] || 0);
+                const delta = after - before;
+                return (
+                  <div key={c.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.6rem', color: '#38bdf8', fontWeight: 'bold' }}>{c.base.charName}</span>
+                    <div style={{ display: 'flex', gap: '0.2rem', alignItems: 'center' }}>
+                      <input type="number" placeholder="초기" value={snapBefore.goldByChar?.[c.id] || ''} onChange={e => setSnapBefore(p => ({ ...p, goldByChar: { ...p.goldByChar, [c.id]: e.target.value } }))} style={{ ...snapInp, width: '72px' }} />
+                      <span style={{ color: '#475569', fontSize: '0.65rem' }}>→</span>
+                      <input type="number" placeholder="최종" value={snapAfter.goldByChar?.[c.id] || ''} onChange={e => setSnapAfter(p => ({ ...p, goldByChar: { ...p.goldByChar, [c.id]: e.target.value } }))} style={{ ...snapInp, width: '72px' }} />
+                    </div>
+                    <span style={{ fontSize: '0.65rem', color: delta > 0 ? '#4ade80' : '#475569', fontWeight: 'bold' }}>{delta > 0 ? `+${delta.toLocaleString()}` : '-'}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Main Table */}
       <div style={{ overflowX: 'auto', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap', tableLayout: 'auto' }}>
@@ -1072,7 +900,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
             <col style={{ minWidth: '72px' }} />{/* 캐릭터 */}
             <col style={{ minWidth: '52px' }} />{/* 피로도 */}
             <col style={{ minWidth: '32px' }} />{/* 판수 */}
-            <col style={{ minWidth: '54px' }} />{/* 재화입력 */}
             <col style={{ minWidth: '72px' }} />{/* 순골드 */}
             <col style={{ minWidth: '28px' }} />{/* 인장 */}
             <col style={{ minWidth: '32px' }} />{/* 교환인장 */}
@@ -1095,8 +922,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
               <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>캐릭터</th>
               <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>시작 피로도</th>
               <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
-              <th rowSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', borderLeft: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>재화 입력</th>
-              <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>획득 재화 (기록)</th>
+              <th colSpan="9" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#4ade80', fontSize: '0.7rem' }}>획득 재화 (스냅샷 분배)</th>
               <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>소모 재화</th>
               <th colSpan="1" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점</th>
               <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가치 산출 (골드)</th>
@@ -1122,7 +948,7 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
           </thead>
           <tbody>
             {selectedChars.length === 0 ? (
-              <tr><td colSpan="20" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td></tr>
+              <tr><td colSpan="19" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td></tr>
             ) : (
               <>
                 {rows}
@@ -1130,7 +956,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                   <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>총합계 ({countWithData})</td>
                   <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>{sumFatigue > 0 ? sumFatigue : '-'}</td>
                   <td style={{ padding: '0.5rem', color: '#fbbf24' }}>{sumRuns > 0 ? sumRuns : '-'}</td>
-                  <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
                   <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{sumPureGold > 0 ? sumPureGold.toLocaleString() : '-'}</td>
                   <td style={{ padding: '0.5rem' }}>{sumSeal > 0 ? sumSeal.toLocaleString() : '-'}</td>
                   <td style={{ padding: '0.5rem' }}>{sumTradableSeal > 0 ? sumTradableSeal.toLocaleString() : '-'}</td>
@@ -1152,7 +977,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                   <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>평균 (캐릭터당)</td>
                   <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumFatigue / countWithData) : '-'}</td>
                   <td style={{ padding: '0.3rem 0.5rem', color: '#94a3b8' }}>{countWithData > 0 ? Math.round(sumRuns / countWithData) : '-'}</td>
-                  <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>-</td>
                   <td style={{ padding: '0.3rem 0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>{countWithData > 0 ? Math.round(sumPureGold / countWithData).toLocaleString() : '-'}</td>
                   <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumSeal / countWithData).toLocaleString() : '-'}</td>
                   <td style={{ padding: '0.3rem 0.5rem' }}>{countWithData > 0 ? Math.round(sumTradableSeal / countWithData).toLocaleString() : '-'}</td>
@@ -1280,12 +1104,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         addCharToken={addCharToken} updateCharToken={updateCharToken} removeCharToken={removeCharToken}
         addCharRecipe={addCharRecipe} updateCharRecipe={updateCharRecipe} removeCharRecipe={removeCharRecipe}
         updateCharForm={updateCharForm}
-      />
-      <LootModal
-        activeLootModal={activeLootModal ? { ...activeLootModal, _pilgrimageHistory: pilgrimageHistory } : null}
-        setActiveLootModal={setActiveLootModal}
-        characters={characters} getCharForm={getCharForm} updateCharForm={updateCharForm}
-        apiKey={apiKey} auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices}
       />
       <CalcDetailModal calcDetail={calcDetail} onClose={() => setCalcDetail(null)} />
       {showAuctionPricesModal && <AuctionPricesModal auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} onClose={() => setShowAuctionPricesModal(false)} />}
