@@ -16,7 +16,15 @@ if (REDIS_URL && REDIS_TOKEN) {
 }
 
 export async function GET(request) {
-  if (!redis) return NextResponse.json({ success: false, error: "Redis not configured" }, { status: 500 });
+  if (!redis) return NextResponse.json({
+    success: false,
+    error: "Redis not configured",
+    _debug: {
+      hasUrl: !!process.env.UPSTASH_REDIS_REST_URL,
+      hasToken: !!process.env.UPSTASH_REDIS_REST_TOKEN,
+      urlPrefix: process.env.UPSTASH_REDIS_REST_URL?.slice(0, 20) ?? null,
+    }
+  }, { status: 500 });
   
   const { searchParams } = new URL(request.url);
   const apiKey = searchParams.get('apiKey');
