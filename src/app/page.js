@@ -204,7 +204,7 @@ export default function Home() {
   // 60s auto-refresh
   useEffect(() => {
     if (!apiKey || characters.length === 0) return;
-    const timer = setInterval(() => { handleRefreshAll(charsRef.current, apiKey); }, 60000);
+    const timer = setInterval(() => { handleRefreshAll(charsRef.current, apiKey); }, 3600000);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiKey]);
