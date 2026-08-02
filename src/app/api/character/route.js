@@ -130,9 +130,13 @@ export async function POST(request) {
       const oathUpgrade = oathData.oath.info?.oathUpgrade;
       if (oathUpgrade) {
         const corePoints = rawOathPoints; // 진의 포인트 보너스를 제외한 순수 서약 점수 (추천 로직의 기준점)
+        // 장비 세트점수가 2550 미만이면 아래 5번 단계에서 서약 포인트 일부가 장비 쪽으로 이월되어
+        // 서약 자체의 등급에는 반영되지 않는다. 추천 로직이 이 이월량을 알아야 실제 등급 상승 여부를
+        // 정확히 계산할 수 있으므로 함께 넘겨준다.
+        const donationNeeded = (rawSetPoints > 0 && rawSetPoints < 2550) ? (2550 - rawSetPoints) : 0;
         const { stages, pointBonus } = parseMukeonUpgrade(oathUpgrade);
         rawOathPoints += pointBonus;
-        if (stages.length > 0) mukeon = { corePoints, stages };
+        if (stages.length > 0) mukeon = { corePoints, donationNeeded, stages };
       }
     }
 

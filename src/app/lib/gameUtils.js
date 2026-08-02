@@ -49,16 +49,24 @@ const MUKEON_TYPE_LABEL = { point: '서약 포인트 +25', damage: '최종 데�
 // (포인트 옵션은 변경 시 재료 소모가 없으므로, 매 단계 독립적으로 필요 단계 수를 다시 계산한다.)
 export const recommendMukeonOptions = (mukeon) => {
   if (!mukeon || !mukeon.stages || mukeon.stages.length === 0) return null;
-  const { corePoints, stages } = mukeon;
+  const { corePoints, donationNeeded = 0, stages } = mukeon;
   const unlockedCount = stages.length;
 
-  // 필요한 단계 수가 실제 해금된 단계 수를 넘어서면(=포인트를 다 몰아도 등급이 오르지 않으면)
-  // 포인트 옵션은 의미가 없으므로 절대 추천하지 않는다 (capping해서 억지로 추천하면 안 됨).
-  const nextThreshold = getNextTierThreshold(corePoints);
-  const needed = nextThreshold !== null ? nextThreshold - corePoints : null;
-  const stagesNeeded = needed !== null && needed > 0 ? Math.ceil(needed / 25) : 0;
-  const willTierUp = stagesNeeded > 0 && stagesNeeded <= unlockedCount;
-  const stagesForPoint = willTierUp ? stagesNeeded : 0;
+  // 장비 세트점수가 2550 미만이면 서약 원점수 중 donationNeeded만큼이 장비 쪽으로 이월되고,
+  // 남는 만큼만 서약 자체의 등급에 반영된다(캐릭터 API의 5번 "Point Adjustment"와 동일한 규칙).
+  // 진의 포인트를 늘려도 이 이월분을 채우기 전까지는 서약 등급에 전혀 영향을 주지 않으므로,
+  // 실제 서약 등급에 쓰이는 점수를 기준으로 등급 상승 여부를 계산해야 한다.
+  const oathGradePoints = (n) => donationNeeded > 0 ? Math.max(0, corePoints + 25 * n - donationNeeded) : corePoints + 25 * n;
+
+  const nextThreshold = getNextTierThreshold(oathGradePoints(0));
+  let stagesForPoint = 0;
+  if (nextThreshold !== null) {
+    for (let n = 1; n <= unlockedCount; n++) {
+      if (oathGradePoints(n) >= nextThreshold) { stagesForPoint = n; break; }
+    }
+  }
+  // 필요한 단계 수를 다 써도(=포인트를 4단계 다 몰아도) 등급이 오르지 않으면 추천하지 않는다.
+  const willTierUp = stagesForPoint > 0;
 
   // 이미 포인트 옵션을 선택해둔 단계를 우선 배정해 불필요한 "변경 권장"을 줄인다.
   const order = stages.map((s, i) => i).sort((a, b) => (stages[a].currentType === 'point' ? 0 : 1) - (stages[b].currentType === 'point' ? 0 : 1));
