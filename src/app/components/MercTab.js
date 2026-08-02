@@ -1,15 +1,18 @@
 "use client";
 
 import React, { useState } from 'react';
+import { getMaxOathRawPoints } from '../lib/gameUtils';
 
 export default function MercTab({ characters, mercLevel, mercNextLevelTarget, onSaveMerc }) {
   const [mercLevelInput, setMercLevelInput] = useState(String(mercLevel));
   const [mercTargetInput, setMercTargetInput] = useState(String(mercNextLevelTarget || ''));
 
+  // 용병단 총합은 "모든 캐릭터가 묵언의 진의를 서약 포인트로 몰아줬다"고 가정한 값으로 계산한다.
+  // 로스터 탭에 보이는 개별 캐릭터의 실제 서약 점수/등급(c.oath.points)에는 영향을 주지 않는다.
   const top20 = [...characters]
-    .sort((a, b) => (b.oath.rawPoints ?? b.oath.points ?? 0) - (a.oath.rawPoints ?? a.oath.points ?? 0))
+    .sort((a, b) => getMaxOathRawPoints(b) - getMaxOathRawPoints(a))
     .slice(0, 20);
-  const totalOath = top20.reduce((acc, c) => acc + (c.oath.rawPoints ?? c.oath.points ?? 0), 0);
+  const totalOath = top20.reduce((acc, c) => acc + getMaxOathRawPoints(c), 0);
   const hasTarget = mercNextLevelTarget > 0;
   const progress = hasTarget ? Math.min(totalOath / mercNextLevelTarget * 100, 100) : 0;
   const remaining = hasTarget ? Math.max(mercNextLevelTarget - totalOath, 0) : null;
@@ -50,6 +53,7 @@ export default function MercTab({ characters, mercLevel, mercNextLevelTarget, on
               <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>서약 총합</span>
               <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: isNearTarget ? '#fef08a' : '#e2e8f0', marginLeft: '0.6rem' }}>{totalOath.toLocaleString()}</span>
               {hasTarget && <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginLeft: '0.4rem' }}>/ {mercNextLevelTarget.toLocaleString()}</span>}
+              <div style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '0.2rem' }}>* 묵언의 진의를 전부 서약 포인트로 맞췄다고 가정한 최대치입니다 (로스터의 실제 서약 점수와 다를 수 있음)</div>
             </div>
             {remaining !== null && (
               <div style={{ fontSize: '0.7rem', color: isNearTarget ? '#fef08a' : '#fb923c', fontWeight: isNearTarget ? 'bold' : 'normal' }}>
@@ -81,9 +85,9 @@ export default function MercTab({ characters, mercLevel, mercNextLevelTarget, on
           {top20.length === 0 ? (
             <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>캐릭터를 먼저 추가해주세요.</div>
           ) : top20.map((c, i) => {
-            const pts = c.oath.rawPoints ?? c.oath.points ?? 0;
+            const pts = getMaxOathRawPoints(c);
             const pct = totalOath > 0 ? (pts / totalOath * 100) : 0;
-            const maxPts = top20.reduce((mx, ch) => Math.max(mx, ch.oath.rawPoints ?? ch.oath.points ?? 0), 0);
+            const maxPts = top20.reduce((mx, ch) => Math.max(mx, getMaxOathRawPoints(ch)), 0);
             const relPct = maxPts > 0 ? (pts / maxPts * 100) : 0;
             return (
               <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>

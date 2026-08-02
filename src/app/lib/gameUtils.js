@@ -93,6 +93,16 @@ export const recommendMukeonOptions = (mukeon) => {
   };
 };
 
+// 캐릭터가 현재 해금한 묵언의 진의 단계를 전부 "서약 포인트 25 증가"로 몰았다고 가정했을 때의
+// 서약 원점수(장비 이월 반영 전). 용병단 총합처럼 "다 맞췄다면"을 가정하는 계산에만 쓰고,
+// 로스터에 실제로 표시되는 개별 캐릭터의 서약 점수/등급(c.oath.points/gradeDesc)에는 쓰지 않는다.
+export const getMaxOathRawPoints = (c) => {
+  const current = c.oath?.rawPoints ?? c.oath?.points ?? 0;
+  const mukeon = c.oath?.mukeon;
+  if (!mukeon || !mukeon.stages || mukeon.stages.length === 0) return current;
+  return mukeon.corePoints + 25 * mukeon.stages.length;
+};
+
 export const getRole = (c) => {
   if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
   const jobName = c.base?.jobGrowName || c.base?.jobName || '';
