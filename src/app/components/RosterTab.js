@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { SERVER_LIST, ADVANCED_DUNGEONS, RAIDS } from '../lib/constants';
-import { getTierClass, buildGroups } from '../lib/gameUtils';
+import { getTierClass, buildGroups, getRole, recommendMukeonOptions } from '../lib/gameUtils';
 
 // ─── ManualModal ────────────────────────────────────────────────────────────
 
@@ -240,6 +240,21 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                             <div className={getTierClass(c.oath.rarity)} style={{ fontSize: '0.7rem', letterSpacing: '-0.3px', marginTop: '2px' }}>
                               {c.oath.gradeDesc} ({c.oath.points})
                             </div>
+                            {(() => {
+                              const rec = recommendMukeonOptions(c.oath.mukeon, getRole(c));
+                              if (!rec || !rec.needsAnyChange) return null;
+                              const tooltip = rec.stages
+                                .map(s => `${s.stepName}: ${rec.typeLabel[s.recommendedType]}${s.needsChange ? ` (현재: ${rec.typeLabel[s.currentType]})` : ' (유지)'}`)
+                                .join('\n');
+                              return (
+                                <div
+                                  title={tooltip}
+                                  style={{ marginTop: '3px', fontSize: '0.62rem', color: rec.willTierUp ? '#fde047' : '#94a3b8', background: rec.willTierUp ? 'rgba(234,179,8,0.15)' : 'rgba(148,163,184,0.1)', border: rec.willTierUp ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(148,163,184,0.2)', borderRadius: '4px', padding: '0.1rem 0.3rem', cursor: 'help', whiteSpace: 'nowrap' }}
+                                >
+                                  {rec.willTierUp ? '🔔 진의 변경 시 등급↑' : '💡 묵언의 진의 변경 권장'}
+                                </div>
+                              );
+                            })()}
                           </td>
                           <td data-label="던담" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                             {(() => {
@@ -256,7 +271,7 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                     onChange={e => setEditingDundamValue(e.target.value)}
                                     onBlur={() => {
                                       const raw = Number(editingDundamValue.replace(/,/g, ''));
-                                      if (!isNaN(raw) && raw > 0) {
+                                      if (!isNaN(raw) && raw > 0 && raw !== c.manual?.dundamScore) {
                                         onSaveManual(c.id, { ...c.manual, dundamScore: raw, dundamUpdatedAt: Date.now(), dundamFameAtEntry: c.base.fame });
                                       }
                                       setEditingDundamId(null);

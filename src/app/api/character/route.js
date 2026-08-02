@@ -19,6 +19,32 @@ const OATH_NAME_MAP = {
   "정화": "완전무결한 정화 서약"
 };
 
+// 묵언의 진의 단계별 선택지의 status 배열에서 옵션 종류를 판별.
+// "특수 오브젝트 데미지"는 선택과 무관하게 항상 붙는 고정 스탯이라 "최종 데미지"로 오인하지 않도록 구분.
+function classifyMukeonStage(status) {
+  const keys = (status || []).map(s => s.key || '');
+  if (keys.some(k => k.includes('서약') && k.includes('포인트'))) return 'point';
+  if (keys.some(k => k.includes('쿨타임'))) return 'cooldown';
+  if (keys.some(k => k.includes('최종 데미지'))) return 'damage';
+  return 'unknown';
+}
+
+function parseMukeonUpgrade(oathUpgrade) {
+  const options = oathUpgrade?.options || [];
+  let pointBonus = 0;
+  const stages = options.map((opt, idx) => {
+    const type = classifyMukeonStage(opt.status);
+    let pointValue = 0;
+    if (type === 'point') {
+      const raw = (opt.status || []).find(s => (s.key || '').includes('서약') && (s.key || '').includes('포인트'))?.value;
+      pointValue = parseFloat(String(raw).replace(/[^0-9.-]/g, '')) || 0;
+      pointBonus += pointValue;
+    }
+    return { index: idx, stepName: opt.stepName || `${idx + 1}단계`, optionName: opt.optionName || '', currentType: type, pointValue };
+  });
+  return { stages, pointBonus };
+}
+
 function getGradeTier(pts) {
   if (pts >= 2550) return { rarity: "태초", tier: "" };
   const tiers = [
@@ -77,15 +103,16 @@ export async function POST(request) {
 
     // 4. Oath Info
     let rawOathPoints = 0, oathSetName = "공용 서약";
+    let mukeon = null;
     const oathData = await dnfFetch(`/servers/${server}/characters/${charId}/equip/oath`);
     if (oathData && oathData.oath) {
       const crystals = oathData.oath.crystal || [];
       let found = false;
       for (let c of crystals) {
-        for (let k in OATH_NAME_MAP) { 
-          if ((c.itemName || "").includes(k)) { 
-            oathSetName = OATH_NAME_MAP[k]; found = true; break; 
-          } 
+        for (let k in OATH_NAME_MAP) {
+          if ((c.itemName || "").includes(k)) {
+            oathSetName = OATH_NAME_MAP[k]; found = true; break;
+          }
         }
         if (found) break;
       }
@@ -97,6 +124,16 @@ export async function POST(request) {
           tunes.forEach(t => { if (t.setPoint) rawOathPoints += t.setPoint; });
         }
       });
+
+      // 묵언의 진의: 단계별 "서약 포인트 25 증가" 선택 시 부여되는 포인트는
+      // crystal/tune setPoint에 잡히지 않으므로 별도로 합산해야 서약 총점/등급에 반영됨.
+      const oathUpgrade = oathData.oath.info?.oathUpgrade;
+      if (oathUpgrade) {
+        const corePoints = rawOathPoints; // 진의 포인트 보너스를 제외한 순수 서약 점수 (추천 로직의 기준점)
+        const { stages, pointBonus } = parseMukeonUpgrade(oathUpgrade);
+        rawOathPoints += pointBonus;
+        if (stages.length > 0) mukeon = { corePoints, stages };
+      }
     }
 
     // 5. Point Adjustment
@@ -134,7 +171,8 @@ export async function POST(request) {
         points: finalOathPoints,
         rawPoints: rawOathPoints,
         gradeDesc: formatGrade(oathGradeTier),
-        rarity: oathGradeTier.rarity
+        rarity: oathGradeTier.rarity,
+        mukeon
       }
     });
 

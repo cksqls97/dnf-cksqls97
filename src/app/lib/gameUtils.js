@@ -34,6 +34,58 @@ export const GradeBadge = ({ points }) => {
   );
 };
 
+// 서약 등급업 임계 점수(오름차순). getGradeTier의 임계값과 반드시 동일하게 유지.
+const TIER_POINTS = [750, 830, 910, 990, 1070, 1200, 1285, 1370, 1455, 1540, 1650, 1735, 1820, 1905, 1990, 2100, 2185, 2270, 2355, 2440, 2550];
+const getNextTierThreshold = (pts) => {
+  for (const t of TIER_POINTS) { if (pts < t) return t; }
+  return null; // 이미 태초(최고 등급)
+};
+
+const MUKEON_TYPE_LABEL = { point: '서약 포인트 +25', damage: '최종 데미지 +4%', cooldown: '쿨타임 감소 +8%', unknown: '알 수 없음' };
+
+// 묵언의 진의 단계별 추천: "서약 포인트 25 증가"를 선택했을 때 서약 등급이 실제로 오른다면
+// 그 단계는 포인트 옵션이 최선이고, 그렇지 않다면 데미지/쿨감 중 역할군에 맞는 쪽을 추천한다.
+// (포인트 옵션은 변경 시 재료 소모가 없으므로, 매 단계 독립적으로 최적 조합을 다시 계산한다.)
+export const recommendMukeonOptions = (mukeon, role) => {
+  if (!mukeon || !mukeon.stages || mukeon.stages.length === 0) return null;
+  const { corePoints, stages } = mukeon;
+  const unlockedCount = stages.length;
+
+  // 필요한 단계 수가 실제 해금된 단계 수를 넘어서면(=포인트를 다 몰아도 등급이 오르지 않으면)
+  // 포인트 옵션은 의미가 없으므로 절대 추천하지 않는다 (capping해서 억지로 추천하면 안 됨).
+  const nextThreshold = getNextTierThreshold(corePoints);
+  const needed = nextThreshold !== null ? nextThreshold - corePoints : null;
+  const stagesNeeded = needed !== null && needed > 0 ? Math.ceil(needed / 25) : 0;
+  const willTierUp = stagesNeeded > 0 && stagesNeeded <= unlockedCount;
+  const stagesForPoint = willTierUp ? stagesNeeded : 0;
+
+  // 이미 포인트 옵션을 선택해둔 단계를 우선 배정해 불필요한 "변경 권장"을 줄인다.
+  const order = stages.map((s, i) => i).sort((a, b) => (stages[a].currentType === 'point' ? 0 : 1) - (stages[b].currentType === 'point' ? 0 : 1));
+  const pointSet = new Set(order.slice(0, stagesForPoint));
+
+  const fallbackType = role === 'buffer' ? 'cooldown' : 'damage';
+
+  const result = stages.map((s, idx) => {
+    const recommendedType = pointSet.has(idx) ? 'point' : fallbackType;
+    return {
+      index: idx,
+      stepName: s.stepName,
+      currentType: s.currentType,
+      recommendedType,
+      needsChange: s.currentType !== recommendedType
+    };
+  });
+
+  return {
+    willTierUp,
+    nextThreshold,
+    stagesForPoint,
+    stages: result,
+    needsAnyChange: result.some(s => s.needsChange),
+    typeLabel: MUKEON_TYPE_LABEL
+  };
+};
+
 export const getRole = (c) => {
   if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
   const jobName = c.base?.jobGrowName || c.base?.jobName || '';
