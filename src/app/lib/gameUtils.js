@@ -43,10 +43,11 @@ const getNextTierThreshold = (pts) => {
 
 const MUKEON_TYPE_LABEL = { point: '서약 포인트 +25', damage: '최종 데미지 +4%', cooldown: '쿨타임 감소 +8%', unknown: '알 수 없음' };
 
-// 묵언의 진의 단계별 추천: "서약 포인트 25 증가"를 선택했을 때 서약 등급이 실제로 오른다면
-// 그 단계는 포인트 옵션이 최선이고, 그렇지 않다면 데미지/쿨감 중 역할군에 맞는 쪽을 추천한다.
-// (포인트 옵션은 변경 시 재료 소모가 없으므로, 매 단계 독립적으로 최적 조합을 다시 계산한다.)
-export const recommendMukeonOptions = (mukeon, role) => {
+// 묵언의 진의 단계별 추천: "서약 포인트 25 증가"를 선택했을 때 서약 등급이 실제로 오르는 경우에만
+// 그만큼의 단계에 포인트 옵션을 추천한다. 데미지/쿨감 사이의 선택은 딜사이클 등 이 앱이 알 수 없는
+// 정보에 좌우되므로 추천하지 않고, 등급업에 필요 없는 단계는 그대로 둔다(recommendedType: null).
+// (포인트 옵션은 변경 시 재료 소모가 없으므로, 매 단계 독립적으로 필요 단계 수를 다시 계산한다.)
+export const recommendMukeonOptions = (mukeon) => {
   if (!mukeon || !mukeon.stages || mukeon.stages.length === 0) return null;
   const { corePoints, stages } = mukeon;
   const unlockedCount = stages.length;
@@ -63,16 +64,14 @@ export const recommendMukeonOptions = (mukeon, role) => {
   const order = stages.map((s, i) => i).sort((a, b) => (stages[a].currentType === 'point' ? 0 : 1) - (stages[b].currentType === 'point' ? 0 : 1));
   const pointSet = new Set(order.slice(0, stagesForPoint));
 
-  const fallbackType = role === 'buffer' ? 'cooldown' : 'damage';
-
   const result = stages.map((s, idx) => {
-    const recommendedType = pointSet.has(idx) ? 'point' : fallbackType;
+    const shouldBePoint = pointSet.has(idx);
     return {
       index: idx,
       stepName: s.stepName,
       currentType: s.currentType,
-      recommendedType,
-      needsChange: s.currentType !== recommendedType
+      recommendedType: shouldBePoint ? 'point' : null,
+      needsChange: shouldBePoint && s.currentType !== 'point'
     };
   });
 
