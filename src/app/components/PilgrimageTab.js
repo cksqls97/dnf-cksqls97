@@ -1,171 +1,84 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createRoot } from 'react-dom/client';
-import { getSortedCharacters } from '../lib/gameUtils';
+import React, { useState, useEffect } from 'react';
 import { PILGRIMAGE_BASE_ITEMS, DEFAULT_AUCTION_PRICES } from '../lib/constants';
-import SecretShopModal from './SecretShopModal';
 
-const EMPTY_CHAR_FORM = () => ({
-  selected: false, startFatigue: '', memo: '',
-  secretTokens: [], secretRecipes: [], customItems: [], usePotion: false
-});
+// 순례 시작 전 / 종료 후에 입력받는 계정 전체 보유량 스냅샷 (골드 제외 8종)
+const SNAPSHOT_FIELDS = [
+  ['token', '닳아버린\n순례의 증표'],
+  ['seal', '순례의\n인장'],
+  ['sealVoucher', '교환권'],
+  ['sealVoucherBox', '교환권\n1개 상자'],
+  ['condensedCore', '응축\n라이언 코어'],
+  ['flawlessCore', '무결점\n라이언 코어'],
+  ['crystal', '빛나는\n조화의 결정체'],
+  ['flawlessCrystal', '무결점\n조화의 결정체'],
+];
+const SNAPSHOT_KEYS = SNAPSHOT_FIELDS.map(([k]) => k);
+const EMPTY_SNAP = () => ({ gold: '', ...Object.fromEntries(SNAPSHOT_KEYS.map(k => [k, ''])) });
+const EMPTY_SHOP = () => ({ generalRecipes: [], shinyGiftCount: '', brilliantGiftCount: '', customItems: [] });
 
-function calcCharValues(form, auctionPrices, useVoucherExchange = true) {
-  const fatigue = Number(form.startFatigue || 0);
-  const runs = Math.ceil(fatigue / 8) + (form.usePotion ? 4 : 0);
+// 일괄정산: 캐릭터별 분배 없이, 시작 전/종료 후 스냅샷 증감분을 그대로 골드 가치로 환산한다.
+// - 골드/증표는 특별상점 지출·제작으로 증가하거나 줄어들 수 있으므로 증감분을 그대로 반영(음수 허용).
+// - 나머지 재료는 순례 중 늘어나기만 한다고 가정해 0 미만으로 내려가지 않게 한다.
+function calcBatchValues(before, after, auctionPrices, shop, useVoucherExchange) {
+  const signedDelta = (k) => Number(after[k] || 0) - Number(before[k] || 0);
+  const gainDelta = (k) => Math.max(0, signedDelta(k));
 
-  const sealValue = Number(form.seal || 0) * 5000;
-  const boundCoreValue = Number(form.condensedCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
-  const boundCrystalValue = Number(form.crystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
-  const totalBoundValue = sealValue + boundCoreValue + boundCrystalValue;
+  const goldDelta = signedDelta('gold');
+  const tokenDelta = signedDelta('token');
+  const sealDelta = signedDelta('seal');
+  const sealVoucherDelta = gainDelta('sealVoucher');
+  const sealVoucherBoxDelta = gainDelta('sealVoucherBox');
+  const condensedCoreDelta = gainDelta('condensedCore');
+  const flawlessCoreDelta = gainDelta('flawlessCore');
+  const crystalDelta = gainDelta('crystal');
+  const flawlessCrystalDelta = gainDelta('flawlessCrystal');
 
-  const pureGoldInput = Number(form.pureGold || 0);
-  const tradableCoreValue = Number(form.flawlessCore || 0) * (auctionPrices['무결점 라이언 코어'] || 0);
-  const tradableCrystalValue = Number(form.flawlessCrystal || 0) * (auctionPrices['무결점 조화의 결정체'] || 0);
-
+  const priceFlawlessCore = auctionPrices['무결점 라이언 코어'] || 0;
+  const priceFlawlessCrystal = auctionPrices['무결점 조화의 결정체'] || 0;
+  const priceToken = auctionPrices['닳아버린 순례의 증표'] || 0;
   const priceTradableSeal = auctionPrices['순례의 인장(1회 교환 가능)'] || 0;
   const priceVoucherBox = auctionPrices['순례의 인장(1회 교환 가능) 교환권 1개 상자'] || 0;
-  const voucherCount = Number(form.sealVoucher || 0);
-  const voucherTradableGain = useVoucherExchange ? voucherCount * 3 * priceTradableSeal : 0;
-  const voucherBoundCost   = useVoucherExchange ? voucherCount * 75000 : 0; // 15인장×5000
-  const voucherProfitTotal = voucherTradableGain - voucherBoundCost; // 호환성용 net
-  const tradableSealValue = Number(form.tradableSeal || 0) * priceTradableSeal;
-  const voucherBoxValue = Number(form.sealVoucherBox || 0) * priceVoucherBox;
-
-  const marketTokenPrice = auctionPrices['닳아버린 순례의 증표'] || 0;
-  const tokenCost = runs * marketTokenPrice;
-  const potionCost = form.usePotion ? (auctionPrices['피로 회복의 영약'] || 0) : 0;
-
-  // 특별상점 구매 지출 역산 (pureGold에 이미 차감되어 있음)
-  let tokenSpend = 0;
-  let tokenProfit = 0;
-  (form.secretTokens || []).forEach(t => {
-    const bp = Number(t.buyPrice || 0);
-    if (bp > 0) { tokenSpend += bp; tokenProfit += marketTokenPrice; }
-  });
-
   const legendarySoulPrice = auctionPrices['레전더리 소울 결정'] || 0;
   const epicSoulPrice = auctionPrices['에픽 소울 결정'] || 0;
 
-  let recipeSpend = 0;
-  let recipeProfit = 0;
-  let recipeSealCostValue = 0;  // 귀속: 레시피 인장 소모
-  let giftSoulCost = 0;         // 교환: 답례품 소울 결정 기회비용
-  (form.secretRecipes || []).forEach(r => {
-    const bp = Number(r.buyPrice || 0);
-    if (r.type === 'shinyGift') {
-      if (bp > 0) {
-        recipeSpend += bp;
-        recipeProfit += 5 * marketTokenPrice;
-        giftSoulCost += legendarySoulPrice; // 레전더리 소울 결정 1개 소모
-      }
-    } else if (r.type === 'brilliantGift') {
-      if (bp > 0) {
-        recipeSpend += bp;
-        recipeProfit += 20 * marketTokenPrice;
-        giftSoulCost += epicSoulPrice; // 에픽 소울 결정 1개 소모
-      }
-    } else {
-      const seals = Number(r.sealCost || 0);
-      const sp = Number(r.sellPrice || 0);
-      if (bp > 0 || sp > 0) {
-        recipeSpend += bp;
-        recipeSealCostValue += seals * 5000;
-        recipeProfit += sp;
-      }
-    }
-  });
+  // 귀속 가치 (Bound): 인장 고정단가 5000G + 응축코어/빛나는결정체(무결점 시세로 환산, 귀속이라 거래는 불가)
+  const sealValue = sealDelta * 5000;
+  const boundCoreValue = condensedCoreDelta * priceFlawlessCore;
+  const boundCrystalValue = crystalDelta * priceFlawlessCrystal;
+  const boundValue = sealValue + boundCoreValue + boundCrystalValue;
 
-  // 순수 던전 획득 골드 = 입력값 + 특별상점 지출 역산
-  const grossPureGold = pureGoldInput + tokenSpend + recipeSpend;
+  // 교환 가치 (Tradable): 골드 증감분 + 무결점 코어/결정체 + 증표 + 교환권(3배 환산)/상자
+  const tokenValue = tokenDelta * priceToken;
+  const flawlessCoreValue = flawlessCoreDelta * priceFlawlessCore;
+  const flawlessCrystalValue = flawlessCrystalDelta * priceFlawlessCrystal;
+  const voucherValue = useVoucherExchange ? sealVoucherDelta * 3 * priceTradableSeal : 0;
+  const voucherBoxValue = sealVoucherBoxDelta * priceVoucherBox;
 
-  let customTradableValue = 0;
-  (form.customItems || []).forEach(item => {
-    customTradableValue += Number(item.quantity || 0) * (Number(item.price || 0) || (auctionPrices[item.name] || 0));
-  });
+  // 특별상점 부가정산: 답례품은 소울 결정 기회비용만 차감(증표 획득분은 증표 스냅샷에 이미 반영됨),
+  // 일반 레시피/기타 획득 아이템은 아직 팔지 않은 결과물이라 예상 판매가를 더해준다.
+  const shinyCount = Number(shop.shinyGiftCount || 0);
+  const brilliantCount = Number(shop.brilliantGiftCount || 0);
+  const giftSoulCost = shinyCount * legendarySoulPrice + brilliantCount * epicSoulPrice;
+  const recipeUnsoldValue = (shop.generalRecipes || []).reduce((s, r) => s + Number(r.sellPrice || 0), 0);
+  const customValue = (shop.customItems || []).reduce((s, it) => s + Number(it.quantity || 0) * (Number(it.price || 0) || (auctionPrices[it.name] || 0)), 0);
 
-  const totalConsumedValue = tokenCost + potionCost;
-  const finalTradableValue = pureGoldInput + tradableCoreValue + tradableCrystalValue + voucherTradableGain + tradableSealValue + voucherBoxValue + customTradableValue + tokenProfit + recipeProfit - giftSoulCost;
-  const finalBoundValue = totalBoundValue - recipeSealCostValue - voucherBoundCost;
-  const totalProfit = finalBoundValue + finalTradableValue - totalConsumedValue;
+  const tradableValue = goldDelta + tokenValue + flawlessCoreValue + flawlessCrystalValue + voucherValue + voucherBoxValue + recipeUnsoldValue + customValue - giftSoulCost;
+  const totalProfit = boundValue + tradableValue;
 
   return {
-    runs, sealValue, boundCoreValue, boundCrystalValue, totalBoundValue, tradableCoreValue, tradableCrystalValue,
-    voucherTradableGain, voucherBoundCost, voucherProfitTotal, tradableSealValue, voucherBoxValue, tokenCost, potionCost,
-    tokenSpend, recipeSpend, grossPureGold,
-    tokenProfit, recipeProfit, giftSoulCost,
-    customTradableValue, recipeSealCostValue,
-    totalConsumedValue, finalTradableValue, finalBoundValue, totalProfit
+    deltas: {
+      gold: goldDelta, token: tokenDelta, seal: sealDelta,
+      sealVoucher: sealVoucherDelta, sealVoucherBox: sealVoucherBoxDelta,
+      condensedCore: condensedCoreDelta, flawlessCore: flawlessCoreDelta,
+      crystal: crystalDelta, flawlessCrystal: flawlessCrystalDelta
+    },
+    sealValue, boundCoreValue, boundCrystalValue, boundValue,
+    tokenValue, flawlessCoreValue, flawlessCrystalValue, voucherValue, voucherBoxValue,
+    giftSoulCost, recipeUnsoldValue, customValue,
+    tradableValue, totalProfit, profitExclBound: tradableValue
   };
-}
-
-function CalcDetailModal({ calcDetail, onClose }) {
-  if (!calcDetail) return null;
-  const { charName, items, breakdown, totals, final } = calcDetail;
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content glass-panel" style={{ maxWidth: '600px', width: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3 style={{ marginTop: 0, color: '#e2e8f0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>📊 상세 가치 산출 내역 ({charName})</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '1.5rem' }}>
-          {[
-            { title: '📦 귀속 가치 (Bound)', color: '#fb923c', rows: [
-              [`순례의 인장 (${items.seal}개)`, breakdown.seal],
-              [`응축된 라이언 코어 (${items.core}개)`, breakdown.core],
-              [`빛나는 조화의 결정체 (${items.crystal}개)`, breakdown.crystal],
-              ...(breakdown.recipeSealCost > 0 ? [[`레시피 인장 소모`, -breakdown.recipeSealCost]] : []),
-              ...(breakdown.voucherBoundCost > 0 ? [[`교환권 인장 소모 (${items.sealVoucher}×15개)`, -breakdown.voucherBoundCost]] : []),
-            ], total: ['귀속 합계', totals.bound, '#fb923c'] },
-            { title: '💰 교환 가능 가치 (Tradable)', color: '#38bdf8', rows: [
-              ['순 골드 (던전 획득, 구매 미포함)', breakdown.grossPureGold ?? items.pureGold],
-              ...(breakdown.tokenSpend > 0 ? [['  └ 특별상점 증표 구매 지출', -breakdown.tokenSpend]] : []),
-              ...(breakdown.recipeSpend > 0 ? [['  └ 특별상점 레시피/답례품 구매 지출', -breakdown.recipeSpend]] : []),
-              [`무결점 라이언 코어 (${items.flawlessCore}개)`, breakdown.flawlessCore],
-              [`무결점 조화의 결정체 (${items.flawlessCrystal}개)`, breakdown.flawlessCrystal],
-              ...(breakdown.voucherTradableGain > 0 ? [[`교환권 → 교환인장 (${items.sealVoucher}×3개, ${items.useVoucherExchange ? '교환 O' : '교환 X'})`, breakdown.voucherTradableGain]] : []),
-              [`순례의 인장(1회 교환 가능) 교환권 1개 상자 (${items.sealVoucherBox}개)`, breakdown.sealVoucherBox],
-              [`순례의 인장(1회 교환 가능) (${items.tradableSeal}개)`, breakdown.tradableSeal],
-              ...(breakdown.tokenProfit ? [['닳아버린 순례의 증표 판매 예정가 (미수령)', breakdown.tokenProfit]] : []),
-              ...(breakdown.recipeProfit ? [['레시피/답례품 판매 예정가 (미수령)', breakdown.recipeProfit]] : []),
-              ...(breakdown.giftSoulCost > 0 ? [['답례품 소울 결정 소모 (교환 가능)', -breakdown.giftSoulCost]] : []),
-              ...(breakdown.customTradable > 0 ? [['커스텀 추가 항목 (교환)', breakdown.customTradable]] : []),
-            ], total: ['교환 가능 합계', totals.tradable, '#38bdf8'] },
-            { title: '📉 소모 비용 (Costs)', color: '#f87171', rows: [
-              [`닳아버린 순례의 증표 소모 (${items.runs}개)`, `-${breakdown.tokenCost.toLocaleString()}`],
-              ...(breakdown.potionCost > 0 ? [[`피로 회복의 영약 (1개)`, `-${breakdown.potionCost.toLocaleString()}`]] : []),
-            ], total: ['소모 합계', `-${totals.consumed.toLocaleString()}`, '#f87171'] },
-          ].map(({ title, color, rows, total }) => (
-            <div key={title}>
-              <h4 style={{ color, marginBottom: '0.5rem', fontSize: '0.7rem' }}>{title}</h4>
-              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '6px', fontSize: '0.7rem' }}>
-                {rows.map(([label, value]) => (
-                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                    <span>{label}</span>
-                    <span>{typeof value === 'number' ? `${value.toLocaleString()} G` : `${value} G`}</span>
-                  </div>
-                ))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: total[2], borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.3rem', marginTop: '0.3rem' }}>
-                  <span>{total[0]}</span>
-                  <span>{typeof total[1] === 'number' ? `${total[1].toLocaleString()} G` : `${total[1]} G`}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-          <div style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>
-              <span>순수익 (귀속 제외)</span><span>{final.excludingBound.toLocaleString()} G</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 'bold', color: '#4ade80' }}>
-              <span>순수익 (귀속 포함)</span><span>{final.includingBound.toLocaleString()} G</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '0.6rem 1.5rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>확인</button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function AuctionPricesModal({ auctionPrices, setAuctionPrices, onClose }) {
@@ -198,136 +111,62 @@ function AuctionPricesModal({ auctionPrices, setAuctionPrices, onClose }) {
   );
 }
 
-// 자동 캡처 인식 대상 (아이콘 구별 가능)
-const LOOT_FIELDS_AUTO = [
-  ['seal', '순례의 인장'],
-  ['condensedCore', '응축된 라이언 코어'], ['flawlessCore', '무결점 라이언 코어'],
-  ['crystal', '빛나는 조화의 결정체'], ['flawlessCrystal', '무결점 조화의 결정체'],
-];
-
-// 아이콘이 동일해 자동 구별 불가 → 직접 입력
-const LOOT_FIELDS_MANUAL = [
-  ['tradableSeal', '순례의 인장(1회 교환 가능)'],
-  ['sealVoucher', '순례의 인장(1회 교환 가능) 교환권'],
-  ['sealVoucherBox', '순례의 인장(1회 교환 가능) 교환권 1개 상자'],
-];
-
-const MATERIAL_FIELDS = [
-  ['seal', '인장'],
-  ['tradableSeal', '교환\n인장'],
-  ['sealVoucher', '교환권'],
-  ['sealVoucherBox', '교환권\n상자'],
-  ['condensedCore', '응축\n코어'],
-  ['flawlessCore', '무결점\n코어'],
-  ['crystal', '빛나는\n결정체'],
-  ['flawlessCrystal', '무결점\n결정체'],
-];
-const MATERIAL_KEYS = MATERIAL_FIELDS.map(([k]) => k);
-const EMPTY_SNAP = () => ({ gold: '', ...Object.fromEntries(MATERIAL_KEYS.map(k => [k, ''])) });
-
-const PIP_NORMAL = { w: 336, h: 947, x: 1743, y: 0 };
-
-// PiP 커스텀 아이템 한 행 — 로컬 state로 입력 관리해 외부 re-render와 독립
-function CustomItemRow({ item, charId, updateCharForm, fetchCustomItemPrice, fetchingItemId, suggestions = [] }) {
-  const [localName, setLocalName] = React.useState(item.name);
-  const [localQty, setLocalQty] = React.useState(item.quantity);
-  const [showSug, setShowSug] = React.useState(false);
-  const nameFocused = React.useRef(false);
-  const qtyFocused = React.useRef(false);
-
-  React.useEffect(() => { if (!nameFocused.current) setLocalName(item.name); }, [item.name]);
-  React.useEffect(() => { if (!qtyFocused.current) setLocalQty(item.quantity); }, [item.quantity]);
-
-  const filtered = suggestions.filter(s => s !== localName && (!localName || s.toLowerCase().includes(localName.toLowerCase())));
-  const inp = { padding: '0.25rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '3px', fontSize: '0.7rem' };
+// 기타 획득 아이템 한 행 — customItems 배열은 id로 keying되어 있어 그냥 직접 바인딩해도 포커스가 끊기지 않는다.
+function CustomItemRow({ item, updateShop, fetchCustomItemPrice, fetchingItemId }) {
+  const inp = { padding: '0.3rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '4px', fontSize: '0.7rem' };
 
   return (
-    <div style={{ marginBottom: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.4rem', borderRadius: '4px' }}>
-      <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', marginBottom: '0.25rem' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <input type="text" placeholder="아이템명" style={{ ...inp, width: '100%', boxSizing: 'border-box' }} value={localName}
-            onFocus={() => { nameFocused.current = true; setShowSug(true); }}
-            onChange={e => { const val = e.target.value; const id = item.id; setLocalName(val); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name: val } : i)); }}
-            onBlur={e => { nameFocused.current = false; setTimeout(() => setShowSug(false), 150); if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id); }}
-          />
-          {showSug && filtered.length > 0 && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#1e293b', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', maxHeight: '120px', overflowY: 'auto', marginTop: '2px' }}>
-              {filtered.map(name => (
-                <div key={name} style={{ padding: '0.3rem 0.5rem', fontSize: '0.65rem', color: '#cbd5e1', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-                  onMouseDown={() => { const id = item.id; setLocalName(name); setShowSug(false); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, name } : i)); fetchCustomItemPrice(name, item.id); }}
-                  onMouseEnter={e => e.target.style.background = 'rgba(96,165,250,0.2)'}
-                  onMouseLeave={e => e.target.style.background = 'transparent'}
-                >{name}</div>
-              ))}
-            </div>
-          )}
-        </div>
-        <input type="number" placeholder="수량" style={{ ...inp, width: '52px', flex: 'none' }} value={localQty}
-          onFocus={() => { qtyFocused.current = true; }}
-          onChange={e => { const val = e.target.value; const id = item.id; setLocalQty(val); updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === id ? { ...i, quantity: val } : i)); }}
-          onBlur={() => { qtyFocused.current = false; }}
-        />
-        {fetchingItemId === item.id ? <span style={{ fontSize: '0.65rem', color: '#fbbf24' }}>⏳</span> : null}
-        <button onClick={() => updateCharForm(charId, 'customItems', cur => (cur || []).filter(i => i.id !== item.id))} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0', flexShrink: 0 }}>×</button>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#94a3b8' }}>
-        {fetchingItemId === item.id
-          ? <span style={{ color: '#fbbf24' }}>⏳ 조회 중...</span>
-          : <span>단가: <span style={{ color: Number(item.price || 0) > 0 ? '#fbbf24' : '#475569', fontWeight: 'bold' }}>{Number(item.price || 0) > 0 ? `${Number(item.price).toLocaleString()} G` : '미조회'}</span></span>
-        }
-        {localName && Number(localQty || 0) > 0 && Number(item.price || 0) > 0 && (
-          <span style={{ color: '#4ade80' }}>= {(Number(localQty) * Number(item.price)).toLocaleString()} G</span>
-        )}
-      </div>
+    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '0.4rem', borderRadius: '4px', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+      <input type="text" placeholder="아이템명" style={{ ...inp, flex: 1, minWidth: '120px' }} value={item.name}
+        onChange={e => { const val = e.target.value; updateShop('customItems', cur => (cur || []).map(i => i.id === item.id ? { ...i, name: val } : i)); }}
+        onBlur={e => { if (e.target.value.trim()) fetchCustomItemPrice(e.target.value.trim(), item.id); }}
+      />
+      <input type="number" placeholder="수량" style={{ ...inp, width: '64px' }} value={item.quantity}
+        onChange={e => { const val = e.target.value; updateShop('customItems', cur => (cur || []).map(i => i.id === item.id ? { ...i, quantity: val } : i)); }}
+      />
+      <span style={{ fontSize: '0.65rem', color: fetchingItemId === item.id ? '#fbbf24' : (Number(item.price || 0) > 0 ? '#94a3b8' : '#475569'), minWidth: '80px' }}>
+        {fetchingItemId === item.id ? '⏳ 조회 중' : (Number(item.price || 0) > 0 ? `단가 ${Number(item.price).toLocaleString()}G` : '단가 미조회')}
+      </span>
+      <button onClick={() => updateShop('customItems', cur => (cur || []).filter(i => i.id !== item.id))} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0' }}>×</button>
     </div>
   );
 }
 
-function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pilgrimageHistory = [], pipWindow }) {
-  const [activeCharId, setActiveCharId] = useState(selectedChars[selectedChars.length - 1]?.id || null);
-  const [tab, setTab] = useState('shop');
+export default function PilgrimageTab({ pilgrimageHistory, onSavePilgrimage, onDeletePilgrimage, apiKey }) {
+  const [snapBefore, setSnapBefore] = useState(EMPTY_SNAP());
+  const [snapAfter, setSnapAfter] = useState(EMPTY_SNAP());
+  const [shop, setShop] = useState(EMPTY_SHOP());
+  const [memo, setMemo] = useState('');
+  const [useVoucherExchange, setUseVoucherExchange] = useState(true);
+  const [auctionPrices, setAuctionPrices] = useState(DEFAULT_AUCTION_PRICES);
+  const [isFetchingPrices, setIsFetchingPrices] = useState(false);
+  const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
   const [fetchingItemId, setFetchingItemId] = useState(null);
-
-
+  const [saveResult, setSaveResult] = useState(null);
 
   useEffect(() => {
-    if (selectedChars.length > 0 && !selectedChars.find(c => c.id === activeCharId)) {
-      setActiveCharId(selectedChars[0].id);
-    }
-  }, [selectedChars, activeCharId]);
+    const loadJson = (key, setter) => {
+      const raw = localStorage.getItem(key);
+      if (raw) { try { setter(JSON.parse(raw)); } catch (e) {} }
+    };
+    const loadRaw = (key, setter) => {
+      const raw = localStorage.getItem(key);
+      if (raw !== null) setter(raw);
+    };
+    loadJson('DNF_PILGRIMAGE_BATCH_BEFORE', setSnapBefore);
+    loadJson('DNF_PILGRIMAGE_BATCH_AFTER', setSnapAfter);
+    loadJson('DNF_PILGRIMAGE_BATCH_SHOP', setShop);
+    loadRaw('DNF_PILGRIMAGE_BATCH_MEMO', setMemo);
+    loadJson('DNF_PILGRIMAGE_AUCTION_PRICES', prices => setAuctionPrices(prev => ({ ...prev, ...prices })));
+  }, []);
 
-  if (selectedChars.length === 0) {
-    return (
-      <div style={{ padding: '1.5rem', textAlign: 'center', color: '#64748b', fontSize: '0.8rem', background: '#0f172a', height: '100%' }}>
-        메인 화면에서 순례 참여 캐릭터를 선택해주세요.
-      </div>
-    );
-  }
+  useEffect(() => { localStorage.setItem('DNF_PILGRIMAGE_BATCH_BEFORE', JSON.stringify(snapBefore)); }, [snapBefore]);
+  useEffect(() => { localStorage.setItem('DNF_PILGRIMAGE_BATCH_AFTER', JSON.stringify(snapAfter)); }, [snapAfter]);
+  useEffect(() => { localStorage.setItem('DNF_PILGRIMAGE_BATCH_SHOP', JSON.stringify(shop)); }, [shop]);
+  useEffect(() => { localStorage.setItem('DNF_PILGRIMAGE_BATCH_MEMO', memo); }, [memo]);
+  useEffect(() => { localStorage.setItem('DNF_PILGRIMAGE_AUCTION_PRICES', JSON.stringify(auctionPrices)); }, [auctionPrices]);
 
-  const charId = (activeCharId && selectedChars.find(c => c.id === activeCharId)) ? activeCharId : selectedChars[0].id;
-  const form = getCharForm(charId);
-
-  const customItemSuggestions = (() => {
-    const freq = {};
-    selectedChars.forEach(c => {
-      (getCharForm(c.id).customItems || []).forEach(it => {
-        if (it.name?.trim()) freq[it.name.trim()] = (freq[it.name.trim()] || 0) + 1;
-      });
-    });
-    pilgrimageHistory.forEach(record => {
-      (record.details || []).forEach(d => {
-        (d.customItems || []).forEach(it => {
-          if (it.name?.trim()) freq[it.name.trim()] = (freq[it.name.trim()] || 0) + 1;
-        });
-      });
-    });
-    return Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([name]) => name);
-  })();
-
-  const inp = { width: '100%', padding: '0.35rem 0.4rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px', fontSize: '0.75rem', boxSizing: 'border-box' };
-  const lbl = { display: 'block', marginBottom: '0.2rem', fontSize: '0.6rem', color: '#94a3b8', lineHeight: '1.3', wordBreak: 'keep-all' };
-
-  const activeChar = selectedChars.find(c => c.id === charId);
+  const updateShop = (field, value) => setShop(prev => ({ ...prev, [field]: typeof value === 'function' ? value(prev[field]) : value }));
 
   const fetchCustomItemPrice = async (itemName, itemId) => {
     if (!itemName || !apiKey) return;
@@ -337,612 +176,212 @@ function PiPContent({ selectedChars, getCharForm, updateCharForm, auctionPrices,
       const data = await res.json();
       if (data.success && data.data[itemName] !== undefined) {
         const price = data.data[itemName];
-        updateCharForm(charId, 'customItems', cur => (cur || []).map(i => i.id === itemId ? { ...i, price } : i));
+        updateShop('customItems', cur => (cur || []).map(i => i.id === itemId ? { ...i, price } : i));
       }
     } catch (e) { console.error(e); }
     setFetchingItemId(null);
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f172a', color: '#e2e8f0', fontFamily: 'system-ui, sans-serif', fontSize: '0.8rem' }}>
-      {/* 캐릭터 탭 */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0.3rem', gap: '0.25rem', flexShrink: 0 }}>
-        {selectedChars.map(c => (
-          <button key={c.id} onClick={() => setActiveCharId(c.id)} style={{ width: 'calc(25% - 0.2rem)', padding: '0.3rem 0.2rem', fontSize: '0.65rem', borderRadius: '4px', border: c.id === charId ? '1px solid rgba(56,189,248,0.5)' : '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', background: c.id === charId ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.04)', color: c.id === charId ? '#38bdf8' : '#94a3b8', fontWeight: c.id === charId ? 'bold' : 'normal', textAlign: 'center' }}>
-            {c.base.charName}
-          </button>
-        ))}
-      </div>
-      {/* 탭 전환 */}
-      <div style={{ display: 'flex', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-        {[['shop', '🛒 특별상점'], ['loot', '📦 재화 입력']].map(([t, label]) => (
-          <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '0.45rem', fontSize: '0.7rem', border: 'none', cursor: 'pointer', background: tab === t ? 'rgba(56,189,248,0.12)' : 'transparent', color: tab === t ? '#38bdf8' : '#64748b', borderBottom: tab === t ? '2px solid #38bdf8' : '2px solid transparent', fontWeight: tab === t ? 'bold' : 'normal' }}>
-            {label}
-          </button>
-        ))}
-      </div>
-      {/* 내용 */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-        {tab === 'loot' ? (
-          <>
-            {/* 커스텀 아이템 */}
-            <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: '6px', padding: '0.55rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <span style={{ fontSize: '0.65rem', color: '#60a5fa', fontWeight: 'bold' }}>커스텀 추가 항목</span>
-                <button onClick={() => updateCharForm(charId, 'customItems', cur => [...(cur || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: '', quantity: '', price: 0 }])} style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: 'rgba(96,165,250,0.18)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: '3px', cursor: 'pointer' }}>+ 추가</button>
-              </div>
-              {(form.customItems || []).map(item => (
-                <CustomItemRow key={item.id} item={item} charId={charId} updateCharForm={updateCharForm} fetchCustomItemPrice={fetchCustomItemPrice} fetchingItemId={fetchingItemId} suggestions={customItemSuggestions} />
-              ))}
-              {(form.customItems || []).length === 0 && <div style={{ fontSize: '0.65rem', color: '#475569', textAlign: 'center' }}>없음</div>}
-            </div>
-            {/* 포션 / 메모 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={lbl}>포션 사용:</span>
-              <button onClick={() => updateCharForm(charId, 'usePotion', !form.usePotion)} style={{ padding: '0.2rem 0.7rem', fontSize: '0.7rem', background: form.usePotion ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.05)', border: form.usePotion ? '1px solid rgba(248,113,113,0.4)' : '1px solid rgba(255,255,255,0.12)', color: form.usePotion ? '#f87171' : '#64748b', borderRadius: '4px', cursor: 'pointer' }}>
-                {form.usePotion ? '사용' : '미사용'}
-              </button>
-            </div>
-            <div>
-              <label style={lbl}>메모</label>
-              <input type="text" style={inp} value={form.memo || ''} onChange={e => updateCharForm(charId, 'memo', e.target.value)} placeholder="특이사항" />
-            </div>
-          </>
-        ) : (
-          <>
-            {/* 인장 구매 */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.7rem', color: '#38bdf8', fontWeight: 'bold' }}>인장 구매</span>
-                <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                  {[90000, 100000, 110000].map(price => (
-                    <button key={price} onClick={() => addCharToken(charId, String(price))} style={{ padding: '0.15rem 0.35rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.15)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.3)', borderRadius: '3px', cursor: 'pointer' }}>{price / 10000}만</button>
-                  ))}
-                  <button onClick={() => addCharToken(charId)} style={{ padding: '0.15rem 0.35rem', fontSize: '0.65rem', background: 'rgba(255,255,255,0.07)', color: '#cbd5e1', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '3px', cursor: 'pointer' }}>직접</button>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                {(form.secretTokens || []).map((t, idx) => (
-                  <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(255,255,255,0.04)', padding: '0.25rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <span style={{ fontSize: '0.6rem', color: '#475569' }}>#{idx + 1}</span>
-                    <input type="number" value={t.buyPrice} onChange={e => updateCharToken(charId, t.id, e.target.value)} style={{ width: '68px', padding: '0.2rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '3px', fontSize: '0.7rem' }} placeholder="골드" />
-                    <button onClick={() => removeCharToken(charId, t.id)} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0' }}>×</button>
-                  </div>
-                ))}
-                {(form.secretTokens || []).length === 0 && <div style={{ fontSize: '0.65rem', color: '#475569' }}>없음</div>}
-              </div>
-            </div>
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-            {/* 레시피 / 답례품 */}
-            <div>
-              <div style={{ display: 'flex', gap: '0.3rem', marginBottom: '0.55rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.65rem', color: '#a78bfa', fontWeight: 'bold' }}>레시피:</span>
-                <button onClick={() => addCharRecipe(charId)} style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: 'rgba(167,139,250,0.15)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.28)', borderRadius: '3px', cursor: 'pointer' }}>+ 일반</button>
-                <button onClick={() => { const f = getCharForm(charId); updateCharForm(charId, 'secretRecipes', [...(f.secretRecipes || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, buyPrice: '', type: 'shinyGift' }]); }} style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.28)', borderRadius: '3px', cursor: 'pointer' }}>+ 빛나는</button>
-                <button onClick={() => { const f = getCharForm(charId); updateCharForm(charId, 'secretRecipes', [...(f.secretRecipes || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, buyPrice: '', type: 'brilliantGift' }]); }} style={{ padding: '0.15rem 0.4rem', fontSize: '0.65rem', background: 'rgba(56,189,248,0.15)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.28)', borderRadius: '3px', cursor: 'pointer' }}>+ 화려한</button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {(form.secretRecipes || []).map((r, idx) => {
-                  const isShiny = r.type === 'shinyGift', isBrilliant = r.type === 'brilliantGift', isGift = isShiny || isBrilliant;
-                  return (
-                    <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255,255,255,0.03)', padding: '0.4rem 0.5rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.65rem', color: isGift ? '#fbbf24' : '#a78bfa', minWidth: '80px', flexShrink: 0 }}>
-                        {isShiny ? '🎁 빛나는 답례품' : isBrilliant ? '🎁 화려한 답례품' : `레시피 #${idx + 1}`}
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                        <span style={{ fontSize: '0.6rem', color: '#64748b' }}>구매가:</span>
-                        <input type="number" value={r.buyPrice} onChange={e => updateCharRecipe(charId, r.id, 'buyPrice', e.target.value)} style={{ width: '70px', padding: '0.2rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '3px', fontSize: '0.65rem' }} placeholder="골드" />
-                      </div>
-                      {!isGift && (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                            <span style={{ fontSize: '0.6rem', color: '#64748b' }}>인장:</span>
-                            <input type="number" value={r.sealCost} onChange={e => updateCharRecipe(charId, r.id, 'sealCost', e.target.value)} style={{ width: '38px', padding: '0.2rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '3px', fontSize: '0.65rem' }} />
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                            <span style={{ fontSize: '0.6rem', color: '#64748b' }}>판매가:</span>
-                            <input type="number" value={r.sellPrice} onChange={e => updateCharRecipe(charId, r.id, 'sellPrice', e.target.value)} style={{ width: '70px', padding: '0.2rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff', borderRadius: '3px', fontSize: '0.65rem' }} />
-                          </div>
-                        </>
-                      )}
-                      <button onClick={() => removeCharRecipe(charId, r.id)} style={{ marginLeft: 'auto', color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: '0' }}>×</button>
-                    </div>
-                  );
-                })}
-                {(form.secretRecipes || []).length === 0 && <div style={{ fontSize: '0.65rem', color: '#475569' }}>없음</div>}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePilgrimage, onDeletePilgrimage, apiKey }) {
-  const [pilgrimageForm, setPilgrimageForm] = useState({});
-  const [snapBefore, setSnapBefore] = useState(EMPTY_SNAP());
-  const [snapAfter, setSnapAfter] = useState(EMPTY_SNAP());
-  const [useVoucherExchange, setUseVoucherExchange] = useState(true);
-  const [globalStartFatigue, setGlobalStartFatigue] = useState('');
-  const [auctionPrices, setAuctionPrices] = useState(DEFAULT_AUCTION_PRICES);
-  const [isFetchingPrices, setIsFetchingPrices] = useState(false);
-  const [activeSecretShopModal, setActiveSecretShopModal] = useState(null);
-  const [showAuctionPricesModal, setShowAuctionPricesModal] = useState(false);
-  const [calcDetail, setCalcDetail] = useState(null);
-  const [saveResult, setSaveResult] = useState(null);
-  const [isPipOpen, setIsPipOpen] = useState(false);
-  const pipWindowRef = useRef(null);
-  const pipRootRef = useRef(null);
-
-  useEffect(() => {
-    const draft = localStorage.getItem('DNF_PILGRIMAGE_FORM_DRAFT');
-    if (draft) { try { setPilgrimageForm(JSON.parse(draft)); } catch (e) {} }
-    const draftFatigue = localStorage.getItem('DNF_PILGRIMAGE_GLOBAL_FATIGUE');
-    if (draftFatigue) setGlobalStartFatigue(Number(draftFatigue));
-    const draftPrices = localStorage.getItem('DNF_PILGRIMAGE_AUCTION_PRICES');
-    if (draftPrices) { try { setAuctionPrices(prev => ({ ...prev, ...JSON.parse(draftPrices) })); } catch (e) {} }
-    const snapB = localStorage.getItem('DNF_SNAP_BEFORE');
-    if (snapB) { try { setSnapBefore(JSON.parse(snapB)); } catch (e) {} }
-    const snapA = localStorage.getItem('DNF_SNAP_AFTER');
-    if (snapA) { try { setSnapAfter(JSON.parse(snapA)); } catch (e) {} }
-  }, []);
-
-  useEffect(() => {
-    if (globalStartFatigue !== '') localStorage.setItem('DNF_PILGRIMAGE_GLOBAL_FATIGUE', globalStartFatigue);
-  }, [globalStartFatigue]);
-
-  useEffect(() => {
-    localStorage.setItem('DNF_PILGRIMAGE_AUCTION_PRICES', JSON.stringify(auctionPrices));
-  }, [auctionPrices]);
-
-  useEffect(() => {
-    if (Object.keys(pilgrimageForm).length > 0) localStorage.setItem('DNF_PILGRIMAGE_FORM_DRAFT', JSON.stringify(pilgrimageForm));
-  }, [pilgrimageForm]);
-
-  useEffect(() => { localStorage.setItem('DNF_SNAP_BEFORE', JSON.stringify(snapBefore)); }, [snapBefore]);
-  useEffect(() => { localStorage.setItem('DNF_SNAP_AFTER', JSON.stringify(snapAfter)); }, [snapAfter]);
-
-  const getCharForm = (id) => pilgrimageForm[id] || EMPTY_CHAR_FORM();
-
-  const getEffectiveForm = (charId, allSelectedChars) => {
-    const form = getCharForm(charId);
-    const charRuns = Math.ceil(Number(form.startFatigue || 0) / 8) + (form.usePotion ? 4 : 0);
-    const totalRuns = (allSelectedChars || []).reduce((sum, c) => {
-      const f = getCharForm(c.id);
-      return sum + Math.ceil(Number(f.startFatigue || 0) / 8) + (f.usePotion ? 4 : 0);
-    }, 0);
-    const n = (allSelectedChars || []).length;
-    const ratio = totalRuns > 0 ? charRuns / totalRuns : (n > 0 ? 1 / n : 0);
-    return {
-      ...form,
-      pureGold: String(Math.round(Math.max(0, Number(snapAfter.gold || 0) - Number(snapBefore.gold || 0)) * ratio)),
-      ...Object.fromEntries(MATERIAL_KEYS.map(k => [k, String(Math.round(Math.max(0, Number(snapAfter[k] || 0) - Number(snapBefore[k] || 0)) * ratio))])),
-    };
-  };
-
-  const updateCharForm = (id, field, value) => setPilgrimageForm(prev => {
-    const existing = prev[id] || EMPTY_CHAR_FORM();
-    return { ...prev, [id]: { ...existing, [field]: typeof value === 'function' ? value(existing[field]) : value } };
-  });
-  const togglePilgrimageChar = (id) => updateCharForm(id, 'selected', !getCharForm(id).selected);
-
-  // ─── Document PiP ─────────────────────────────────────────────────────────────
-
-  const renderToPip = useCallback((sel, gCF, uCF, ap, ak, aCT, uCT, rCT, aCR, uCR, rCR, hist) => {
-    if (!pipRootRef.current || !pipWindowRef.current) return;
-    pipRootRef.current.render(
-      <PiPContent
-        selectedChars={sel}
-        getCharForm={gCF}
-        updateCharForm={uCF}
-        auctionPrices={ap}
-        apiKey={ak}
-        addCharToken={aCT}
-        updateCharToken={uCT}
-        removeCharToken={rCT}
-        addCharRecipe={aCR}
-        updateCharRecipe={uCR}
-        removeCharRecipe={rCR}
-        pilgrimageHistory={hist}
-        pipWindow={pipWindowRef.current}
-      />
-    );
-  }, []);
-
-  const openDocumentPiP = async () => {
-    if (pipWindowRef.current && !pipWindowRef.current.closed) {
-      pipWindowRef.current.close();
-      return;
-    }
-    if (!('documentPictureInPicture' in window)) {
-      alert('Chrome 116 이상에서만 지원됩니다.');
-      return;
-    }
-    try {
-      // preferInitialWindowPlacement: false(기본값) → Chrome이 직전 드래그 위치/크기를 자동 복원
-      const pip = await window.documentPictureInPicture.requestWindow({
-        width: PIP_NORMAL.w,
-        height: PIP_NORMAL.h,
-        preferInitialWindowPlacement: false,
-      });
-      pipWindowRef.current = pip;
-
-      pip.document.body.style.cssText = 'margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:system-ui,sans-serif;overflow:hidden;height:100vh;';
-      document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-        const el = pip.document.createElement('link');
-        el.rel = 'stylesheet'; el.href = link.href;
-        pip.document.head.appendChild(el);
-      });
-      document.querySelectorAll('style').forEach(style => {
-        const el = pip.document.createElement('style');
-        el.textContent = style.textContent;
-        pip.document.head.appendChild(el);
-      });
-
-      const container = pip.document.createElement('div');
-      container.style.cssText = 'height:100vh;display:flex;flex-direction:column;overflow:hidden;';
-      pip.document.body.appendChild(container);
-
-      const root = createRoot(container);
-      pipRootRef.current = root;
-      setIsPipOpen(true);
-
-      pip.addEventListener('pagehide', () => {
-        root.unmount();
-        pipRootRef.current = null;
-        pipWindowRef.current = null;
-        setIsPipOpen(false);
-      });
-    } catch (e) {
-      if (e.name !== 'AbortError') alert('PiP 창 열기 실패: ' + e.message);
-    }
-  };
-
-  const addCharToken = (charId, buyPrice = '') => {
-    const form = getCharForm(charId);
-    updateCharForm(charId, 'secretTokens', [...(form.secretTokens || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, buyPrice }]);
-  };
-  const updateCharToken = (charId, tokenId, val) => {
-    updateCharForm(charId, 'secretTokens', getCharForm(charId).secretTokens.map(t => t.id === tokenId ? { ...t, buyPrice: val } : t));
-  };
-  const removeCharToken = (charId, tokenId) => {
-    updateCharForm(charId, 'secretTokens', getCharForm(charId).secretTokens.filter(t => t.id !== tokenId));
-  };
-  const addCharRecipe = (charId) => {
-    const form = getCharForm(charId);
-    updateCharForm(charId, 'secretRecipes', [...(form.secretRecipes || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, buyPrice: '', sealCost: '', sellPrice: '' }]);
-  };
-  const updateCharRecipe = (charId, recipeId, field, val) => {
-    updateCharForm(charId, 'secretRecipes', getCharForm(charId).secretRecipes.map(r => r.id === recipeId ? { ...r, [field]: val } : r));
-  };
-  const removeCharRecipe = (charId, recipeId) => {
-    updateCharForm(charId, 'secretRecipes', getCharForm(charId).secretRecipes.filter(r => r.id !== recipeId));
-  };
-
-  const applyGlobalFatigue = () => {
-    const updated = { ...pilgrimageForm };
-    characters.forEach(c => { updated[c.id] = { ...getCharForm(c.id), startFatigue: globalStartFatigue }; });
-    setPilgrimageForm(updated);
   };
 
   const fetchAuctionPrices = async () => {
     if (!apiKey) { alert("API 키가 필요합니다."); return; }
     setIsFetchingPrices(true);
     try {
-      const customNames = new Set();
-      characters.forEach(c => (getCharForm(c.id).customItems || []).forEach(item => { if (item.name?.trim()) customNames.add(item.name.trim()); }));
-      const allItemNames = [...PILGRIMAGE_BASE_ITEMS, ...Array.from(customNames)];
+      const customNames = (shop.customItems || []).map(i => i.name?.trim()).filter(Boolean);
+      const allItemNames = [...PILGRIMAGE_BASE_ITEMS, ...new Set(customNames)];
       const res = await fetch('/api/auction', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey, itemNames: allItemNames }) });
       const data = await res.json();
       if (data.success) {
         setAuctionPrices(prev => ({ ...prev, ...data.data }));
-        const updatedForm = { ...pilgrimageForm };
-        characters.forEach(c => {
-          const form = getCharForm(c.id);
-          const items = form.customItems || [];
-          if (items.length > 0) updatedForm[c.id] = { ...form, customItems: items.map(item => item.name && data.data[item.name] !== undefined ? { ...item, price: data.data[item.name] } : item) };
-        });
-        setPilgrimageForm(updatedForm);
+        updateShop('customItems', cur => (cur || []).map(item => item.name && data.data[item.name] !== undefined ? { ...item, price: data.data[item.name] } : item));
         alert("경매장 시세를 성공적으로 불러왔습니다!");
       } else { alert("불러오기 실패: " + data.error); }
     } catch (e) { console.error(e); alert("경매장 API 연동 중 오류가 발생했습니다."); }
     setIsFetchingPrices(false);
   };
 
-  const handleSavePilgrimage = () => {
-    const selectedCharsForSave = characters.filter(c => getCharForm(c.id).selected);
-    const selectedIds = selectedCharsForSave.map(c => c.id);
-    if (selectedIds.length === 0) { alert('돌 캐릭터를 하나 이상 선택해주세요.'); return; }
+  const values = calcBatchValues(snapBefore, snapAfter, auctionPrices, shop, useVoucherExchange);
+  const hasAnyInput = Object.keys(snapBefore).some(k => snapBefore[k] !== '') || Object.keys(snapAfter).some(k => snapAfter[k] !== '');
 
-    const recordDetails = selectedIds.map(id => {
-      const c = characters.find(char => char.id === id);
-      const form = getEffectiveForm(id, selectedCharsForSave);
-      const v = calcCharValues(form, auctionPrices, useVoucherExchange);
-      return {
-        charId: id,
-        charName: c ? c.base.charName : '알 수 없음',
-        jobName: c ? c.base.jobGrowName : '',
-        startFatigue: form.startFatigue,
-        runs: v.runs,
-        acquired: { pureGold: form.pureGold, seal: form.seal, condensedCore: form.condensedCore, crystal: form.crystal, flawlessCore: form.flawlessCore, flawlessCrystal: form.flawlessCrystal, sealVoucher: form.sealVoucher, tradableSeal: form.tradableSeal, sealVoucherBox: form.sealVoucherBox },
-        consumed: { token: v.runs, potion: form.usePotion ? 1 : 0 },
-        memo: form.memo || '',
-        customItems: form.customItems || [],
-        customTradableValue: v.customTradableValue,
-        secretShop: { tokens: form.secretTokens, recipes: form.secretRecipes, tokenProfit: v.tokenProfit, recipeProfit: v.recipeProfit, recipeSealCost: v.recipeSealCostValue },
-        values: { bound: v.finalBoundValue, tradable: v.finalTradableValue, consumed: v.totalConsumedValue, potionCost: v.potionCost, profit: v.totalProfit }
-      };
-    });
-
-    const totalBound = recordDetails.reduce((acc, d) => acc + d.values.bound, 0);
-    const totalTradable = recordDetails.reduce((acc, d) => acc + d.values.tradable, 0);
-    const totalConsumed = recordDetails.reduce((acc, d) => acc + d.values.consumed, 0);
-
+  const handleSave = () => {
+    if (!hasAnyInput) { alert('시작 전 / 종료 후 재화를 먼저 입력해주세요.'); return; }
     const newRecord = {
       id: Date.now().toString(),
       date: new Date().toISOString(),
-      details: recordDetails,
-      sessionTotals: { bound: totalBound, tradable: totalTradable, consumed: totalConsumed, profit: totalBound + totalTradable - totalConsumed }
+      before: snapBefore, after: snapAfter,
+      deltas: values.deltas,
+      shop: { generalRecipes: shop.generalRecipes, shinyGiftCount: shop.shinyGiftCount, brilliantGiftCount: shop.brilliantGiftCount, customItems: shop.customItems },
+      values: { bound: values.boundValue, tradable: values.tradableValue, profitIncl: values.totalProfit, profitExcl: values.profitExclBound },
+      memo
     };
-
     onSavePilgrimage(newRecord);
+    setSaveResult(newRecord);
 
-    setSaveResult({
-      count: recordDetails.length,
-      totalBound: totalBound,
-      totalTradable: totalTradable,
-      totalConsumed: totalConsumed,
-      totalProfit: totalBound + totalTradable - totalConsumed,
-      profitExclBound: totalTradable - totalConsumed,
-      goldDelta: Math.max(0, Number(snapAfter.gold || 0) - Number(snapBefore.gold || 0)),
-      materialDeltas: Object.fromEntries(MATERIAL_KEYS.map(k => [k, Math.max(0, Number(snapAfter[k] || 0) - Number(snapBefore[k] || 0))])),
-    });
-
-    const resetForm = { ...pilgrimageForm };
-    selectedIds.forEach(id => { resetForm[id] = EMPTY_CHAR_FORM(); });
-    setPilgrimageForm(resetForm);
     setSnapBefore(EMPTY_SNAP());
     setSnapAfter(EMPTY_SNAP());
-    localStorage.removeItem('DNF_SNAP_BEFORE');
-    localStorage.removeItem('DNF_SNAP_AFTER');
+    setShop(EMPTY_SHOP());
+    setMemo('');
+    ['DNF_PILGRIMAGE_BATCH_BEFORE', 'DNF_PILGRIMAGE_BATCH_AFTER', 'DNF_PILGRIMAGE_BATCH_SHOP', 'DNF_PILGRIMAGE_BATCH_MEMO'].forEach(k => localStorage.removeItem(k));
   };
 
-  const sortedChars = getSortedCharacters(characters);
-  const selectedChars = sortedChars.filter(c => getCharForm(c.id).selected);
-
-  // PiP 상태 동기화
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    renderToPip(selectedChars, getCharForm, updateCharForm, auctionPrices, apiKey, addCharToken, updateCharToken, removeCharToken, addCharRecipe, updateCharRecipe, removeCharRecipe, pilgrimageHistory);
-  }, [pilgrimageForm, auctionPrices, characters, apiKey, isPipOpen, pilgrimageHistory]);
-
-  const inputStyle = { width: '55px', padding: '0.2rem 0.1rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
-
-  let countWithData = 0, sumFatigue = 0, sumRuns = 0;
-  let sumTokens = 0, sumPotions = 0, sumBoundValue = 0, sumTradableValue = 0, sumTotalProfit = 0, sumProfitExclBound = 0;
-
-  const rows = selectedChars.map((c, idx) => {
-    const rawForm = getCharForm(c.id);
-    const form = getEffectiveForm(c.id, selectedChars);
-    const v = calcCharValues(form, auctionPrices, useVoucherExchange);
-    const hasLootData = MATERIAL_KEYS.some(k => Number(form[k] || 0) > 0)
-      || Number(form.pureGold || 0) > 0
-      || (form.customItems && form.customItems.length > 0)
-      || (form.secretTokens || []).some(t => t.buyPrice !== '')
-      || (form.secretRecipes || []).some(r => r.buyPrice !== '' || r.sealCost !== '' || r.sellPrice !== '');
-    const rowStyle = { borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.2s' };
-    const totalProfitIncl = v.finalBoundValue + v.finalTradableValue - v.totalConsumedValue;
-    const profitExclBound = v.finalTradableValue - v.totalConsumedValue;
-
-    if (hasLootData) {
-      countWithData++; sumFatigue += Number(rawForm.startFatigue || 0); sumRuns += v.runs;
-      sumTokens += v.runs; sumPotions += (rawForm.usePotion ? 1 : 0);
-      sumBoundValue += v.finalBoundValue; sumTradableValue += v.finalTradableValue;
-      sumTotalProfit += totalProfitIncl; sumProfitExclBound += profitExclBound;
-    }
-
-    const clickDetail = hasLootData ? {
-      charName: c.base.charName,
-      items: { seal: Number(form.seal || 0), core: Number(form.condensedCore || 0), crystal: Number(form.crystal || 0), pureGold: Number(form.pureGold || 0), flawlessCore: Number(form.flawlessCore || 0), flawlessCrystal: Number(form.flawlessCrystal || 0), sealVoucher: Number(form.sealVoucher || 0), sealVoucherBox: Number(form.sealVoucherBox || 0), tradableSeal: Number(form.tradableSeal || 0), runs: v.runs, useVoucherExchange },
-      breakdown: { seal: v.sealValue, core: v.boundCoreValue, crystal: v.boundCrystalValue, flawlessCore: v.tradableCoreValue, flawlessCrystal: v.tradableCrystalValue, voucherTradableGain: v.voucherTradableGain, voucherBoundCost: v.voucherBoundCost, sealVoucherBox: v.voucherBoxValue, tradableSeal: v.tradableSealValue, tokenCost: v.tokenCost, potionCost: v.potionCost, recipeSealCost: v.recipeSealCostValue, customTradable: v.customTradableValue, tokenProfit: v.tokenProfit, recipeProfit: v.recipeProfit, giftSoulCost: v.giftSoulCost, grossPureGold: v.grossPureGold, tokenSpend: v.tokenSpend, recipeSpend: v.recipeSpend },
-      totals: { bound: v.finalBoundValue, tradable: v.finalTradableValue, consumed: v.totalConsumedValue },
-      final: { includingBound: totalProfitIncl, excludingBound: profitExclBound }
-    } : null;
-
-    return (
-      <tr key={c.id} style={rowStyle}>
-        <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#38bdf8', cursor: 'pointer' }} onClick={() => togglePilgrimageChar(c.id)} title={`${c.base.charName} - 클릭 시 목록에서 제거`}>
-          <span style={{ fontSize: '0.7rem' }}>{c.base.charName}</span><span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontWeight: 'normal' }}>✕</span>
-        </td>
-        <td style={{ padding: '0.2rem 0.1rem' }}><input type="number" style={inputStyle} value={rawForm.startFatigue} onChange={e => updateCharForm(c.id, 'startFatigue', e.target.value)} /></td>
-        <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{v.runs}</td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{v.runs > 0 ? v.runs : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem', color: '#fca5a5' }}>
-          <button onClick={() => updateCharForm(c.id, 'usePotion', !rawForm.usePotion)} style={{ padding: '0.1rem 0.3rem', fontSize: '0.65rem', background: rawForm.usePotion ? 'rgba(248,113,113,0.2)' : 'rgba(255,255,255,0.05)', border: rawForm.usePotion ? '1px solid rgba(248,113,113,0.4)' : '1px solid rgba(255,255,255,0.1)', color: rawForm.usePotion ? '#f87171' : '#64748b', borderRadius: '3px', cursor: 'pointer' }}>
-            {rawForm.usePotion ? '사용' : '미사용'}
-          </button>
-        </td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', verticalAlign: 'middle' }}>
-          <button onClick={() => setActiveSecretShopModal({ charId: c.id })} style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', background: 'rgba(167,139,250,0.2)', border: '1px solid rgba(167,139,250,0.4)', color: '#a78bfa', borderRadius: '4px', cursor: 'pointer', width: '100%' }}>
-            특별상점 관리 {((form.secretTokens?.length || 0) + (form.secretRecipes?.length || 0)) > 0 ? `(${(form.secretTokens?.length || 0) + (form.secretRecipes?.length || 0)})` : ''}
-          </button>
-        </td>
-        <td style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', verticalAlign: 'middle' }}>{v.finalBoundValue > 0 ? v.finalBoundValue.toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem', color: '#e2e8f0', verticalAlign: 'middle' }}>{v.finalTradableValue > 0 ? v.finalTradableValue.toLocaleString() : '-'}</td>
-        <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: hasLootData ? (totalProfitIncl > 0 ? '#4ade80' : totalProfitIncl < 0 ? '#f87171' : '#cbd5e1') : '#94a3b8', verticalAlign: 'middle', cursor: hasLootData ? 'pointer' : 'default', textDecoration: hasLootData ? 'underline' : 'none' }} onClick={() => clickDetail && setCalcDetail(clickDetail)}>
-          {hasLootData ? (totalProfitIncl !== 0 ? totalProfitIncl.toLocaleString() : '-') : '-'}
-        </td>
-        <td style={{ padding: '0.2rem 0.1rem', fontWeight: 'bold', color: hasLootData ? (profitExclBound > 0 ? '#38bdf8' : profitExclBound < 0 ? '#f87171' : '#cbd5e1') : '#94a3b8', verticalAlign: 'middle', cursor: hasLootData ? 'pointer' : 'default', textDecoration: hasLootData ? 'underline' : 'none' }} onClick={() => clickDetail && setCalcDetail(clickDetail)}>
-          {hasLootData ? (profitExclBound !== 0 ? profitExclBound.toLocaleString() : '-') : '-'}
-        </td>
-      </tr>
-    );
-  });
+  const snapInp = { width: '64px', padding: '0.25rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px' };
+  const goldInp = { ...snapInp, width: '110px' };
+  const lbl = { fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold' };
 
   return (
     <section className="glass-panel" style={{ minHeight: '60vh' }}>
-      <h2 style={{ marginTop: 0, marginBottom: '1.5rem' }}>✨ 광휘의 순례 기록표</h2>
+      <h2 style={{ marginTop: 0, marginBottom: '0.4rem' }}>✨ 광휘의 순례 — 일괄 정산</h2>
+      <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: 0, marginBottom: '1.5rem' }}>
+        캐릭터별로 나누지 않고, 계정 전체 보유량의 시작 전 → 종료 후 증감분만으로 손익을 계산합니다.
+      </p>
 
       {/* Global Actions */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>일괄 피로도:</label>
-          <input type="number" value={globalStartFatigue} onChange={e => setGlobalStartFatigue(Number(e.target.value))} style={{ width: '80px', padding: '0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: '0.7rem' }} />
-          <button onClick={applyGlobalFatigue} style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: 'rgba(56,189,248,0.2)', border: '1px solid rgba(56,189,248,0.4)', color: '#38bdf8' }}>적용</button>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <button onClick={openDocumentPiP} style={{ padding: '0.5rem 1rem', background: isPipOpen ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)', color: isPipOpen ? '#4ade80' : '#cbd5e1', border: isPipOpen ? '1px solid rgba(74,222,128,0.4)' : '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 'bold' }}>
-            {isPipOpen ? '📌 PiP 닫기' : '📌 PiP 입력창'}
-          </button>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <button onClick={() => setUseVoucherExchange(v => !v)} style={{ padding: '0.5rem 0.9rem', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
-              background: useVoucherExchange ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)',
-              color: useVoucherExchange ? '#4ade80' : '#f87171',
-              borderColor: useVoucherExchange ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.4)' }}>
-              교환권 {useVoucherExchange ? '교환 O' : '교환 X'}
-            </button>
-            <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
-              {isFetchingPrices ? '불러오는 중...' : '단가 새로고침'}
-            </button>
-            <button onClick={() => setShowAuctionPricesModal(true)} style={{ padding: '0.5rem 1rem', background: 'rgba(167,139,250,0.2)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>단가 확인</button>
-          </div>
-          <button onClick={handleSavePilgrimage} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px', fontSize: '0.7rem' }}>선택 캐릭터 저장</button>
-        </div>
+      <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <button onClick={() => setUseVoucherExchange(v => !v)} style={{ padding: '0.5rem 0.9rem', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid', cursor: 'pointer', fontWeight: 'bold',
+          background: useVoucherExchange ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)',
+          color: useVoucherExchange ? '#4ade80' : '#f87171',
+          borderColor: useVoucherExchange ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.4)' }}>
+          교환권 {useVoucherExchange ? '교환 O' : '교환 X'}
+        </button>
+        <button onClick={fetchAuctionPrices} disabled={isFetchingPrices} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>
+          {isFetchingPrices ? '불러오는 중...' : '단가 새로고침'}
+        </button>
+        <button onClick={() => setShowAuctionPricesModal(true)} style={{ padding: '0.5rem 1rem', background: 'rgba(167,139,250,0.2)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem' }}>단가 확인</button>
+        <button onClick={handleSave} style={{ padding: '0.5rem 1.5rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px', fontSize: '0.7rem' }}>이번 순례 저장</button>
       </div>
 
-      {/* 캐릭터 선택 */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.8rem' }}>참여 캐릭터 선택 (클릭하여 추가/제거)</h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {sortedChars.map(c => {
-            const isSelected = getCharForm(c.id).selected;
-            return (
-              <button key={c.id} onClick={() => togglePilgrimageChar(c.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem', borderRadius: '4px', border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.1)', background: isSelected ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.05)', color: isSelected ? '#fff' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}>
-                {c.base.charName}
-              </button>
-            );
-          })}
+      {/* 재화 스냅샷 */}
+      <div style={{ marginBottom: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
+          <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold' }}>📦 재화 스냅샷 (순례 시작 전 / 종료 후 보유량)</span>
+          <button onClick={() => { setSnapBefore(EMPTY_SNAP()); setSnapAfter(EMPTY_SNAP()); }} style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem', background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '3px', cursor: 'pointer' }}>초기화</button>
         </div>
-      </div>
 
-      {/* 재화 스냅샷 패널 */}
-      {selectedChars.length > 0 && (() => {
-        const snapInp = { width: '54px', padding: '0.2rem', fontSize: '0.7rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px' };
-        return (
-          <div style={{ marginBottom: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '0.9rem 1rem', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.7rem' }}>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold' }}>📦 재화 스냅샷 (운영 전 / 후 수량 직접 입력)</span>
-              <button onClick={() => { setSnapBefore(EMPTY_SNAP()); setSnapAfter(EMPTY_SNAP()); }} style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem', background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '3px', cursor: 'pointer' }}>초기화</button>
-            </div>
-            {/* 공유 재료 스냅샷 */}
-            <div style={{ overflowX: 'auto', marginBottom: '0.8rem' }}>
-              <table style={{ borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    <th style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color: '#64748b', fontSize: '0.65rem', width: '44px' }}></th>
-                    {MATERIAL_FIELDS.map(([k, label]) => (
-                      <th key={k} style={{ padding: '0.2rem 0.3rem', color: '#94a3b8', fontSize: '0.6rem', whiteSpace: 'pre-line', minWidth: '58px' }}>{label}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[['초기', snapBefore, setSnapBefore, '#64748b'], ['최종', snapAfter, setSnapAfter, '#4ade80']].map(([label, snap, setSnap, color]) => (
-                    <tr key={label}>
-                      <td style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color, fontSize: '0.65rem', fontWeight: 'bold' }}>{label}</td>
-                      {MATERIAL_FIELDS.map(([k]) => (
-                        <td key={k} style={{ padding: '0.15rem 0.2rem' }}>
-                          <input type="number" value={snap[k]} onChange={e => setSnap(p => ({ ...p, [k]: e.target.value }))} style={snapInp} placeholder="0" />
-                        </td>
-                      ))}
-                    </tr>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.9rem' }}>
+          <span style={{ ...lbl, minWidth: '70px' }}>💰 골드</span>
+          <input type="number" placeholder="시작 전" value={snapBefore.gold} onChange={e => setSnapBefore(p => ({ ...p, gold: e.target.value }))} style={goldInp} />
+          <span style={{ color: '#475569', fontSize: '0.65rem' }}>→</span>
+          <input type="number" placeholder="종료 후" value={snapAfter.gold} onChange={e => setSnapAfter(p => ({ ...p, gold: e.target.value }))} style={goldInp} />
+          <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: values.deltas.gold > 0 ? '#4ade80' : values.deltas.gold < 0 ? '#f87171' : '#475569' }}>
+            {values.deltas.gold !== 0 ? `${values.deltas.gold > 0 ? '+' : ''}${values.deltas.gold.toLocaleString()}` : '-'}
+          </span>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <th style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color: '#64748b', fontSize: '0.65rem', width: '54px' }}></th>
+                {SNAPSHOT_FIELDS.map(([k, label]) => (
+                  <th key={k} style={{ padding: '0.2rem 0.3rem', color: '#94a3b8', fontSize: '0.6rem', whiteSpace: 'pre-line', minWidth: '64px' }}>{label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[['시작 전', snapBefore, setSnapBefore, '#64748b'], ['종료 후', snapAfter, setSnapAfter, '#4ade80']].map(([label, snap, setSnap, color]) => (
+                <tr key={label}>
+                  <td style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color, fontSize: '0.65rem', fontWeight: 'bold' }}>{label}</td>
+                  {SNAPSHOT_FIELDS.map(([k]) => (
+                    <td key={k} style={{ padding: '0.15rem 0.2rem' }}>
+                      <input type="number" value={snap[k]} onChange={e => setSnap(p => ({ ...p, [k]: e.target.value }))} style={snapInp} placeholder="0" />
+                    </td>
                   ))}
-                  <tr style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                    <td style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color: '#fbbf24', fontSize: '0.65rem', fontWeight: 'bold' }}>+획득</td>
-                    {MATERIAL_FIELDS.map(([k]) => {
-                      const delta = Math.max(0, Number(snapAfter[k] || 0) - Number(snapBefore[k] || 0));
-                      return <td key={k} style={{ padding: '0.15rem 0.2rem', fontWeight: 'bold', color: delta > 0 ? '#4ade80' : '#475569', fontSize: '0.7rem' }}>{delta > 0 ? `+${delta}` : '-'}</td>;
-                    })}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            {/* 전체 골드 */}
-            {(() => {
-              const goldDelta = Math.max(0, Number(snapAfter.gold || 0) - Number(snapBefore.gold || 0));
-              return (
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.65rem', color: '#94a3b8', flexShrink: 0 }}>💰 골드 (전체 합산)</span>
-                  <input type="number" placeholder="초기" value={snapBefore.gold} onChange={e => setSnapBefore(p => ({ ...p, gold: e.target.value }))} style={{ ...snapInp, width: '90px' }} />
-                  <span style={{ color: '#475569', fontSize: '0.65rem' }}>→</span>
-                  <input type="number" placeholder="최종" value={snapAfter.gold} onChange={e => setSnapAfter(p => ({ ...p, gold: e.target.value }))} style={{ ...snapInp, width: '90px' }} />
-                  <span style={{ fontSize: '0.7rem', color: goldDelta > 0 ? '#4ade80' : '#475569', fontWeight: 'bold' }}>{goldDelta > 0 ? `+${goldDelta.toLocaleString()}` : '-'}</span>
-                </div>
-              );
-            })()}
-          </div>
-        );
-      })()}
-
-      {/* Main Table */}
-      <div style={{ overflowX: 'auto', marginBottom: '3rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap', tableLayout: 'auto' }}>
-          <colgroup>
-            <col style={{ minWidth: '72px' }} />{/* 캐릭터 */}
-            <col style={{ minWidth: '52px' }} />{/* 피로도 */}
-            <col style={{ minWidth: '32px' }} />{/* 판수 */}
-            <col style={{ minWidth: '28px' }} />{/* 증표 */}
-            <col style={{ minWidth: '40px' }} />{/* 포션 */}
-            <col style={{ minWidth: '76px' }} />{/* 특별상점 */}
-            <col style={{ minWidth: '64px' }} />{/* 귀속가치 */}
-            <col style={{ minWidth: '64px' }} />{/* 교환가치 */}
-            <col style={{ minWidth: '64px' }} />{/* 순수익포함 */}
-            <col style={{ minWidth: '64px' }} />{/* 순수익제외 */}
-          </colgroup>
-          <thead>
-            <tr style={{ background: 'rgba(255,255,255,0.05)', fontSize: '0.7rem' }}>
-              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>캐릭터</th>
-              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>시작 피로도</th>
-              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', color: '#fbbf24', fontSize: '0.7rem' }}>예상 판수</th>
-              <th colSpan="2" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5', fontSize: '0.7rem' }}>소모 재화</th>
-              <th style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점</th>
-              <th colSpan="4" style={{ padding: '0.4rem', borderBottom: '1px solid rgba(255,255,255,0.1)', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c', fontSize: '0.7rem' }}>가치 산출 (골드)</th>
-            </tr>
-            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem', lineHeight: '1.2' }}>
-              <th colSpan="3" />
-              {['증표', '포션'].map((h, i) => (
-                <th key={h} style={{ padding: '0.2rem 0.1rem', ...(i === 0 ? { borderLeft: '1px solid rgba(255,255,255,0.1)' } : {}), color: '#fca5a5', fontSize: '0.7rem' }}>{h}</th>
-              ))}
-              <th style={{ padding: '0.2rem 0.1rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', fontSize: '0.7rem' }}>특별상점 관리</th>
-              {['귀속 가치', '교환 가치'].map((h, i) => (
-                <th key={h} style={{ padding: '0.2rem 0.1rem', ...(i === 0 ? { borderLeft: '1px solid rgba(255,255,255,0.1)' } : {}), color: '#fb923c', fontSize: '0.7rem' }}>{h}</th>
-              ))}
-              <th style={{ padding: '0.2rem 0.1rem', color: '#4ade80', fontSize: '0.7rem' }}>순수익<br />(귀속 포함)</th>
-              <th style={{ padding: '0.2rem 0.1rem', color: '#38bdf8', fontSize: '0.7rem' }}>순수익<br />(귀속 제외)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedChars.length === 0 ? (
-              <tr><td colSpan="19" style={{ padding: '2rem', color: 'var(--text-muted)' }}>위에서 참여할 캐릭터를 선택해주세요.</td></tr>
-            ) : (
-              <>
-                {rows}
-                <tr style={{ background: 'rgba(255,255,255,0.05)', fontWeight: 'bold', borderTop: '2px solid rgba(255,255,255,0.2)' }}>
-                  <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>총합계 ({countWithData})</td>
-                  <td style={{ padding: '0.5rem', color: '#e2e8f0' }}>{sumFatigue > 0 ? sumFatigue : '-'}</td>
-                  <td style={{ padding: '0.5rem', color: '#fbbf24' }}>{sumRuns > 0 ? sumRuns : '-'}</td>
-                  <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fca5a5' }}>{sumTokens > 0 ? sumTokens : '-'}</td>
-                  <td style={{ padding: '0.5rem', color: '#fca5a5' }}>{sumPotions > 0 ? sumPotions : '-'}</td>
-                  <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#a78bfa', textAlign: 'center' }}>-</td>
-                  <td style={{ padding: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', color: '#fb923c' }}>{sumBoundValue > 0 ? sumBoundValue.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem', color: '#fb923c' }}>{sumTradableValue > 0 ? sumTradableValue.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem', color: sumTotalProfit > 0 ? '#4ade80' : sumTotalProfit < 0 ? '#f87171' : '#cbd5e1' }}>{sumTotalProfit !== 0 ? sumTotalProfit.toLocaleString() : '-'}</td>
-                  <td style={{ padding: '0.5rem', color: sumProfitExclBound > 0 ? '#38bdf8' : sumProfitExclBound < 0 ? '#f87171' : '#cbd5e1' }}>{sumProfitExclBound !== 0 ? sumProfitExclBound.toLocaleString() : '-'}</td>
                 </tr>
-              </>
-            )}
-          </tbody>
-        </table>
+              ))}
+              <tr style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <td style={{ textAlign: 'left', padding: '0.2rem 0.6rem 0.2rem 0', color: '#fbbf24', fontSize: '0.65rem', fontWeight: 'bold' }}>증감</td>
+                {SNAPSHOT_FIELDS.map(([k]) => {
+                  const d = values.deltas[k];
+                  return <td key={k} style={{ padding: '0.15rem 0.2rem', fontWeight: 'bold', color: d > 0 ? '#4ade80' : d < 0 ? '#f87171' : '#475569', fontSize: '0.7rem' }}>{d !== 0 ? `${d > 0 ? '+' : ''}${d}` : '-'}</td>;
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style={{ fontSize: '0.6rem', color: '#475569', margin: '0.6rem 0 0' }}>* 골드·증표는 특별상점 지출/제작으로 줄어들 수 있어 증감분을 그대로 반영합니다. 나머지 재료는 감소분을 인정하지 않습니다.</p>
+      </div>
+
+      {/* 특별상점 부가정산 */}
+      <div style={{ marginBottom: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '1rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ fontSize: '0.75rem', color: '#a78bfa', fontWeight: 'bold', marginBottom: '0.8rem' }}>🛒 특별상점 부가정산 (재화 스냅샷에 안 잡히는 항목만)</div>
+
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.7rem', color: '#fbbf24' }}>🎁 빛나는 답례품 제작 횟수</span>
+            <input type="number" min="0" value={shop.shinyGiftCount} onChange={e => updateShop('shinyGiftCount', e.target.value)} style={{ ...snapInp, width: '54px' }} placeholder="0" />
+            <span style={{ fontSize: '0.6rem', color: '#64748b' }}>(회당 레전더리 소울 결정 1개 소모)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.7rem', color: '#38bdf8' }}>🎁 화려한 답례품 제작 횟수</span>
+            <input type="number" min="0" value={shop.brilliantGiftCount} onChange={e => updateShop('brilliantGiftCount', e.target.value)} style={{ ...snapInp, width: '54px' }} placeholder="0" />
+            <span style={{ fontSize: '0.6rem', color: '#64748b' }}>(회당 에픽 소울 결정 1개 소모)</span>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.7rem', color: '#a78bfa' }}>일반 레시피 제작 (아직 안 판 결과물의 예상 판매가)</span>
+            <button onClick={() => updateShop('generalRecipes', cur => [...(cur || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: '', sellPrice: '' }])} style={{ padding: '0.15rem 0.5rem', fontSize: '0.65rem', background: 'rgba(167,139,250,0.18)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)', borderRadius: '3px', cursor: 'pointer' }}>+ 추가</button>
+          </div>
+          {(shop.generalRecipes || []).map(r => (
+            <div key={r.id} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', marginBottom: '0.35rem' }}>
+              <input type="text" placeholder="결과물 이름 (선택)" value={r.name} onChange={e => updateShop('generalRecipes', cur => cur.map(x => x.id === r.id ? { ...x, name: e.target.value } : x))} style={{ ...snapInp, width: '160px', textAlign: 'left' }} />
+              <span style={{ fontSize: '0.65rem', color: '#64748b' }}>예상 판매가:</span>
+              <input type="number" placeholder="0" value={r.sellPrice} onChange={e => updateShop('generalRecipes', cur => cur.map(x => x.id === r.id ? { ...x, sellPrice: e.target.value } : x))} style={{ ...snapInp, width: '90px' }} />
+              <button onClick={() => updateShop('generalRecipes', cur => cur.filter(x => x.id !== r.id))} style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>×</button>
+            </div>
+          ))}
+          {(shop.generalRecipes || []).length === 0 && <div style={{ fontSize: '0.65rem', color: '#475569' }}>없음</div>}
+        </div>
+
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.7rem', color: '#60a5fa' }}>기타 획득 아이템 (재화 스냅샷/레시피 외 잡템)</span>
+            <button onClick={() => updateShop('customItems', cur => [...(cur || []), { id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: '', quantity: '', price: 0 }])} style={{ padding: '0.15rem 0.5rem', fontSize: '0.65rem', background: 'rgba(96,165,250,0.18)', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.3)', borderRadius: '3px', cursor: 'pointer' }}>+ 추가</button>
+          </div>
+          {(shop.customItems || []).map(item => (
+            <CustomItemRow key={item.id} item={item} updateShop={updateShop} fetchCustomItemPrice={fetchCustomItemPrice} fetchingItemId={fetchingItemId} />
+          ))}
+          {(shop.customItems || []).length === 0 && <div style={{ fontSize: '0.65rem', color: '#475569' }}>없음</div>}
+        </div>
+      </div>
+
+      {/* 계산 결과 */}
+      <div style={{ marginBottom: '1.5rem', background: 'rgba(0,0,0,0.25)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ fontSize: '0.75rem', color: '#fb923c', fontWeight: 'bold', marginBottom: '0.8rem' }}>📊 계산 결과</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.7rem', marginBottom: '0.8rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>순례의 인장 (귀속, {values.deltas.seal}개 × 5,000G)</span><span>{values.sealValue.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>응축된 라이언 코어 (귀속, {values.deltas.condensedCore}개)</span><span>{values.boundCoreValue.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>빛나는 조화의 결정체 (귀속, {values.deltas.crystal}개)</span><span>{values.boundCrystalValue.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#fb923c', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.3rem' }}><span>귀속 가치 합계</span><span>{values.boundValue.toLocaleString()} G</span></div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.7rem', marginBottom: '0.8rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>골드 증감</span><span>{values.deltas.gold.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>닳아버린 순례의 증표 증감 ({values.deltas.token}개)</span><span>{values.tokenValue.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>무결점 라이언 코어 ({values.deltas.flawlessCore}개)</span><span>{values.flawlessCoreValue.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>무결점 조화의 결정체 ({values.deltas.flawlessCrystal}개)</span><span>{values.flawlessCrystalValue.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>교환권 → 교환 인장 ({values.deltas.sealVoucher}×3개, {useVoucherExchange ? '교환 O' : '교환 X'})</span><span>{values.voucherValue.toLocaleString()} G</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>교환권 1개 상자 ({values.deltas.sealVoucherBox}개)</span><span>{values.voucherBoxValue.toLocaleString()} G</span></div>
+          {values.recipeUnsoldValue > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>일반 레시피 예상 판매가</span><span>+{values.recipeUnsoldValue.toLocaleString()} G</span></div>}
+          {values.customValue > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>기타 획득 아이템</span><span>+{values.customValue.toLocaleString()} G</span></div>}
+          {values.giftSoulCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>답례품 소울 결정 소모 (기회비용)</span><span>-{values.giftSoulCost.toLocaleString()} G</span></div>}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#38bdf8', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.3rem' }}><span>교환 가치 합계</span><span>{values.tradableValue.toLocaleString()} G</span></div>
+        </div>
+        <div style={{ borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 'bold' }}>
+            <span style={{ color: '#e2e8f0' }}>순수익 (귀속 포함)</span>
+            <span style={{ color: values.totalProfit > 0 ? '#4ade80' : values.totalProfit < 0 ? '#f87171' : '#cbd5e1' }}>{values.totalProfit.toLocaleString()} G</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 'bold' }}>
+            <span style={{ color: '#e2e8f0' }}>순수익 (귀속 제외)</span>
+            <span style={{ color: values.profitExclBound > 0 ? '#38bdf8' : values.profitExclBound < 0 ? '#f87171' : '#cbd5e1' }}>{values.profitExclBound.toLocaleString()} G</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 메모 */}
+      <div style={{ marginBottom: '2rem' }}>
+        <label style={{ ...lbl, display: 'block', marginBottom: '0.4rem' }}>메모</label>
+        <input type="text" value={memo} onChange={e => setMemo(e.target.value)} placeholder="이번 순례 특이사항" style={{ width: '100%', boxSizing: 'border-box', padding: '0.5rem', fontSize: '0.7rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.18)', color: '#fff', borderRadius: '4px' }} />
       </div>
 
       {/* 히스토리 */}
@@ -957,85 +396,35 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
                 <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 'bold' }}>📅 {new Date(record.date).toLocaleString()}</span>
                 <button className="danger" onClick={() => onDeletePilgrimage(record.id)} style={{ padding: '0.2rem 0.4rem', fontSize: '0.7rem' }}>기록 삭제</button>
               </div>
-              <div style={{ overflowX: 'auto', padding: '1rem' }}>
-                {record.chars ? (
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>[구버전 기록] 캐릭터: {record.chars.join(', ')} / 획득: {record.acquired} / 소모: {record.consumed}</div>
-                ) : (
+              <div style={{ padding: '1rem' }}>
+                {record.before && record.deltas ? (
                   <>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.7rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      <thead>
-                        <tr style={{ color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '0.7rem' }}>
-                          {['캐릭터', '피로도(판수)', '순 골드', '순례의 인장', '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권', '순례의 인장(1회 교환 가능) 교환권 1개 상자', '응축된 라이언 코어', '무결점 라이언 코어', '빛나는 조화의 결정체', '무결점 조화의 결정체', '귀속 가치', '교환 가치', '순수익(귀속 포함)', '순수익(귀속 제외)', '메모'].map((h, i) => (
-                            <th key={i} style={{ padding: '0.2rem 0.1rem', textAlign: i === 0 || i === 15 ? 'left' : 'center', color: [12, 13].includes(i) ? '#4ade80' : [10, 11].includes(i) ? '#fb923c' : [14].includes(i) ? '#38bdf8' : 'inherit', fontSize: '0.7rem' }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {record.details.map((d, i) => {
-                          let profit = d.values?.profit || 0;
-                          let tradable = d.values?.tradable || 0;
-                          const consumed = d.values?.consumed || 0;
-                          if (d.consumed?.potion > 0 && d.values?.potionCost === undefined) {
-                            const pPrice = auctionPrices['피로 회복의 영약'] || 0;
-                            tradable -= pPrice; profit -= pPrice;
-                          }
-                          const profitExclBound = tradable - consumed;
-                          return (
-                            <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                              <td style={{ padding: '0.25rem', color: '#e2e8f0', fontWeight: 'bold', textAlign: 'left', fontSize: '0.7rem' }}>{d.charName}</td>
-                              <td style={{ padding: '0.4rem' }}>{d.startFatigue} <span style={{ color: '#fbbf24' }}>({d.runs}판)</span></td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.pureGold ? '#fff' : '#64748b' }}>{d.acquired.pureGold ? Number(d.acquired.pureGold).toLocaleString() : '-'}</td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.seal ? '#fff' : '#64748b' }}>{d.acquired.seal || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.tradableSeal ? '#fff' : '#64748b' }}>{d.acquired.tradableSeal || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.sealVoucher ? '#fff' : '#64748b' }}>{d.acquired.sealVoucher || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: Number(d.acquired.sealVoucherBox || 0) > 0 ? '#fff' : '#64748b' }}>{d.acquired.sealVoucherBox || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.condensedCore ? '#fff' : '#64748b' }}>{d.acquired.condensedCore || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.flawlessCore ? '#fff' : '#64748b' }}>{d.acquired.flawlessCore || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.crystal ? '#fff' : '#64748b' }}>{d.acquired.crystal || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: d.acquired.flawlessCrystal ? '#fff' : '#64748b' }}>{d.acquired.flawlessCrystal || '-'}</td>
-                              <td style={{ padding: '0.25rem', color: (d.values?.bound || 0) > 0 ? '#fb923c' : '#64748b' }}>{(d.values?.bound || 0) > 0 ? (d.values.bound).toLocaleString() : '-'}</td>
-                              <td style={{ padding: '0.25rem', color: tradable > 0 ? '#fb923c' : '#64748b' }}>{tradable > 0 ? tradable.toLocaleString() : '-'}</td>
-                              <td style={{ padding: '0.25rem', fontWeight: 'bold', color: profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#64748b' }}>{profit !== 0 ? profit.toLocaleString() : '-'}</td>
-                              <td style={{ padding: '0.25rem', fontWeight: 'bold', color: profitExclBound > 0 ? '#38bdf8' : profitExclBound < 0 ? '#f87171' : '#64748b' }}>{profitExclBound !== 0 ? profitExclBound.toLocaleString() : '-'}</td>
-                              <td style={{ padding: '0.4rem', color: '#cbd5e1', textAlign: 'left', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={d.memo || ''}>{d.memo || '-'}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                    {record.sessionTotals && (() => {
-                      let bSum = record.sessionTotals.bound || 0;
-                      let tSum = record.sessionTotals.tradable || 0;
-                      let pSum = record.sessionTotals.profit || 0;
-                      record.details.forEach(d => {
-                        if (d.consumed?.potion > 0 && d.values?.potionCost === undefined) {
-                          const pPrice = auctionPrices['피로 회복의 영약'] || 0;
-                          tSum -= pPrice; pSum -= pPrice;
-                        }
-                      });
-                      return (
-                        <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between' }}>
-                            <div style={{ flex: 1, minWidth: '200px' }}>
-                              <h5 style={{ margin: '0 0 0.5rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>비밀상점 정산 내역</h5>
-                              <div style={{ fontSize: '0.7rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                <div>- 닳아버린 순례의 증표 판매 예정가: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.tokenProfit?.toLocaleString() || 0}</span></div>
-                                <div>- 레시피/답례품 판매 예정가: <span style={{ color: '#4ade80' }}>+{record.sessionTotals.recipeProfit?.toLocaleString() || 0}</span></div>
-                                <div>- 레시피 순례의 인장 소모: <span style={{ color: '#f87171' }}>-{record.sessionTotals.recipeSealCost?.toLocaleString() || 0}</span></div>
-                              </div>
-                            </div>
-                            <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
-                              <h5 style={{ margin: '0 0 0.2rem 0', color: '#94a3b8', fontSize: '0.7rem' }}>이번 순례 총 결산</h5>
-                              <div style={{ fontSize: '0.7rem' }}>총 귀속 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{bSum.toLocaleString()}</span></div>
-                              <div style={{ fontSize: '0.7rem' }}>총 교환 가치: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{tSum.toLocaleString()}</span></div>
-                              <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>최종 순수익(귀속 포함): <span style={{ color: pSum > 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{pSum.toLocaleString()}</span></div>
-                              <div style={{ fontSize: '0.7rem' }}>최종 순수익(귀속 제외): <span style={{ color: (tSum - record.sessionTotals.consumed) > 0 ? '#38bdf8' : '#f87171', fontWeight: 'bold' }}>{(tSum - record.sessionTotals.consumed).toLocaleString()}</span></div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                      {record.deltas.gold !== 0 && (
+                        <span style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.7rem', color: '#fbbf24' }}>
+                          골드 {record.deltas.gold > 0 ? '+' : ''}{record.deltas.gold.toLocaleString()}
+                        </span>
+                      )}
+                      {SNAPSHOT_FIELDS.map(([k, label]) => record.deltas[k] ? (
+                        <span key={k} style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.7rem', color: '#38bdf8' }}>
+                          {label.replace('\n', ' ')} {record.deltas[k] > 0 ? '+' : ''}{record.deltas[k]}
+                        </span>
+                      ) : null)}
+                    </div>
+                    <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', fontSize: '0.75rem' }}>
+                      <div>귀속 가치: <span style={{ color: '#fb923c', fontWeight: 'bold' }}>{(record.values?.bound || 0).toLocaleString()} G</span></div>
+                      <div>교환 가치: <span style={{ color: '#fb923c', fontWeight: 'bold' }}>{(record.values?.tradable || 0).toLocaleString()} G</span></div>
+                      <div>순수익(포함): <span style={{ color: (record.values?.profitIncl || 0) >= 0 ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>{(record.values?.profitIncl || 0).toLocaleString()} G</span></div>
+                      <div>순수익(제외): <span style={{ color: (record.values?.profitExcl || 0) >= 0 ? '#38bdf8' : '#f87171', fontWeight: 'bold' }}>{(record.values?.profitExcl || 0).toLocaleString()} G</span></div>
+                    </div>
+                    {record.memo && <div style={{ marginTop: '0.6rem', fontSize: '0.7rem', color: '#cbd5e1' }}>📝 {record.memo}</div>}
                   </>
+                ) : record.details ? (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                    [구버전 기록 · 캐릭터별 정산] {record.details.map(d => d.charName).join(', ')} — 순수익(포함) {(record.sessionTotals?.profit || 0).toLocaleString()} G
+                  </div>
+                ) : (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>[구버전 기록] 캐릭터: {record.chars?.join(', ')} / 획득: {record.acquired} / 소모: {record.consumed}</div>
                 )}
               </div>
             </div>
@@ -1043,44 +432,17 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
         </div>
       )}
 
-      <SecretShopModal
-        activeSecretShopModal={activeSecretShopModal} setActiveSecretShopModal={setActiveSecretShopModal}
-        characters={characters} getCharForm={getCharForm}
-        addCharToken={addCharToken} updateCharToken={updateCharToken} removeCharToken={removeCharToken}
-        addCharRecipe={addCharRecipe} updateCharRecipe={updateCharRecipe} removeCharRecipe={removeCharRecipe}
-        updateCharForm={updateCharForm}
-      />
-      <CalcDetailModal calcDetail={calcDetail} onClose={() => setCalcDetail(null)} />
+      {showAuctionPricesModal && <AuctionPricesModal auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} onClose={() => setShowAuctionPricesModal(false)} />}
+
       {saveResult && (
         <div className="modal-overlay">
-          <div className="modal-content glass-panel" style={{ maxWidth: '480px', width: '95%' }}>
-            <h3 style={{ marginTop: 0, color: '#4ade80', fontSize: '1.1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.6rem' }}>✅ 순례 결과 ({saveResult.count}캐릭터)</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem', marginBottom: '1.2rem' }}>
-              <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.8rem' }}>
-                <div style={{ fontSize: '0.65rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.4rem' }}>💰 골드 획득</div>
-                <div style={{ fontSize: '0.85rem', color: '#4ade80', fontWeight: 'bold' }}>+{saveResult.goldDelta.toLocaleString()} G</div>
-                <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '0.2rem' }}>캐릭터당 평균: {saveResult.count > 0 ? Math.round(saveResult.goldDelta / saveResult.count).toLocaleString() : '-'} G</div>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.8rem' }}>
-                <div style={{ fontSize: '0.65rem', color: '#38bdf8', fontWeight: 'bold', marginBottom: '0.4rem' }}>📦 획득 재료 (전체)</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                  {MATERIAL_FIELDS.map(([k, label]) => saveResult.materialDeltas[k] > 0 ? (
-                    <span key={k} style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.7rem', color: '#38bdf8' }}>
-                      {label.replace('\n', ' ')} ×{saveResult.materialDeltas[k]}
-                    </span>
-                  ) : null)}
-                </div>
-              </div>
-              <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.8rem' }}>
-                <div style={{ fontSize: '0.65rem', color: '#fb923c', fontWeight: 'bold', marginBottom: '0.4rem' }}>📊 수익 산출</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.75rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>귀속 가치</span><span style={{ color: '#fb923c' }}>{saveResult.totalBound.toLocaleString()} G</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>교환 가치</span><span style={{ color: '#fb923c' }}>{saveResult.totalTradable.toLocaleString()} G</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '0.3rem', fontWeight: 'bold' }}><span>순수익 (귀속 포함)</span><span style={{ color: saveResult.totalProfit >= 0 ? '#4ade80' : '#f87171' }}>{saveResult.totalProfit.toLocaleString()} G</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}><span>순수익 (귀속 제외)</span><span style={{ color: saveResult.profitExclBound >= 0 ? '#38bdf8' : '#f87171' }}>{saveResult.profitExclBound.toLocaleString()} G</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '0.3rem', fontSize: '0.65rem', color: '#64748b' }}><span>캐릭터당 평균 순수익</span><span>{saveResult.count > 0 ? Math.round(saveResult.totalProfit / saveResult.count).toLocaleString() : '-'} G</span></div>
-                </div>
-              </div>
+          <div className="modal-content glass-panel" style={{ maxWidth: '440px', width: '95%' }}>
+            <h3 style={{ marginTop: 0, color: '#4ade80', fontSize: '1.1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.6rem' }}>✅ 순례 결과 저장 완료</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', marginBottom: '1.2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>귀속 가치</span><span style={{ color: '#fb923c' }}>{saveResult.values.bound.toLocaleString()} G</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>교환 가치</span><span style={{ color: '#fb923c' }}>{saveResult.values.tradable.toLocaleString()} G</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '0.4rem', fontWeight: 'bold' }}><span>순수익 (귀속 포함)</span><span style={{ color: saveResult.values.profitIncl >= 0 ? '#4ade80' : '#f87171' }}>{saveResult.values.profitIncl.toLocaleString()} G</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}><span>순수익 (귀속 제외)</span><span style={{ color: saveResult.values.profitExcl >= 0 ? '#38bdf8' : '#f87171' }}>{saveResult.values.profitExcl.toLocaleString()} G</span></div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => setSaveResult(null)} style={{ padding: '0.5rem 1.5rem', background: '#4ade80', color: '#0f172a', fontWeight: 'bold', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>확인</button>
@@ -1088,7 +450,6 @@ export default function PilgrimageTab({ characters, pilgrimageHistory, onSavePil
           </div>
         </div>
       )}
-      {showAuctionPricesModal && <AuctionPricesModal auctionPrices={auctionPrices} setAuctionPrices={setAuctionPrices} onClose={() => setShowAuctionPricesModal(false)} />}
     </section>
   );
 }

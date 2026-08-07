@@ -61,7 +61,7 @@ export const ALL_MANUAL_KEYS = [
 export const PILGRIMAGE_BASE_ITEMS = [
   '무결점 라이언 코어', '무결점 조화의 결정체', '닳아버린 순례의 증표',
   '순례의 인장(1회 교환 가능)', '순례의 인장(1회 교환 가능) 교환권 1개 상자',
-  '피로 회복의 영약', '레전더리 소울 결정', '에픽 소울 결정'
+  '레전더리 소울 결정', '에픽 소울 결정'
 ];
 
 export const DEFAULT_AUCTION_PRICES = {
@@ -70,7 +70,6 @@ export const DEFAULT_AUCTION_PRICES = {
   '닳아버린 순례의 증표': 0,
   '순례의 인장(1회 교환 가능)': 0,
   '순례의 인장(1회 교환 가능) 교환권 1개 상자': 0,
-  '피로 회복의 영약': 0,
   '레전더리 소울 결정': 0,
   '에픽 소울 결정': 0,
 };

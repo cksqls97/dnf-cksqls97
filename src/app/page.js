@@ -505,7 +505,6 @@ export default function Home() {
 
       {activeTab === 'pilgrimage' && (
         <PilgrimageTab
-          characters={characters}
           pilgrimageHistory={pilgrimageHistory}
           onSavePilgrimage={handleSavePilgrimage}
           onDeletePilgrimage={handleDeletePilgrimage}
