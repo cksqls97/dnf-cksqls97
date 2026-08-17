@@ -186,6 +186,11 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                               {isImminentFame && <span style={{ marginRight: '3px' }}>🔥</span>}
                               {c.base.fame.toLocaleString()}
                             </div>
+                            {c.equipmentScore?.value != null && (
+                              <div style={{ fontSize: '0.65rem', color: '#a78bfa', marginTop: '2px' }} title="던파 공홈 캐릭터 검색 기준 (최고 명성 갱신 시에만 갱신됨)">
+                                {c.equipmentScore.isBuffScore ? '버프' : '장비'} {c.equipmentScore.value.toLocaleString()}
+                              </div>
+                            )}
                           </td>
                           <td data-label="상급던전" style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>

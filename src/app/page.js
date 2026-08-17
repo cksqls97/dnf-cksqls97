@@ -227,6 +227,23 @@ export default function Home() {
     return res.json();
   };
 
+  // 장비/버프 점수는 Open API에 없어 던파 공홈을 헤드리스 브라우저로 긁어와야 해서 무겁다.
+  // 최고 명성이 갱신됐을 때만(= 장비가 실제로 바뀌었을 가능성이 있을 때만) 호출하고,
+  // 실패해도 나머지 갱신 흐름을 막지 않도록 항상 null 또는 값만 돌려준다.
+  const fetchEquipmentScore = async (srv, name) => {
+    try {
+      const res = await fetch('/api/equipment-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ server: srv, charName: name })
+      });
+      const data = await res.json();
+      return data.success ? { value: data.score, isBuffScore: data.isBuffScore } : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!charName.trim()) return;
@@ -240,6 +257,7 @@ export default function Home() {
     const jobName = data.base?.jobGrowName || data.base?.jobName || '';
     data.manual = { role: bufferKeywords.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer' };
     data.refreshedAt = Date.now();
+    data.equipmentScore = await fetchEquipmentScore(server, charName.trim());
 
     if (characters.some(c => c.id === data.id)) { alert("이미 등록된 캐릭터입니다."); return; }
     const newList = [...characters, data];
@@ -285,7 +303,11 @@ export default function Home() {
           const patchedManual = (latestManual?.dundamScore && latestManual?.dundamFameAtEntry === undefined)
             ? { ...latestManual, dundamFameAtEntry: c.base.fame }
             : latestManual;
-          return { ...res, manual: patchedManual, refreshedAt: Date.now() };
+          const fameIncreased = res.base.fame > (c.base.fame || 0);
+          const equipmentScore = fameIncreased
+            ? (await fetchEquipmentScore(c.base.server, c.base.charName)) || c.equipmentScore
+            : c.equipmentScore;
+          return { ...res, manual: patchedManual, equipmentScore, refreshedAt: Date.now() };
         }
         return c;
       })
@@ -373,7 +395,11 @@ export default function Home() {
         }
         if (changed) newLogs.push(logEntry);
         const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
-        return { ...res, manual: latestManual, refreshedAt: Date.now() };
+        const fameIncreased = res.base.fame > (base.base?.fame || 0);
+        const equipmentScore = fameIncreased
+          ? (await fetchEquipmentScore(c.base.server, c.base.charName)) || c.equipmentScore
+          : c.equipmentScore;
+        return { ...res, manual: latestManual, equipmentScore, refreshedAt: Date.now() };
       })
     );
     setCharacters(updatedList);
