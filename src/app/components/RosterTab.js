@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { SERVER_LIST, ADVANCED_DUNGEONS, RAIDS } from '../lib/constants';
-import { getTierClass, buildGroups, recommendMukeonOptions } from '../lib/gameUtils';
+import { SERVER_LIST, ADVANCED_DUNGEONS, RAIDS, MICHAELA_TIERS } from '../lib/constants';
+import { getTierClass, buildGroups, recommendMukeonOptions, michaelaAchievedIdx } from '../lib/gameUtils';
 
 // ─── ManualModal ────────────────────────────────────────────────────────────
 
@@ -133,9 +133,10 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                           </tr>
                         );
                       }
-                      const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전' || gIdx < 2);
+                      const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전');
                       const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
                       const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
+                      const michaelaIdx = michaelaAchievedIdx(c);
                       const diffD = nextDungeon ? nextDungeon.fame - c.base.fame : null;
                       const diffR = nextRaid ? nextRaid.fame - c.base.fame : null;
                       const isImminentFame = (diffD !== null && diffD < 1000) || (diffR !== null && diffR < 1000);
@@ -200,6 +201,11 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                   <span key={r.name} style={{ background: 'rgba(192,132,252,0.15)', color: '#d8b4fe', padding: '0.1rem 0.3rem', borderRadius: '3px', fontSize: '0.7rem', border: '1px solid rgba(192,132,252,0.2)' }}>{r.name}</span>
                                 ))}
                               </div>
+                              {michaelaIdx >= 0 && (
+                                <span style={{ background: 'rgba(244,114,182,0.15)', color: '#f472b6', padding: '0.1rem 0.3rem', borderRadius: '3px', fontSize: '0.7rem', border: '1px solid rgba(244,114,182,0.3)' }}>
+                                  🌟 미카엘라 {MICHAELA_TIERS[michaelaIdx].name}
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td data-label="아포칼립스" style={{ textAlign: 'center' }}>

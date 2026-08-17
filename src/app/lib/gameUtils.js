@@ -1,5 +1,5 @@
 import React from 'react';
-import { BUFFER_KEYWORDS } from './constants';
+import { BUFFER_KEYWORDS, MICHAELA_TIERS } from './constants';
 
 export const getGradeTier = (pts) => {
   if (!pts) return null;
@@ -107,6 +107,23 @@ export const getRole = (c) => {
   if (c.manual?.isManualRoleSet && c.manual?.role) return c.manual.role;
   const jobName = c.base?.jobGrowName || c.base?.jobName || '';
   return BUFFER_KEYWORDS.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
+};
+
+// 미카엘라 레이드: 매칭은 명성, 일반/하드는 역할군별(딜러/버퍼) 장비·버프 점수 기준.
+// 세 난이도를 매칭→일반→하드 순으로 누적 진행한다고 보고, 아직 못 넘은 첫 단계를 "다음 목표"로 삼는다.
+export const michaelaValue = (c, tier) => tier.type === 'fame' ? c.base.fame : (c.equipmentScore?.value ?? null);
+export const michaelaThreshold = (c, tier) => tier.type === 'fame' ? tier.fame : (getRole(c) === 'buffer' ? tier.buffer : tier.dealer);
+export const michaelaMetricLabel = (c, tier) => tier.type === 'fame' ? '명성' : (getRole(c) === 'buffer' ? '버프 점수' : '장비 점수');
+export const meetsMichaelaTier = (c, tier) => {
+  const val = michaelaValue(c, tier);
+  return val != null && val > michaelaThreshold(c, tier);
+};
+export const michaelaAchievedIdx = (c) => {
+  let idx = -1;
+  for (const tier of MICHAELA_TIERS) {
+    if (meetsMichaelaTier(c, tier)) idx++; else break;
+  }
+  return idx;
 };
 
 // 장비/버프 점수는 최고 명성 갱신 시에만 채워지므로, 아직 못 받아온 캐릭터는 명성으로

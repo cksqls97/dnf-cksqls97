@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ADVANCED_DUNGEONS, RAIDS, MICHAELA_TIERS } from '../lib/constants';
-import { getRole } from '../lib/gameUtils';
+import { getRole, michaelaValue, michaelaThreshold, michaelaMetricLabel, meetsMichaelaTier, michaelaAchievedIdx } from '../lib/gameUtils';
 
 function renderCard(c, target, diff, emoji = '🚀', accentColor = '#38bdf8', currentBadge = null, options = {}) {
   const { metricLabel = '명성', metricValue = c.base.fame, imminentThreshold = 1000 } = options;
@@ -158,29 +158,6 @@ function ApocSubTab({ characters, view, setView }) {
       )}
     </>
   );
-}
-
-// 미카엘라: 매칭은 명성, 일반/하드는 역할군별(딜러/버퍼) 장비·버프 점수 기준.
-// 세 난이도를 매칭→일반→하드 순으로 누적 진행한다고 보고, 아직 못 넘은 첫 단계를 "다음 목표"로 삼는다.
-function michaelaValue(c, tier) {
-  return tier.type === 'fame' ? c.base.fame : (c.equipmentScore?.value ?? null);
-}
-function michaelaThreshold(c, tier) {
-  return tier.type === 'fame' ? tier.fame : (getRole(c) === 'buffer' ? tier.buffer : tier.dealer);
-}
-function michaelaMetricLabel(c, tier) {
-  return tier.type === 'fame' ? '명성' : (getRole(c) === 'buffer' ? '버프 점수' : '장비 점수');
-}
-function meetsMichaelaTier(c, tier) {
-  const val = michaelaValue(c, tier);
-  return val != null && val > michaelaThreshold(c, tier);
-}
-function michaelaAchievedIdx(c) {
-  let idx = -1;
-  for (const tier of MICHAELA_TIERS) {
-    if (meetsMichaelaTier(c, tier)) idx++; else break;
-  }
-  return idx;
 }
 
 function UnknownScoreCard({ c }) {
