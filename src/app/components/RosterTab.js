@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { SERVER_LIST, ADVANCED_DUNGEONS, RAIDS, MICHAELA_TIERS } from '../lib/constants';
-import { getTierClass, buildGroups, recommendMukeonOptions, michaelaAchievedIdx } from '../lib/gameUtils';
+import { SERVER_LIST, ADVANCED_DUNGEONS, MICHAELA_TIERS, DIREGIE_TIERS } from '../lib/constants';
+import { getTierClass, buildGroups, recommendMukeonOptions, raidTierAchievedIdx } from '../lib/gameUtils';
 
 // ─── ManualModal ────────────────────────────────────────────────────────────
 
@@ -133,13 +133,11 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                           </tr>
                         );
                       }
-                      const filteredRaids = RAIDS.filter(r => r.name !== '이내 황혼전');
                       const nextDungeon = [...ADVANCED_DUNGEONS].reverse().find(d => d.fame > c.base.fame);
-                      const nextRaid = [...filteredRaids].reverse().find(r => r.fame > c.base.fame);
-                      const michaelaIdx = michaelaAchievedIdx(c);
+                      const diregieIdx = raidTierAchievedIdx(c, DIREGIE_TIERS);
+                      const michaelaIdx = raidTierAchievedIdx(c, MICHAELA_TIERS);
                       const diffD = nextDungeon ? nextDungeon.fame - c.base.fame : null;
-                      const diffR = nextRaid ? nextRaid.fame - c.base.fame : null;
-                      const isImminentFame = (diffD !== null && diffD < 1000) || (diffR !== null && diffR < 1000);
+                      const isImminentFame = diffD !== null && diffD < 1000;
 
                       const fame = c.base.fame;
                       const apocState = fame >= 105881 ? 3 : fame >= 98171 ? 2 : fame >= 73993 ? 1 : 0;
@@ -150,7 +148,6 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                       const isApocImminent = apocDiff !== null && apocDiff < 1000;
 
                       const clearedDungeons = ADVANCED_DUNGEONS.filter(d => c.base.fame >= d.fame).slice(0, 2);
-                      const clearedRaids = filteredRaids.filter(r => c.base.fame >= r.fame);
 
                       return (
                         <tr key={c.id} style={{ verticalAlign: 'middle', background: mIdx === 3 ? 'rgba(167, 139, 250, 0.05)' : 'transparent', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -191,16 +188,11 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                           </td>
                           <td data-label="레이드" style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-                              {nextRaid && (
-                                <div style={{ fontSize: '0.7rem', color: diffR < 1000 ? '#fef08a' : '#c084fc', background: diffR < 1000 ? 'rgba(234,179,8,0.15)' : 'rgba(192,132,252,0.08)', padding: '0.2rem 0.4rem', borderRadius: '4px', border: diffR < 1000 ? '1px solid rgba(234,179,8,0.4)' : '1px solid rgba(192,132,252,0.2)', whiteSpace: 'nowrap', fontWeight: diffR < 1000 ? 'bold' : 'normal' }}>
-                                  {diffR < 1000 ? '🔥' : '⚔️'} {nextRaid.name}까지 <strong style={{ color: diffR < 1000 ? '#fde047' : '#a855f7' }}>{diffR.toLocaleString()}</strong>
-                                </div>
+                              {diregieIdx >= 0 && (
+                                <span style={{ background: 'rgba(192,132,252,0.15)', color: '#d8b4fe', padding: '0.1rem 0.3rem', borderRadius: '3px', fontSize: '0.7rem', border: '1px solid rgba(192,132,252,0.2)' }}>
+                                  ⚔️ 디레지에 {DIREGIE_TIERS[diregieIdx].name}
+                                </span>
                               )}
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center' }}>
-                                {clearedRaids.map(r => (
-                                  <span key={r.name} style={{ background: 'rgba(192,132,252,0.15)', color: '#d8b4fe', padding: '0.1rem 0.3rem', borderRadius: '3px', fontSize: '0.7rem', border: '1px solid rgba(192,132,252,0.2)' }}>{r.name}</span>
-                                ))}
-                              </div>
                               {michaelaIdx >= 0 && (
                                 <span style={{ background: 'rgba(244,114,182,0.15)', color: '#f472b6', padding: '0.1rem 0.3rem', borderRadius: '3px', fontSize: '0.7rem', border: '1px solid rgba(244,114,182,0.3)' }}>
                                   🌟 미카엘라 {MICHAELA_TIERS[michaelaIdx].name}

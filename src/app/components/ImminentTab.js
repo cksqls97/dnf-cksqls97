@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ADVANCED_DUNGEONS, RAIDS, MICHAELA_TIERS } from '../lib/constants';
-import { getRole, michaelaValue, michaelaThreshold, michaelaMetricLabel, meetsMichaelaTier, michaelaAchievedIdx } from '../lib/gameUtils';
+import { ADVANCED_DUNGEONS, RAIDS, MICHAELA_TIERS, DIREGIE_TIERS } from '../lib/constants';
+import { getRole, raidTierValue, raidTierThreshold, raidTierMetricLabel, meetsRaidTier, raidTierAchievedIdx } from '../lib/gameUtils';
 
 function renderCard(c, target, diff, emoji = '🚀', accentColor = '#38bdf8', currentBadge = null, options = {}) {
   const { metricLabel = '명성', metricValue = c.base.fame, imminentThreshold = 1000 } = options;
@@ -174,12 +174,20 @@ function UnknownScoreCard({ c }) {
   );
 }
 
-function MichaelaSubTab({ characters, view, setView }) {
+// 매칭/일반/하드처럼 명성 또는 역할군별 장비·버프 점수로 난이도가 갈리는 레이드 공용 탭
+// (미카엘라, 디레지에). tier.strict가 true면 "초과", 아니면 "이상"으로 문구/판정이 달라진다.
+function tierDiff(c, tier) {
+  const val = raidTierValue(c, tier);
+  const threshold = raidTierThreshold(c, tier);
+  return tier.strict ? Math.max(0, threshold - val + 1) : Math.max(0, threshold - val);
+}
+
+function TieredRaidSubTab({ characters, view, setView, tiers, raidLabel, emoji, accentColor, accentRgb }) {
   return (
     <>
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
         {[['byTier', '🗂️ 난이도별 정렬'], ['overall', '📊 전체 정렬']].map(([v, label]) => (
-          <button key={v} onClick={() => setView(v)} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: view === v ? 'rgba(244,114,182,0.2)' : 'rgba(255,255,255,0.04)', border: view === v ? '1px solid rgba(244,114,182,0.4)' : '1px solid rgba(255,255,255,0.1)', color: view === v ? '#f472b6' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>{label}</button>
+          <button key={v} onClick={() => setView(v)} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: view === v ? `rgba(${accentRgb},0.2)` : 'rgba(255,255,255,0.04)', border: view === v ? `1px solid rgba(${accentRgb},0.4)` : '1px solid rgba(255,255,255,0.1)', color: view === v ? accentColor : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>{label}</button>
         ))}
       </div>
 
@@ -187,24 +195,21 @@ function MichaelaSubTab({ characters, view, setView }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
           {(() => {
             const withNext = characters.map(c => {
-              const achievedIdx = michaelaAchievedIdx(c);
-              const next = achievedIdx + 1 < MICHAELA_TIERS.length ? MICHAELA_TIERS[achievedIdx + 1] : null;
+              const achievedIdx = raidTierAchievedIdx(c, tiers);
+              const next = achievedIdx + 1 < tiers.length ? tiers[achievedIdx + 1] : null;
               return { c, achievedIdx, next };
             }).filter(x => x.next);
-            const known = withNext.filter(x => michaelaValue(x.c, x.next) != null)
-              .map(({ c, achievedIdx, next }) => {
-                const val = michaelaValue(c, next);
-                const threshold = michaelaThreshold(c, next);
-                return { c, achievedIdx, next, val, diff: Math.max(0, threshold - val + 1) };
-              }).sort((a, b) => a.diff - b.diff);
-            const unknown = withNext.filter(x => michaelaValue(x.c, x.next) == null);
-            if (known.length === 0 && unknown.length === 0) return emptyMsg('모든 캐릭터가 미카엘라 하드 난이도에 진입 가능합니다.');
+            const known = withNext.filter(x => raidTierValue(x.c, x.next) != null)
+              .map(({ c, achievedIdx, next }) => ({ c, achievedIdx, next, val: raidTierValue(c, next), diff: tierDiff(c, next) }))
+              .sort((a, b) => a.diff - b.diff);
+            const unknown = withNext.filter(x => raidTierValue(x.c, x.next) == null);
+            if (known.length === 0 && unknown.length === 0) return emptyMsg(`모든 캐릭터가 ${raidLabel} 최고 난이도에 진입 가능합니다.`);
             return (
               <>
                 {known.map(({ c, achievedIdx, next, val, diff }) => renderCard(
-                  c, next, diff, '🌟', '#f472b6',
-                  achievedIdx >= 0 ? `현재: ${MICHAELA_TIERS[achievedIdx].name}` : '미진입',
-                  { metricLabel: michaelaMetricLabel(c, next), metricValue: val, imminentThreshold: next.type === 'fame' ? 1000 : 5000 }
+                  c, next, diff, emoji, accentColor,
+                  achievedIdx >= 0 ? `현재: ${tiers[achievedIdx].name}` : '미진입',
+                  { metricLabel: raidTierMetricLabel(c, next), metricValue: val, imminentThreshold: next.type === 'fame' ? 1000 : 5000 }
                 ))}
                 {unknown.map(({ c }) => <UnknownScoreCard key={c.id} c={c} />)}
               </>
@@ -213,30 +218,26 @@ function MichaelaSubTab({ characters, view, setView }) {
         </div>
       ) : (
         <div>
-          {MICHAELA_TIERS.map((tier, idx) => {
-            const prevTier = idx > 0 ? MICHAELA_TIERS[idx - 1] : null;
-            const eligible = characters.filter(c => !meetsMichaelaTier(c, tier) && (prevTier == null || meetsMichaelaTier(c, prevTier)));
-            const known = eligible.filter(c => michaelaValue(c, tier) != null)
-              .sort((a, b) => (michaelaThreshold(a, tier) - michaelaValue(a, tier)) - (michaelaThreshold(b, tier) - michaelaValue(b, tier)));
-            const unknown = eligible.filter(c => michaelaValue(c, tier) == null);
+          {tiers.map((tier, idx) => {
+            const prevTier = idx > 0 ? tiers[idx - 1] : null;
+            const eligible = characters.filter(c => !meetsRaidTier(c, tier) && (prevTier == null || meetsRaidTier(c, prevTier)));
+            const known = eligible.filter(c => raidTierValue(c, tier) != null).sort((a, b) => tierDiff(a, tier) - tierDiff(b, tier));
+            const unknown = eligible.filter(c => raidTierValue(c, tier) == null);
+            const cmp = tier.strict ? '초과' : '이상';
             const requirementText = tier.type === 'fame'
-              ? `명성 ${tier.fame.toLocaleString()} 초과`
-              : `딜러 ${tier.dealer.toLocaleString()} / 버퍼 ${tier.buffer.toLocaleString()} 초과`;
+              ? `명성 ${tier.fame.toLocaleString()} ${cmp}`
+              : `딜러 ${tier.dealer.toLocaleString()} / 버퍼 ${tier.buffer.toLocaleString()} ${cmp}`;
             return (
               <div key={tier.key} style={{ marginBottom: '2rem' }}>
-                <h3 style={{ borderBottom: '1px solid rgba(244,114,182,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#f472b6', fontSize: '0.7rem' }}>
-                  🌟 미카엘라 레이드 - {tier.name} 진입 목표
+                <h3 style={{ borderBottom: `1px solid rgba(${accentRgb},0.2)`, paddingBottom: '0.5rem', marginBottom: '1rem', color: accentColor, fontSize: '0.7rem' }}>
+                  {emoji} {raidLabel} - {tier.name} 진입 목표
                   <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>{requirementText} | 잔여 {eligible.length}명</span>
                 </h3>
                 {eligible.length === 0 ? (
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.8rem' }}>
-                    {known.map(c => {
-                      const val = michaelaValue(c, tier);
-                      const diff = Math.max(0, michaelaThreshold(c, tier) - val + 1);
-                      return renderCard(c, tier, diff, '🌟', '#f472b6', prevTier ? `현재: ${prevTier.name}` : '미진입', { metricLabel: michaelaMetricLabel(c, tier), metricValue: val, imminentThreshold: tier.type === 'fame' ? 1000 : 5000 });
-                    })}
+                    {known.map(c => renderCard(c, tier, tierDiff(c, tier), emoji, accentColor, prevTier ? `현재: ${prevTier.name}` : '미진입', { metricLabel: raidTierMetricLabel(c, tier), metricValue: raidTierValue(c, tier), imminentThreshold: tier.type === 'fame' ? 1000 : 5000 }))}
                     {unknown.map(c => <UnknownScoreCard key={c.id} c={c} />)}
                   </div>
                 )}
@@ -253,6 +254,7 @@ export default function ImminentTab({ characters }) {
   const [subTab, setSubTab] = useState('dungeon');
   const [dungeonView, setDungeonView] = useState('byDungeon');
   const [apocView, setApocView] = useState('byTier');
+  const [diregieView, setDiregieView] = useState('byTier');
   const [michaelaView, setMichaelaView] = useState('byTier');
 
   return (
@@ -260,7 +262,7 @@ export default function ImminentTab({ characters }) {
       <h2 style={{ margin: '0 0 1.5rem' }}>🎯 다음 던전 목표 현황</h2>
 
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
-        {[['dungeon', '🚀 상급던전'], ['raid', '⚔️ 레이드'], ['apoc', '💀 아포칼립스'], ['michaela', '🌟 미카엘라']].map(([v, label]) => (
+        {[['dungeon', '🚀 상급던전'], ['raid', '⚔️ 레이드'], ['apoc', '💀 아포칼립스'], ['diregie', '⚔️ 디레지에'], ['michaela', '🌟 미카엘라']].map(([v, label]) => (
           <button key={v} className={`tab-btn ${subTab === v ? 'active' : ''}`} onClick={() => setSubTab(v)} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>{label}</button>
         ))}
       </div>
@@ -268,7 +270,8 @@ export default function ImminentTab({ characters }) {
       {subTab === 'dungeon' && <DungeonSubTab characters={characters} view={dungeonView} setView={setDungeonView} />}
       {subTab === 'raid' && <RaidSubTab characters={characters} />}
       {subTab === 'apoc' && <ApocSubTab characters={characters} view={apocView} setView={setApocView} />}
-      {subTab === 'michaela' && <MichaelaSubTab characters={characters} view={michaelaView} setView={setMichaelaView} />}
+      {subTab === 'diregie' && <TieredRaidSubTab characters={characters} view={diregieView} setView={setDiregieView} tiers={DIREGIE_TIERS} raidLabel="디레지에 레이드" emoji="⚔️" accentColor="#d8b4fe" accentRgb="192,132,252" />}
+      {subTab === 'michaela' && <TieredRaidSubTab characters={characters} view={michaelaView} setView={setMichaelaView} tiers={MICHAELA_TIERS} raidLabel="미카엘라 레이드" emoji="🌟" accentColor="#f472b6" accentRgb="244,114,182" />}
     </section>
   );
 }

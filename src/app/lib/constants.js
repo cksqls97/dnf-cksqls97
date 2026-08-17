@@ -20,8 +20,7 @@ export const ADVANCED_DUNGEONS = [
 ];
 
 export const RAIDS = [
-  { name: '이내 황혼전', fame: 72688 },
-  { name: '디레지에 레이드', fame: 63257 }
+  { name: '이내 황혼전', fame: 72688 }
 ];
 
 export const APOCALYPSE = [
@@ -30,11 +29,17 @@ export const APOCALYPSE = [
   { name: '매칭', fame: 73993 }
 ];
 
-// 미카엘라 레이드: 매칭은 명성 기준, 일반/하드는 역할군별 장비·버프 점수 기준으로 진입 가능.
+// 미카엘라 레이드: 매칭은 명성 기준(초과), 일반/하드는 역할군별 장비·버프 점수 기준(초과)으로 진입 가능.
 export const MICHAELA_TIERS = [
-  { key: 'matching', name: '매칭', type: 'fame', fame: 104292 },
-  { key: 'normal', name: '일반', type: 'score', dealer: 180000, buffer: 115000 },
-  { key: 'hard', name: '하드', type: 'score', dealer: 350000, buffer: 130000 }
+  { key: 'matching', name: '매칭', type: 'fame', fame: 104292, strict: true },
+  { key: 'normal', name: '일반', type: 'score', dealer: 180000, buffer: 115000, strict: true },
+  { key: 'hard', name: '하드', type: 'score', dealer: 350000, buffer: 130000, strict: true }
+];
+
+// 디레지에 레이드: 매칭은 명성 기준(이상), 악연은 역할군별 장비·버프 점수 기준(이상)으로 진입 가능.
+export const DIREGIE_TIERS = [
+  { key: 'matching', name: '매칭', type: 'fame', fame: 63257 },
+  { key: 'akyeon', name: '악연', type: 'score', dealer: 50000, buffer: 60000 }
 ];
 
 export const BUFFER_KEYWORDS = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BUFFER_KEYWORDS, MICHAELA_TIERS } from './constants';
+import { BUFFER_KEYWORDS } from './constants';
 
 export const getGradeTier = (pts) => {
   if (!pts) return null;
@@ -109,19 +109,22 @@ export const getRole = (c) => {
   return BUFFER_KEYWORDS.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
 };
 
-// 미카엘라 레이드: 매칭은 명성, 일반/하드는 역할군별(딜러/버퍼) 장비·버프 점수 기준.
-// 세 난이도를 매칭→일반→하드 순으로 누적 진행한다고 보고, 아직 못 넘은 첫 단계를 "다음 목표"로 삼는다.
-export const michaelaValue = (c, tier) => tier.type === 'fame' ? c.base.fame : (c.equipmentScore?.value ?? null);
-export const michaelaThreshold = (c, tier) => tier.type === 'fame' ? tier.fame : (getRole(c) === 'buffer' ? tier.buffer : tier.dealer);
-export const michaelaMetricLabel = (c, tier) => tier.type === 'fame' ? '명성' : (getRole(c) === 'buffer' ? '버프 점수' : '장비 점수');
-export const meetsMichaelaTier = (c, tier) => {
-  const val = michaelaValue(c, tier);
-  return val != null && val > michaelaThreshold(c, tier);
+// 난이도별 진입 조건이 명성 또는 역할군별(딜러/버퍼) 장비·버프 점수인 레이드 공용 헬퍼
+// (미카엘라, 디레지에 등). 난이도를 낮은 순으로 누적 진행한다고 보고, 아직 못 넘은 첫
+// 단계를 "다음 목표"로 삼는다. tier.strict가 true면 초과(>), 아니면 이상(>=)으로 비교한다.
+export const raidTierValue = (c, tier) => tier.type === 'fame' ? c.base.fame : (c.equipmentScore?.value ?? null);
+export const raidTierThreshold = (c, tier) => tier.type === 'fame' ? tier.fame : (getRole(c) === 'buffer' ? tier.buffer : tier.dealer);
+export const raidTierMetricLabel = (c, tier) => tier.type === 'fame' ? '명성' : (getRole(c) === 'buffer' ? '버프 점수' : '장비 점수');
+export const meetsRaidTier = (c, tier) => {
+  const val = raidTierValue(c, tier);
+  if (val == null) return false;
+  const threshold = raidTierThreshold(c, tier);
+  return tier.strict ? val > threshold : val >= threshold;
 };
-export const michaelaAchievedIdx = (c) => {
+export const raidTierAchievedIdx = (c, tiers) => {
   let idx = -1;
-  for (const tier of MICHAELA_TIERS) {
-    if (meetsMichaelaTier(c, tier)) idx++; else break;
+  for (const tier of tiers) {
+    if (meetsRaidTier(c, tier)) idx++; else break;
   }
   return idx;
 };
