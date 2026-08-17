@@ -227,7 +227,7 @@ export default function Home() {
     return res.json();
   };
 
-  // 장비/버프 점수는 Open API에 없어 던파 공홈을 헤드리스 브라우저로 긁어와야 해서 무겁다.
+  // 장비/버프 점수는 Open API에 없어 던파 공홈 캐릭터 검색을 대신 조회한다.
   // 최고 명성이 갱신됐을 때만(= 장비가 실제로 바뀌었을 가능성이 있을 때만) 호출하고,
   // 실패해도 나머지 갱신 흐름을 막지 않도록 항상 null 또는 값만 돌려준다.
   const fetchEquipmentScore = async (srv, name) => {
