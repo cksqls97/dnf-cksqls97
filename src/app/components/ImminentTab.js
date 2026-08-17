@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ADVANCED_DUNGEONS, RAIDS } from '../lib/constants';
+import { ADVANCED_DUNGEONS, RAIDS, MICHAELA_TIERS } from '../lib/constants';
 import { getRole } from '../lib/gameUtils';
 
-function renderCard(c, target, diff, emoji = '🚀', accentColor = '#38bdf8', currentBadge = null) {
-  const isImminent = diff < 1000;
+function renderCard(c, target, diff, emoji = '🚀', accentColor = '#38bdf8', currentBadge = null, options = {}) {
+  const { metricLabel = '명성', metricValue = c.base.fame, imminentThreshold = 1000 } = options;
+  const isImminent = diff < imminentThreshold;
   return (
     <div key={c.id} style={{
       background: isImminent ? 'rgba(234,179,8,0.05)' : 'rgba(255,255,255,0.02)',
@@ -19,7 +20,7 @@ function renderCard(c, target, diff, emoji = '🚀', accentColor = '#38bdf8', cu
         <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>명성: <span style={{ color: isImminent ? '#fbbf24' : accentColor, fontWeight: 'bold' }}>{c.base.fame.toLocaleString()}</span></div>
+        <div style={{ fontSize: '0.7rem', color: '#cbd5e1' }}>{metricLabel}: <span style={{ color: isImminent ? '#fbbf24' : accentColor, fontWeight: 'bold' }}>{metricValue.toLocaleString()}</span></div>
         {currentBadge && <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', padding: '0.1rem 0.4rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}>{currentBadge}</span>}
       </div>
       <div style={{ background: isImminent ? 'rgba(234,179,8,0.15)' : 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.7rem', color: isImminent ? '#fef08a' : '#cbd5e1', textAlign: 'center', marginTop: 'auto', border: isImminent ? '1px solid rgba(234,179,8,0.3)' : '1px solid rgba(255,255,255,0.1)' }}>
@@ -159,17 +160,130 @@ function ApocSubTab({ characters, view, setView }) {
   );
 }
 
+// 미카엘라: 매칭은 명성, 일반/하드는 역할군별(딜러/버퍼) 장비·버프 점수 기준.
+// 세 난이도를 매칭→일반→하드 순으로 누적 진행한다고 보고, 아직 못 넘은 첫 단계를 "다음 목표"로 삼는다.
+function michaelaValue(c, tier) {
+  return tier.type === 'fame' ? c.base.fame : (c.equipmentScore?.value ?? null);
+}
+function michaelaThreshold(c, tier) {
+  return tier.type === 'fame' ? tier.fame : (getRole(c) === 'buffer' ? tier.buffer : tier.dealer);
+}
+function michaelaMetricLabel(c, tier) {
+  return tier.type === 'fame' ? '명성' : (getRole(c) === 'buffer' ? '버프 점수' : '장비 점수');
+}
+function meetsMichaelaTier(c, tier) {
+  const val = michaelaValue(c, tier);
+  return val != null && val > michaelaThreshold(c, tier);
+}
+function michaelaAchievedIdx(c) {
+  let idx = -1;
+  for (const tier of MICHAELA_TIERS) {
+    if (meetsMichaelaTier(c, tier)) idx++; else break;
+  }
+  return idx;
+}
+
+function UnknownScoreCard({ c }) {
+  return (
+    <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#e2e8f0' }}>{c.base.charName}</span>
+        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{c.base.jobGrowName}</span>
+      </div>
+      <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
+        장비/버프 점수 미확인 (최고 명성 갱신 시 자동 조회됩니다)
+      </div>
+    </div>
+  );
+}
+
+function MichaelaSubTab({ characters, view, setView }) {
+  return (
+    <>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        {[['byTier', '🗂️ 난이도별 정렬'], ['overall', '📊 전체 정렬']].map(([v, label]) => (
+          <button key={v} onClick={() => setView(v)} style={{ fontSize: '0.7rem', padding: '0.3rem 0.8rem', background: view === v ? 'rgba(244,114,182,0.2)' : 'rgba(255,255,255,0.04)', border: view === v ? '1px solid rgba(244,114,182,0.4)' : '1px solid rgba(255,255,255,0.1)', color: view === v ? '#f472b6' : '#94a3b8', borderRadius: '6px', cursor: 'pointer' }}>{label}</button>
+        ))}
+      </div>
+
+      {view === 'overall' ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+          {(() => {
+            const withNext = characters.map(c => {
+              const achievedIdx = michaelaAchievedIdx(c);
+              const next = achievedIdx + 1 < MICHAELA_TIERS.length ? MICHAELA_TIERS[achievedIdx + 1] : null;
+              return { c, achievedIdx, next };
+            }).filter(x => x.next);
+            const known = withNext.filter(x => michaelaValue(x.c, x.next) != null)
+              .map(({ c, achievedIdx, next }) => {
+                const val = michaelaValue(c, next);
+                const threshold = michaelaThreshold(c, next);
+                return { c, achievedIdx, next, val, diff: Math.max(0, threshold - val + 1) };
+              }).sort((a, b) => a.diff - b.diff);
+            const unknown = withNext.filter(x => michaelaValue(x.c, x.next) == null);
+            if (known.length === 0 && unknown.length === 0) return emptyMsg('모든 캐릭터가 미카엘라 하드 난이도에 진입 가능합니다.');
+            return (
+              <>
+                {known.map(({ c, achievedIdx, next, val, diff }) => renderCard(
+                  c, next, diff, '🌟', '#f472b6',
+                  achievedIdx >= 0 ? `현재: ${MICHAELA_TIERS[achievedIdx].name}` : '미진입',
+                  { metricLabel: michaelaMetricLabel(c, next), metricValue: val, imminentThreshold: next.type === 'fame' ? 1000 : 5000 }
+                ))}
+                {unknown.map(({ c }) => <UnknownScoreCard key={c.id} c={c} />)}
+              </>
+            );
+          })()}
+        </div>
+      ) : (
+        <div>
+          {MICHAELA_TIERS.map((tier, idx) => {
+            const prevTier = idx > 0 ? MICHAELA_TIERS[idx - 1] : null;
+            const eligible = characters.filter(c => !meetsMichaelaTier(c, tier) && (prevTier == null || meetsMichaelaTier(c, prevTier)));
+            const known = eligible.filter(c => michaelaValue(c, tier) != null)
+              .sort((a, b) => (michaelaThreshold(a, tier) - michaelaValue(a, tier)) - (michaelaThreshold(b, tier) - michaelaValue(b, tier)));
+            const unknown = eligible.filter(c => michaelaValue(c, tier) == null);
+            const requirementText = tier.type === 'fame'
+              ? `명성 ${tier.fame.toLocaleString()} 초과`
+              : `딜러 ${tier.dealer.toLocaleString()} / 버퍼 ${tier.buffer.toLocaleString()} 초과`;
+            return (
+              <div key={tier.key} style={{ marginBottom: '2rem' }}>
+                <h3 style={{ borderBottom: '1px solid rgba(244,114,182,0.2)', paddingBottom: '0.5rem', marginBottom: '1rem', color: '#f472b6', fontSize: '0.7rem' }}>
+                  🌟 미카엘라 레이드 - {tier.name} 진입 목표
+                  <span style={{ marginLeft: '0.6rem', fontSize: '0.7rem', color: '#64748b', fontWeight: 'normal' }}>{requirementText} | 잔여 {eligible.length}명</span>
+                </h3>
+                {eligible.length === 0 ? (
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', padding: '1rem', border: '1px dashed rgba(255,255,255,0.07)', borderRadius: '8px', textAlign: 'center' }}>해당 캐릭터 없음</div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.8rem' }}>
+                    {known.map(c => {
+                      const val = michaelaValue(c, tier);
+                      const diff = Math.max(0, michaelaThreshold(c, tier) - val + 1);
+                      return renderCard(c, tier, diff, '🌟', '#f472b6', prevTier ? `현재: ${prevTier.name}` : '미진입', { metricLabel: michaelaMetricLabel(c, tier), metricValue: val, imminentThreshold: tier.type === 'fame' ? 1000 : 5000 });
+                    })}
+                    {unknown.map(c => <UnknownScoreCard key={c.id} c={c} />)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function ImminentTab({ characters }) {
   const [subTab, setSubTab] = useState('dungeon');
   const [dungeonView, setDungeonView] = useState('byDungeon');
   const [apocView, setApocView] = useState('byTier');
+  const [michaelaView, setMichaelaView] = useState('byTier');
 
   return (
     <section className="glass-panel" style={{ minHeight: '60vh' }}>
       <h2 style={{ margin: '0 0 1.5rem' }}>🎯 다음 던전 목표 현황</h2>
 
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
-        {[['dungeon', '🚀 상급던전'], ['raid', '⚔️ 레이드'], ['apoc', '💀 아포칼립스']].map(([v, label]) => (
+        {[['dungeon', '🚀 상급던전'], ['raid', '⚔️ 레이드'], ['apoc', '💀 아포칼립스'], ['michaela', '🌟 미카엘라']].map(([v, label]) => (
           <button key={v} className={`tab-btn ${subTab === v ? 'active' : ''}`} onClick={() => setSubTab(v)} style={{ fontSize: '0.7rem', padding: '0.4rem 1.1rem' }}>{label}</button>
         ))}
       </div>
@@ -177,6 +291,7 @@ export default function ImminentTab({ characters }) {
       {subTab === 'dungeon' && <DungeonSubTab characters={characters} view={dungeonView} setView={setDungeonView} />}
       {subTab === 'raid' && <RaidSubTab characters={characters} />}
       {subTab === 'apoc' && <ApocSubTab characters={characters} view={apocView} setView={setApocView} />}
+      {subTab === 'michaela' && <MichaelaSubTab characters={characters} view={michaelaView} setView={setMichaelaView} />}
     </section>
   );
 }

@@ -30,6 +30,13 @@ export const APOCALYPSE = [
   { name: '매칭', fame: 73993 }
 ];
 
+// 미카엘라 레이드: 매칭은 명성 기준, 일반/하드는 역할군별 장비·버프 점수 기준으로 진입 가능.
+export const MICHAELA_TIERS = [
+  { key: 'matching', name: '매칭', type: 'fame', fame: 104292 },
+  { key: 'normal', name: '일반', type: 'score', dealer: 180000, buffer: 115000 },
+  { key: 'hard', name: '하드', type: 'score', dealer: 350000, buffer: 130000 }
+];
+
 export const BUFFER_KEYWORDS = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
 
 export const DEFAULT_CUSTOM_OPTIONS = {
