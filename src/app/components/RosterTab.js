@@ -113,9 +113,9 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                       <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
                       <th style={{ width: '7%', textAlign: 'center' }}>직업</th>
                       <th style={{ width: '14%', textAlign: 'center' }}>캐릭터명</th>
-                      <th style={{ width: '16%', textAlign: 'center' }}>명성 / 장비·버프 점수</th>
-                      <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
-                      <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
+                      <th style={{ width: '20%', textAlign: 'center' }}>명성 / 장비·버프 점수</th>
+                      <th style={{ width: '9%', textAlign: 'center' }}>상급던전</th>
+                      <th style={{ width: '8%', textAlign: 'center' }}>레이드</th>
                       <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
                       <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
                       <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
@@ -160,14 +160,17 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                           </td>
                           <td data-label="명성 / 장비·버프 점수" style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                              <span style={{ color: isImminentFame ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textShadow: isImminentFame ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }}>
+                              <span style={{ color: isImminentFame ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textShadow: isImminentFame ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }} title="모험가 명성">
                                 {isImminentFame && <span style={{ marginRight: '3px' }}>🔥</span>}
                                 {c.base.fame.toLocaleString()}
                               </span>
                               {c.equipmentScore?.value != null && (
-                                <span style={{ fontSize: '0.7rem', color: c.equipmentScore.isBuffScore ? '#4ade80' : '#38bdf8', fontWeight: 'bold' }} title="던파 공홈 캐릭터 검색 기준 (최고 명성 갱신 시에만 갱신됨)">
-                                  {c.equipmentScore.isBuffScore ? '버프' : '장비'} {c.equipmentScore.value.toLocaleString()}
-                                </span>
+                                <>
+                                  <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#64748b' }}>/</span>
+                                  <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: c.equipmentScore.isBuffScore ? '#4ade80' : '#38bdf8' }} title={`${c.equipmentScore.isBuffScore ? '버프' : '장비'} 점수 · 던파 공홈 캐릭터 검색 기준 (최고 명성 갱신 시에만 갱신됨)`}>
+                                    {c.equipmentScore.value.toLocaleString()}
+                                  </span>
+                                </>
                               )}
                             </div>
                           </td>
