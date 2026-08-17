@@ -74,31 +74,9 @@ function ManualModal({ char, form, setForm, customOptions, onSave, onClose }) {
   );
 }
 
-// ─── 던담 수치 포맷 헬퍼 ──────────────────────────────────────────────────────
-
-function formatDundamScore(n) {
-  if (!n || n <= 0) return '';
-  const rounded = Math.round(n / 100_000_000) * 100_000_000;
-  if (rounded === 0) return n.toLocaleString();
-  const jo = Math.floor(rounded / 1_000_000_000_000);
-  const eok = Math.floor((rounded % 1_000_000_000_000) / 100_000_000);
-  if (jo > 0 && eok > 0) return `${jo}조 ${eok}억`;
-  if (jo > 0) return `${jo}조`;
-  if (eok > 0) return `${eok}억`;
-  return n.toLocaleString();
-}
-
-function formatTimestamp(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
 // ─── RosterOverview ──────────────────────────────────────────────────────────
 
 function RosterOverview({ characters, isAdding, isRefreshing, server, charName, setServer, setCharName, onAdd, onRefreshAll, onForceRefreshAll, onDelete, onSaveManual }) {
-  const [editingDundamId, setEditingDundamId] = React.useState(null);
-  const [editingDundamValue, setEditingDundamValue] = React.useState('');
   const groups = buildGroups(characters);
 
   return (
@@ -135,13 +113,12 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                       <th style={{ width: '5%', textAlign: 'center' }}>서버</th>
                       <th style={{ width: '7%', textAlign: 'center' }}>직업</th>
                       <th style={{ width: '14%', textAlign: 'center' }}>캐릭터명</th>
-                      <th style={{ width: '6%', textAlign: 'center' }}>명성</th>
+                      <th style={{ width: '16%', textAlign: 'center' }}>명성 / 장비·버프 점수</th>
                       <th style={{ width: '11%', textAlign: 'center' }}>상급던전</th>
                       <th style={{ width: '10%', textAlign: 'center' }}>레이드</th>
                       <th style={{ width: '10%', textAlign: 'center' }}>아포칼립스</th>
                       <th style={{ width: '12%', textAlign: 'center' }}>장비 (점수)</th>
                       <th style={{ width: '8%', textAlign: 'center' }}>서약 (점수)</th>
-                      <th style={{ width: '10%', textAlign: 'center' }}>던담</th>
                       <th style={{ width: '7%', textAlign: 'center' }}>관리</th>
                     </tr>
                   </thead>
@@ -150,7 +127,7 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                       if (!c) {
                         return (
                           <tr key={`empty-${mIdx}`}>
-                            <td colSpan="11" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem', background: 'rgba(0,0,0,0.2)' }}>
+                            <td colSpan="10" style={{ textAlign: 'center', color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem', background: 'rgba(0,0,0,0.2)' }}>
                               {mIdx < 3 ? '딜러 자리 비어있음' : '버퍼 자리 비어있음'}
                             </td>
                           </tr>
@@ -181,16 +158,18 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                           <td data-label="캐릭터명" style={{ textAlign: 'center' }}>
                             <div style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>{c.base.charName}</div>
                           </td>
-                          <td data-label="명성" style={{ textAlign: 'center' }}>
-                            <div style={{ color: isImminentFame ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textShadow: isImminentFame ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }}>
-                              {isImminentFame && <span style={{ marginRight: '3px' }}>🔥</span>}
-                              {c.base.fame.toLocaleString()}
+                          <td data-label="명성 / 장비·버프 점수" style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                              <span style={{ color: isImminentFame ? '#fef08a' : '#fbbf24', fontWeight: 'bold', fontSize: '1.05rem', textShadow: isImminentFame ? '0 0 10px rgba(234, 179, 8, 0.6)' : 'none' }}>
+                                {isImminentFame && <span style={{ marginRight: '3px' }}>🔥</span>}
+                                {c.base.fame.toLocaleString()}
+                              </span>
+                              {c.equipmentScore?.value != null && (
+                                <span style={{ fontSize: '0.7rem', color: '#a78bfa', fontWeight: 'bold' }} title="던파 공홈 캐릭터 검색 기준 (최고 명성 갱신 시에만 갱신됨)">
+                                  {c.equipmentScore.isBuffScore ? '버프' : '장비'} {c.equipmentScore.value.toLocaleString()}
+                                </span>
+                              )}
                             </div>
-                            {c.equipmentScore?.value != null && (
-                              <div style={{ fontSize: '0.65rem', color: '#a78bfa', marginTop: '2px' }} title="던파 공홈 캐릭터 검색 기준 (최고 명성 갱신 시에만 갱신됨)">
-                                {c.equipmentScore.isBuffScore ? '버프' : '장비'} {c.equipmentScore.value.toLocaleString()}
-                              </div>
-                            )}
                           </td>
                           <td data-label="상급던전" style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
@@ -258,65 +237,6 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                                   style={{ marginTop: '3px', fontSize: '0.62rem', color: '#fde047', background: 'rgba(234,179,8,0.15)', border: '1px solid rgba(234,179,8,0.4)', borderRadius: '4px', padding: '0.1rem 0.3rem', cursor: 'help', whiteSpace: 'nowrap' }}
                                 >
                                   🔔 진의 변경 시 등급↑
-                                </div>
-                              );
-                            })()}
-                          </td>
-                          <td data-label="던담" style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                            {(() => {
-                              const score = c.manual?.dundamScore;
-                              const scoreAt = c.manual?.dundamUpdatedAt;
-                              const fameAtEntry = c.manual?.dundamFameAtEntry;
-                              const needsUpdate = score && fameAtEntry !== undefined && c.base.fame > fameAtEntry;
-                              if (editingDundamId === c.id) {
-                                return (
-                                  <input
-                                    autoFocus
-                                    type="text"
-                                    value={editingDundamValue}
-                                    onChange={e => setEditingDundamValue(e.target.value)}
-                                    onBlur={() => {
-                                      const raw = Number(editingDundamValue.replace(/,/g, ''));
-                                      if (!isNaN(raw) && raw > 0 && raw !== c.manual?.dundamScore) {
-                                        onSaveManual(c.id, { ...c.manual, dundamScore: raw, dundamUpdatedAt: Date.now(), dundamFameAtEntry: c.base.fame });
-                                      }
-                                      setEditingDundamId(null);
-                                      setEditingDundamValue('');
-                                    }}
-                                    onKeyDown={e => {
-                                      if (e.key === 'Enter') e.target.blur();
-                                      if (e.key === 'Escape') { setEditingDundamId(null); setEditingDundamValue(''); }
-                                    }}
-                                    style={{ width: '100px', padding: '0.2rem 0.3rem', fontSize: '0.85rem', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(56,189,248,0.5)', color: '#fff', borderRadius: '4px', textAlign: 'center' }}
-                                  />
-                                );
-                              }
-                              return (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                  <div
-                                    onClick={() => { setEditingDundamId(c.id); setEditingDundamValue(score ? score.toLocaleString() : ''); }}
-                                    style={{ cursor: 'pointer', padding: '0.1rem 0.2rem' }}
-                                    title="클릭하여 던담 수치 입력"
-                                  >
-                                    {score ? (
-                                      <>
-                                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: needsUpdate ? '#fbbf24' : '#e2e8f0' }}>
-                                          {c.manual?.role === 'buffer' ? score.toLocaleString() : formatDundamScore(score)}
-                                        </div>
-                                        {needsUpdate && (
-                                          <div style={{ fontSize: '0.65rem', color: '#fbbf24', lineHeight: 1.2 }}>⚠️ 갱신 필요</div>
-                                        )}
-                                        {scoreAt && (
-                                          <div style={{ fontSize: '0.62rem', color: '#475569', marginTop: '1px' }}>{formatTimestamp(scoreAt)}</div>
-                                        )}
-                                      </>
-                                    ) : (
-                                      <span style={{ fontSize: '0.7rem', color: '#334155' }}>클릭 입력</span>
-                                    )}
-                                  </div>
-                                  {c.charId && (
-                                    <a href={`https://dundam.xyz/character?server=${c.base.server}&key=${c.charId}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '0.65rem', color: '#38bdf8', textDecoration: 'none' }}>조회 🔗</a>
-                                  )}
                                 </div>
                               );
                             })()}

@@ -299,15 +299,11 @@ export default function Home() {
           }
           if (changed) newLogs.push(logEntry);
           const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
-          // dundamFameAtEntry 미기입 구형 데이터 자동 보정: 이전 명성을 기준점으로 설정
-          const patchedManual = (latestManual?.dundamScore && latestManual?.dundamFameAtEntry === undefined)
-            ? { ...latestManual, dundamFameAtEntry: c.base.fame }
-            : latestManual;
           const fameIncreased = res.base.fame > (c.base.fame || 0);
           const equipmentScore = fameIncreased
             ? (await fetchEquipmentScore(c.base.server, c.base.charName)) || c.equipmentScore
             : c.equipmentScore;
-          return { ...res, manual: patchedManual, equipmentScore, refreshedAt: Date.now() };
+          return { ...res, manual: latestManual, equipmentScore, refreshedAt: Date.now() };
         }
         return c;
       })

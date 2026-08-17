@@ -109,9 +109,19 @@ export const getRole = (c) => {
   return BUFFER_KEYWORDS.some(kw => jobName.includes(kw)) ? 'buffer' : 'dealer';
 };
 
+// 장비/버프 점수는 최고 명성 갱신 시에만 채워지므로, 아직 못 받아온 캐릭터는 명성으로
+// 대체 정렬하고 점수를 받아온 캐릭터보다는 항상 뒤로 보낸다.
+const comparePower = (a, b) => {
+  const sa = a.equipmentScore?.value, sb = b.equipmentScore?.value;
+  if (sa != null && sb != null) return sb - sa;
+  if (sa != null) return -1;
+  if (sb != null) return 1;
+  return b.base.fame - a.base.fame;
+};
+
 export const getSortedCharacters = (chars) => {
-  const dAll = [...chars].filter(c => getRole(c) === 'dealer').sort((a, b) => b.base.fame - a.base.fame);
-  const bAll = [...chars].filter(c => getRole(c) === 'buffer').sort((a, b) => b.base.fame - a.base.fame);
+  const dAll = [...chars].filter(c => getRole(c) === 'dealer').sort(comparePower);
+  const bAll = [...chars].filter(c => getRole(c) === 'buffer').sort(comparePower);
   const sorted = [];
   const maxG = Math.max(Math.ceil(dAll.length / 3), bAll.length);
   for (let i = 0; i < maxG; i++) {
@@ -124,8 +134,8 @@ export const getSortedCharacters = (chars) => {
 };
 
 export const buildGroups = (characters) => {
-  const dealers = characters.filter(c => getRole(c) === 'dealer').sort((a, b) => b.base.fame - a.base.fame);
-  const buffers = characters.filter(c => getRole(c) === 'buffer').sort((a, b) => b.base.fame - a.base.fame);
+  const dealers = characters.filter(c => getRole(c) === 'dealer').sort(comparePower);
+  const buffers = characters.filter(c => getRole(c) === 'buffer').sort(comparePower);
   const maxGroups = Math.max(Math.ceil(dealers.length / 3), buffers.length);
   const groups = [];
   for (let i = 0; i < maxGroups; i++) {

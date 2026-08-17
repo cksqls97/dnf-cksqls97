@@ -151,7 +151,6 @@ export async function POST(request) {
     const oathGradeTier = getGradeTier(finalOathPoints);
     const formatGrade = (g) => g.rarity === "등급 없음" ? "등급 없음" : (g.tier ? `${g.rarity} ${g.tier}` : g.rarity);
 
-    // 던담 API는 차단되었으므로 외부 링크용 charId만 프론트로 넘깁니다.
     return NextResponse.json({
       success: true,
       id: `${server}_${charName}`,
