@@ -65,6 +65,9 @@ export const recommendMukeonOptions = (mukeon) => {
       if (oathGradePoints(n) >= nextThreshold) { stagesForPoint = n; break; }
     }
   }
+  // 등급업에 필요한 서약 포인트 노드 수가 남은 최종뎀/쿨감 노드 수보다 많아야만(과반 초과)
+  // 등급이 오르는 경우는 추천하지 않는다.
+  if (stagesForPoint > unlockedCount - stagesForPoint) stagesForPoint = 0;
   // 필요한 단계 수를 다 써도(=포인트를 4단계 다 몰아도) 등급이 오르지 않으면 추천하지 않는다.
   const willTierUp = stagesForPoint > 0;
 
