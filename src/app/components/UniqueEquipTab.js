@@ -27,6 +27,19 @@ const EMPTY_FIRST_RECORD = () => Object.fromEntries(DAILY_TRACKED_KEYS.map(k => 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
+// KST(UTC+9) 기준 날짜 계산 헬퍼. 실제 브라우저 타임존과 무관하게 항상 KST 달력 기준으로
+// "오늘"과 요일을 구하기 위해, 타임스탬프를 +9시간 밀어둔 뒤 UTC getter로 읽는 방식을 쓴다.
+const KST_OFFSET_MS = 9 * 3600000;
+const DOW_KOR = ['일', '월', '화', '수', '목', '금', '토'];
+function kstTodayMidnightUTC() {
+  const shifted = new Date(Date.now() + KST_OFFSET_MS);
+  return Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate());
+}
+function formatKSTDate(utcMidnight) {
+  const d = new Date(utcMidnight);
+  return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 (${DOW_KOR[d.getUTCDay()]})`;
+}
+
 // 입력값을 "그 날의 최종 보유량"으로 보고, 최초 기록 시점 대비 증가분을 경과일로 나눠 일평균
 // 수급량을 구한 뒤, 남은 물량을 그 페이스로 채우면 며칠 걸리는지 계산한다.
 function getDailyPaceInfo(firstRecord, currentValue, required) {
@@ -41,15 +54,62 @@ function getDailyPaceInfo(firstRecord, currentValue, required) {
   return { status: 'ok', daysNeeded, dailyRate };
 }
 
-function paceLabel(info) {
+// 여명의 빛망울은 KST 기준 매주 토요일에만 수급 가능하므로, 오늘 이후 가장 가까운 토요일부터
+// weeksNeeded번째 토요일까지의 날짜를 완성일로 계산한다(오늘이 토요일이면 그날을 1번째로 센다).
+function getWeeklySupplyCompletionDate(weeksNeeded) {
+  const todayMid = kstTodayMidnightUTC();
+  const dow = new Date(todayMid).getUTCDay();
+  const daysUntilSaturday = (6 - dow + 7) % 7;
+  const firstSaturday = todayMid + daysUntilSaturday * 86400000;
+  return firstSaturday + (weeksNeeded - 1) * 7 * 86400000;
+}
+
+// 재료 하나의 진행 상태 + (계산 가능하면) 완성 예정일을 한 번에 구한다.
+function getMaterialCompletion(m, ownedVal, firstRecords, weeklyDawnDroplet) {
+  if (ownedVal >= m.required) return { status: 'done' };
+  if (m.weeklyTracked) {
+    const weekly = Number(weeklyDawnDroplet || 0);
+    if (!weekly || weekly <= 0) return { status: 'noWeeklyIncome' };
+    const weeksNeeded = Math.ceil((m.required - ownedVal) / weekly);
+    return { status: 'ok', weeksNeeded, dateUTC: getWeeklySupplyCompletionDate(weeksNeeded) };
+  }
+  const pace = getDailyPaceInfo(firstRecords[m.key], ownedVal, m.required);
+  if (pace.status !== 'ok') return pace;
+  return { status: 'ok', daysNeeded: pace.daysNeeded, dailyRate: pace.dailyRate, dateUTC: kstTodayMidnightUTC() + pace.daysNeeded * 86400000 };
+}
+
+function materialCompletionLabel(info) {
   switch (info.status) {
     case 'done': return { text: '완료', color: '#4ade80' };
     case 'noData': return { text: '기록 대기 중 (값 입력 후 다른 곳 클릭)', color: '#64748b' };
     case 'collecting': return { text: '추이 기록 중 (1일 후 계산됨)', color: '#64748b' };
     case 'noProgress': return { text: '최근 증가 없음', color: '#f87171' };
-    case 'ok': return { text: `약 ${info.daysNeeded.toLocaleString()}일 후 도달 (일평균 ${info.dailyRate.toFixed(1)}개)`, color: '#fbbf24' };
+    case 'noWeeklyIncome': return { text: '주간 수급량 입력 필요', color: '#fbbf24' };
+    case 'ok': {
+      const rateText = info.weeksNeeded !== undefined
+        ? `${info.weeksNeeded.toLocaleString()}주 남음`
+        : `약 ${info.daysNeeded.toLocaleString()}일 후 (일평균 ${info.dailyRate.toFixed(1)}개)`;
+      return { text: `${rateText} → ${formatKSTDate(info.dateUTC)} 예상`, color: '#fbbf24' };
+    }
     default: return { text: '', color: '#64748b' };
   }
+}
+
+// 아이템의 예상 완성일 = 그 아이템에 필요한 재료들 중 가장 늦게 채워지는 재료의 완성일(병목).
+// 아직 계산 불가능한(진행 추이 미확인 등) 재료가 하나라도 있으면 전체 완성일도 "정보 부족"으로 둔다.
+function getItemCompletion(item, owned, firstRecords, weeklyDawnDroplet) {
+  let maxDateUTC = null;
+  let allDone = true;
+  for (const m of item.materials) {
+    const ownedVal = getMaterialOwned(m, owned);
+    const info = getMaterialCompletion(m, ownedVal, firstRecords, weeklyDawnDroplet);
+    if (info.status === 'done') continue;
+    allDone = false;
+    if (info.status !== 'ok') return { status: 'unknown' };
+    if (maxDateUTC === null || info.dateUTC > maxDateUTC) maxDateUTC = info.dateUTC;
+  }
+  if (allDone) return { status: 'done' };
+  return { status: 'ok', dateUTC: maxDateUTC };
 }
 
 function ProgressBar({ pct, color }) {
@@ -60,22 +120,10 @@ function ProgressBar({ pct, color }) {
   );
 }
 
-function MaterialRow({ label, owned, required, weeklyIncome, paceInfo }) {
+function MaterialRow({ label, owned, required, completion }) {
   const pct = required > 0 ? (owned / required * 100) : 0;
   const isDone = owned >= required;
-  const remaining = Math.max(0, required - owned);
-
-  let extraText = null, extraColor = '#fbbf24';
-  if (weeklyIncome !== undefined) {
-    if (isDone) extraText = '완료';
-    else if (!weeklyIncome || weeklyIncome <= 0) extraText = '주간 수급량 입력 필요';
-    else extraText = `${Math.ceil(remaining / weeklyIncome).toLocaleString()}주 남음`;
-    extraColor = isDone ? '#4ade80' : '#fbbf24';
-  } else if (paceInfo) {
-    const l = paceLabel(paceInfo);
-    extraText = l.text;
-    extraColor = l.color;
-  }
+  const { text: extraText, color: extraColor } = materialCompletionLabel(completion);
 
   return (
     <div style={{ marginBottom: '0.8rem' }}>
@@ -145,7 +193,8 @@ export default function UniqueEquipTab() {
       <h2 style={{ marginTop: 0, marginBottom: '0.4rem' }}>🔨 유일장비 제작 현황</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: 0, marginBottom: '1.5rem' }}>
         보유 재화를 입력하면 유일장비별 제작 진행률을 계산합니다. 태초 소울 결정·순례의 인장은 두 장비가 요구량을 공유합니다.
-        입력값은 항상 그 날의 최종 보유량으로 취급되며, 최초 입력 시점 대비 증가분으로 일평균 수급량과 예상 소요일수를 계산합니다.
+        입력값은 항상 그 날의 최종 보유량으로 취급되며, 최초 입력 시점 대비 증가분으로 일평균 수급량과 예상 완성일을 계산합니다.
+        여명의 빛망울은 KST 기준 매주 토요일에만 수급 가능한 점을 반영합니다.
       </p>
 
       <div style={{ marginBottom: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -178,11 +227,17 @@ export default function UniqueEquipTab() {
             const ownedVal = getMaterialOwned(m, owned);
             return m.required > 0 ? Math.min(100, ownedVal / m.required * 100) : 100;
           }));
+          const itemCompletion = getItemCompletion(item, owned, firstRecords, weeklyDawnDroplet);
           return (
             <div key={item.key} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                 <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0' }}>{item.name}</h3>
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
+              </div>
+              <div style={{ fontSize: '0.7rem', marginBottom: '1rem', fontWeight: 'bold', color: itemCompletion.status === 'done' ? '#4ade80' : itemCompletion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
+                {itemCompletion.status === 'done' && '✅ 재료 준비 완료'}
+                {itemCompletion.status === 'ok' && `📅 예상 완성일: ${formatKSTDate(itemCompletion.dateUTC)}`}
+                {itemCompletion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
               </div>
               {item.materials.map(m => {
                 const ownedVal = getMaterialOwned(m, owned);
@@ -192,8 +247,7 @@ export default function UniqueEquipTab() {
                     label={m.name}
                     owned={ownedVal}
                     required={m.required}
-                    weeklyIncome={m.weeklyTracked ? Number(weeklyDawnDroplet || 0) : undefined}
-                    paceInfo={m.weeklyTracked ? undefined : getDailyPaceInfo(firstRecords[m.key], ownedVal, m.required)}
+                    completion={getMaterialCompletion(m, ownedVal, firstRecords, weeklyDawnDroplet)}
                   />
                 );
               })}
