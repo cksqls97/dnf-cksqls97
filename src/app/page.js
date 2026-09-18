@@ -300,10 +300,7 @@ export default function Home() {
           }
           if (changed) newLogs.push(logEntry);
           const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
-          const fameIncreased = res.base.fame > (c.base.fame || 0);
-          const equipmentScore = (force || fameIncreased)
-            ? (await fetchEquipmentScore(c.base.server, c.base.charName)) || c.equipmentScore
-            : c.equipmentScore;
+          const equipmentScore = (await fetchEquipmentScore(c.base.server, c.base.charName)) || c.equipmentScore;
           return { ...res, manual: latestManual, equipmentScore, refreshedAt: Date.now() };
         }
         return c;
@@ -392,10 +389,7 @@ export default function Home() {
         }
         if (changed) newLogs.push(logEntry);
         const latestManual = charsRef.current.find(x => x.id === c.id)?.manual || c.manual;
-        const fameIncreased = res.base.fame > (base.base?.fame || 0);
-        const equipmentScore = fameIncreased
-          ? (await fetchEquipmentScore(c.base.server, c.base.charName)) || c.equipmentScore
-          : c.equipmentScore;
+        const equipmentScore = (await fetchEquipmentScore(c.base.server, c.base.charName)) || c.equipmentScore;
         return { ...res, manual: latestManual, equipmentScore, refreshedAt: Date.now() };
       })
     );

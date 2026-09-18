@@ -165,7 +165,7 @@ function RosterOverview({ characters, isAdding, isRefreshing, server, charName, 
                               {c.equipmentScore?.value != null && (
                                 <>
                                   <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#64748b' }}>/</span>
-                                  <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: c.equipmentScore.isBuffScore ? '#4ade80' : '#38bdf8' }} title={`${c.equipmentScore.isBuffScore ? '버프' : '장비'} 점수 · 던파 공홈 캐릭터 검색 기준 (최고 명성 갱신 시에만 갱신됨)`}>
+                                  <span style={{ fontSize: '1.05rem', fontWeight: 'bold', color: c.equipmentScore.isBuffScore ? '#4ade80' : '#38bdf8' }} title={`${c.equipmentScore.isBuffScore ? '버프' : '장비'} 점수 · 던파 공홈 캐릭터 검색 기준 (갱신 시마다 반영)`}>
                                     {c.equipmentScore.value.toLocaleString()}
                                   </span>
                                 </>
