@@ -45,6 +45,7 @@ export const DIREGIE_TIERS = [
 // 유일장비 제작 현황: 태초 소울 결정/순례의 인장은 두 장비가 요구량을 공유하므로
 // (material.key가 같으면) 보유량 입력 한 번으로 두 장비 진행률에 동시 반영된다.
 // weeklyTracked: true인 재료만 "현재 보유 + 주간 수급량"으로 소요 주차를 계산한다.
+// sourceKeys가 있으면 보유량 입력창을 여러 개로 나누고 합산해서 그 재료의 보유량으로 쓴다.
 export const UNIQUE_EQUIPMENT_ITEMS = [
   {
     key: 'plagueHeart',
@@ -61,7 +62,13 @@ export const UNIQUE_EQUIPMENT_ITEMS = [
     materials: [
       { key: 'primordialSoul', name: '태초 소울 결정', required: 25 },
       { key: 'pilgrimageSeal', name: '순례의 인장', required: 20000 },
-      { key: 'dawnDroplet', name: '여명의 빛망울', required: 3360, weeklyTracked: true }
+      {
+        key: 'dawnDroplet', name: '여명의 빛망울', required: 3360, weeklyTracked: true,
+        sourceKeys: [
+          { key: 'dawnDropletUntradeable', name: '여명의 빛망울 (교환불가)' },
+          { key: 'dawnDropletBound', name: '여명의 빛망울 (계정귀속)' }
+        ]
+      }
     ]
   }
 ];

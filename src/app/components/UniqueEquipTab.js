@@ -3,12 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { UNIQUE_EQUIPMENT_ITEMS } from '../lib/constants';
 
-const MATERIAL_FIELDS = [
-  ['primordialSoul', '태초 소울 결정'],
-  ['epicSoul', '에픽 소울 결정'],
-  ['pilgrimageSeal', '순례의 인장'],
-  ['dawnDroplet', '여명의 빛망울']
-];
+// 재료별 보유량 입력창 목록. sourceKeys가 있는 재료(예: 여명의 빛망울)는 입력창을 여러 개로
+// 나눠서(교환불가/계정귀속 등) 각각 입력받고, 합산해서 그 재료의 보유량으로 쓴다.
+function collectInputFields(items) {
+  const seen = new Map();
+  for (const item of items) {
+    for (const m of item.materials) {
+      const fields = m.sourceKeys || [{ key: m.key, name: m.name }];
+      for (const f of fields) { if (!seen.has(f.key)) seen.set(f.key, f.name); }
+    }
+  }
+  return [...seen.entries()];
+}
+const MATERIAL_FIELDS = collectInputFields(UNIQUE_EQUIPMENT_ITEMS);
+const getMaterialOwned = (m, owned) => (m.sourceKeys || [{ key: m.key }]).reduce((sum, f) => sum + Number(owned[f.key] || 0), 0);
+
 // 여명의 빛망울은 주간 수급량이 고정값으로 정해져 있어 일일 페이스 추적 대상에서 제외한다.
 const DAILY_TRACKED_KEYS = ['primordialSoul', 'epicSoul', 'pilgrimageSeal'];
 
@@ -166,7 +175,7 @@ export default function UniqueEquipTab() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.2rem' }}>
         {UNIQUE_EQUIPMENT_ITEMS.map(item => {
           const overallPct = Math.min(...item.materials.map(m => {
-            const ownedVal = Number(owned[m.key] || 0);
+            const ownedVal = getMaterialOwned(m, owned);
             return m.required > 0 ? Math.min(100, ownedVal / m.required * 100) : 100;
           }));
           return (
@@ -175,16 +184,19 @@ export default function UniqueEquipTab() {
                 <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0' }}>{item.name}</h3>
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
               </div>
-              {item.materials.map(m => (
-                <MaterialRow
-                  key={m.key}
-                  label={m.name}
-                  owned={Number(owned[m.key] || 0)}
-                  required={m.required}
-                  weeklyIncome={m.weeklyTracked ? Number(weeklyDawnDroplet || 0) : undefined}
-                  paceInfo={m.weeklyTracked ? undefined : getDailyPaceInfo(firstRecords[m.key], Number(owned[m.key] || 0), m.required)}
-                />
-              ))}
+              {item.materials.map(m => {
+                const ownedVal = getMaterialOwned(m, owned);
+                return (
+                  <MaterialRow
+                    key={m.key}
+                    label={m.name}
+                    owned={ownedVal}
+                    required={m.required}
+                    weeklyIncome={m.weeklyTracked ? Number(weeklyDawnDroplet || 0) : undefined}
+                    paceInfo={m.weeklyTracked ? undefined : getDailyPaceInfo(firstRecords[m.key], ownedVal, m.required)}
+                  />
+                );
+              })}
             </div>
           );
         })}
