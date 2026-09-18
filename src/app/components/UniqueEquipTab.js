@@ -24,17 +24,25 @@ const DAILY_TRACKED_KEYS = ['primordialSoul', 'epicSoul', 'pilgrimageSeal'];
 const EMPTY_OWNED = () => Object.fromEntries(MATERIAL_FIELDS.map(([k]) => [k, '']));
 const EMPTY_FIRST_RECORD = () => Object.fromEntries(DAILY_TRACKED_KEYS.map(k => [k, null]));
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
 const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
 // KST(UTC+9) 기준 날짜 계산 헬퍼. 실제 브라우저 타임존과 무관하게 항상 KST 달력 기준으로
 // "오늘"과 요일을 구하기 위해, 타임스탬프를 +9시간 밀어둔 뒤 UTC getter로 읽는 방식을 쓴다.
 const KST_OFFSET_MS = 9 * 3600000;
 const DOW_KOR = ['일', '월', '화', '수', '목', '금', '토'];
+// 하루 수급량 기록은 KST 기준 "오전 6시"에 갱신된다(던파 일일 컨텐츠 초기화 시각과 동일).
+// 즉 새벽 0~6시 사이는 아직 전날의 연장이며, 그 전에 마지막으로 입력한 값이 전날의 최종 기록으로 남는다.
+const GAME_DAY_RESET_HOUR = 6;
 function kstTodayMidnightUTC() {
   const shifted = new Date(Date.now() + KST_OFFSET_MS);
   return Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate());
 }
+function kstGameDayStartUTC() {
+  const shifted = new Date(Date.now() + KST_OFFSET_MS);
+  const midnight = Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate());
+  return shifted.getUTCHours() < GAME_DAY_RESET_HOUR ? midnight - 86400000 : midnight;
+}
+const kstGameDayISO = () => new Date(kstGameDayStartUTC()).toISOString().slice(0, 10);
 function formatKSTDate(utcMidnight) {
   const d = new Date(utcMidnight);
   return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 (${DOW_KOR[d.getUTCDay()]})`;
@@ -45,7 +53,7 @@ function formatKSTDate(utcMidnight) {
 function getDailyPaceInfo(firstRecord, currentValue, required) {
   if (currentValue >= required) return { status: 'done' };
   if (!firstRecord) return { status: 'noData' };
-  const elapsedDays = daysBetween(firstRecord.date, todayISO());
+  const elapsedDays = daysBetween(firstRecord.date, kstGameDayISO());
   if (elapsedDays < 1) return { status: 'collecting' };
   const gained = currentValue - firstRecord.value;
   if (gained <= 0) return { status: 'noProgress' };
@@ -159,7 +167,7 @@ export default function UniqueEquipTab() {
 
     // 이 기능이 생기기 전부터 값이 들어있던 재료는 오늘을 시작점으로 소급 기록한다.
     const loadedFirstRecord = { ...EMPTY_FIRST_RECORD(), ...(readJson('DNF_UNIQUE_EQUIP_FIRST_RECORD') || {}) };
-    const today = todayISO();
+    const today = kstGameDayISO();
     DAILY_TRACKED_KEYS.forEach(key => {
       if (!loadedFirstRecord[key] && loadedOwned && Number(loadedOwned[key] || 0) > 0) {
         loadedFirstRecord[key] = { date: today, value: Number(loadedOwned[key]) };
@@ -177,7 +185,7 @@ export default function UniqueEquipTab() {
     if (!DAILY_TRACKED_KEYS.includes(key) || firstRecords[key]) return;
     const val = Number(owned[key] || 0);
     if (val <= 0) return;
-    setFirstRecords(prev => ({ ...prev, [key]: { date: todayISO(), value: val } }));
+    setFirstRecords(prev => ({ ...prev, [key]: { date: kstGameDayISO(), value: val } }));
   };
 
   const resetTracking = () => {
@@ -190,10 +198,10 @@ export default function UniqueEquipTab() {
 
   return (
     <section className="glass-panel" style={{ minHeight: '60vh' }}>
-      <h2 style={{ marginTop: 0, marginBottom: '0.4rem' }}>🔨 유일장비 제작 현황</h2>
+      <h2 style={{ marginTop: 0, marginBottom: '0.4rem' }}>🔨 유일 장비 제작 현황</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: 0, marginBottom: '1.5rem' }}>
         보유 재화를 입력하면 유일장비별 제작 진행률을 계산합니다. 태초 소울 결정·순례의 인장은 두 장비가 요구량을 공유합니다.
-        입력값은 항상 그 날의 최종 보유량으로 취급되며, 최초 입력 시점 대비 증가분으로 일평균 수급량과 예상 완성일을 계산합니다.
+        입력값은 항상 그 날의 최종 보유량으로 취급되며(하루는 KST 오전 6시에 갱신), 최초 입력 시점 대비 증가분으로 일평균 수급량과 예상 완성일을 계산합니다.
         여명의 빛망울은 KST 기준 매주 토요일에만 수급 가능한 점을 반영합니다.
       </p>
 

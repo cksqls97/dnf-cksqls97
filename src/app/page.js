@@ -478,7 +478,7 @@ export default function Home() {
         <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>🎯 다음 던전 목표 현황</button>
         <button className={`tab-btn ${activeTab === 'merc' ? 'active' : ''}`} onClick={() => setActiveTab('merc')}>⚔️ 용병단 레벨</button>
         <button className={`tab-btn ${activeTab === 'pilgrimage' ? 'active' : ''}`} onClick={() => setActiveTab('pilgrimage')}>✨ 광휘의 순례</button>
-        <button className={`tab-btn ${activeTab === 'uniqueEquip' ? 'active' : ''}`} onClick={() => setActiveTab('uniqueEquip')}>🔨 유일장비 제작</button>
+        <button className={`tab-btn ${activeTab === 'uniqueEquip' ? 'active' : ''}`} onClick={() => setActiveTab('uniqueEquip')}>🔨 유일 장비 제작 현황</button>
       </div>
 
       {activeTab === 'roster' && (
