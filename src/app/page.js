@@ -6,6 +6,7 @@ import HistoryTab from './components/HistoryTab';
 import ImminentTab from './components/ImminentTab';
 import MercTab from './components/MercTab';
 import PilgrimageTab from './components/PilgrimageTab';
+import UniqueEquipTab from './components/UniqueEquipTab';
 import { ALL_MANUAL_KEYS, DEFAULT_CUSTOM_OPTIONS } from './lib/constants';
 
 export default function Home() {
@@ -483,6 +484,7 @@ export default function Home() {
         <button className={`tab-btn ${activeTab === 'imminent' ? 'active' : ''}`} onClick={() => setActiveTab('imminent')}>🎯 다음 던전 목표 현황</button>
         <button className={`tab-btn ${activeTab === 'merc' ? 'active' : ''}`} onClick={() => setActiveTab('merc')}>⚔️ 용병단 레벨</button>
         <button className={`tab-btn ${activeTab === 'pilgrimage' ? 'active' : ''}`} onClick={() => setActiveTab('pilgrimage')}>✨ 광휘의 순례</button>
+        <button className={`tab-btn ${activeTab === 'uniqueEquip' ? 'active' : ''}`} onClick={() => setActiveTab('uniqueEquip')}>🔨 유일장비 제작</button>
       </div>
 
       {activeTab === 'roster' && (
@@ -533,6 +535,8 @@ export default function Home() {
           apiKey={apiKey}
         />
       )}
+
+      {activeTab === 'uniqueEquip' && <UniqueEquipTab />}
 
       {/* Settings modal */}
       {showSettings && (

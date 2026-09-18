@@ -42,6 +42,30 @@ export const DIREGIE_TIERS = [
   { key: 'akyeon', name: '악연', type: 'score', dealer: 50000, buffer: 60000 }
 ];
 
+// 유일장비 제작 현황: 태초 소울 결정/순례의 인장은 두 장비가 요구량을 공유하므로
+// (material.key가 같으면) 보유량 입력 한 번으로 두 장비 진행률에 동시 반영된다.
+// weeklyTracked: true인 재료만 "현재 보유 + 주간 수급량"으로 소요 주차를 계산한다.
+export const UNIQUE_EQUIPMENT_ITEMS = [
+  {
+    key: 'plagueHeart',
+    name: '만병을 잉태한 역병의 심장',
+    materials: [
+      { key: 'primordialSoul', name: '태초 소울 결정', required: 25 },
+      { key: 'epicSoul', name: '에픽 소울 결정', required: 500 },
+      { key: 'pilgrimageSeal', name: '순례의 인장', required: 20000 }
+    ]
+  },
+  {
+    key: 'radiantEye',
+    name: '광휘를 머금은 눈동자',
+    materials: [
+      { key: 'primordialSoul', name: '태초 소울 결정', required: 25 },
+      { key: 'pilgrimageSeal', name: '순례의 인장', required: 20000 },
+      { key: 'dawnDroplet', name: '여명의 빛망울', required: 3360, weeklyTracked: true }
+    ]
+  }
+];
+
 export const BUFFER_KEYWORDS = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
 
 export const DEFAULT_CUSTOM_OPTIONS = {
