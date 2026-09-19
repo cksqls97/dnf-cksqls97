@@ -264,25 +264,28 @@ export default function UniqueEquipTab() {
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_FIRST_RECORD', JSON.stringify(firstRecords)); }, [firstRecords, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_DAILY_LOG', JSON.stringify(dailyLog)); }, [dailyLog, hydrated]);
 
-  // 일일 페이스 추적 대상 재료에 최초로 값을 입력하면, 그 날을 기준(최초 기록)으로 한 번만 고정한다.
-  const commitFirstRecordIfNeeded = (key) => {
-    if (!DAILY_TRACKED_KEYS.includes(key) || firstRecords[key]) return;
-    const val = Number(owned[key] || 0);
-    if (val <= 0) return;
-    setFirstRecords(prev => ({ ...prev, [key]: { date: kstGameDayISO(), value: val } }));
-  };
-
-  // 입력창에서 포커스가 빠질 때마다 "오늘(KST 6시 기준) 최종 보유량"을 일별 기록 로그에 덮어써 남긴다.
-  const recordDailyLogSnapshot = () => {
-    const today = kstGameDayISO();
-    const snapshot = { ...owned };
-    setDailyLog(prev => {
+  // "오늘(KST 6시 기준 게임데이)"의 기록을 항상 최신 보유량으로 맞춰 둔다. 입력을 바꿀 때뿐 아니라
+  // 아무 입력 없이 날짜만 넘어가도(하루 종일 값이 그대로였어도) 그 날의 행이 생기도록,
+  // blur 이벤트가 아니라 owned 변경 + 최초 마운트(하이드레이션 완료) 시점 모두에 걸어 둔다.
+  useEffect(() => {
+    if (!hydrated) return;
+    const upsertToday = (setter, snapshot) => setter(prev => {
+      const today = kstGameDayISO();
       const idx = prev.findIndex(e => e.date === today);
       if (idx === -1) return [...prev, { date: today, owned: snapshot }];
       const next = [...prev];
       next[idx] = { date: today, owned: snapshot };
       return next;
     });
+    upsertToday(setDailyLog, { ...owned });
+  }, [owned, hydrated]);
+
+  // 일일 페이스 추적 대상 재료에 최초로 값을 입력하면, 그 날을 기준(최초 기록)으로 한 번만 고정한다.
+  const commitFirstRecordIfNeeded = (key) => {
+    if (!DAILY_TRACKED_KEYS.includes(key) || firstRecords[key]) return;
+    const val = Number(owned[key] || 0);
+    if (val <= 0) return;
+    setFirstRecords(prev => ({ ...prev, [key]: { date: kstGameDayISO(), value: val } }));
   };
 
   const resetTracking = () => {
@@ -314,7 +317,7 @@ export default function UniqueEquipTab() {
               <input
                 type="number" min="0" value={owned[key]}
                 onChange={e => setOwned(p => ({ ...p, [key]: e.target.value }))}
-                onBlur={() => { commitFirstRecordIfNeeded(key); recordDailyLogSnapshot(); }}
+                onBlur={() => commitFirstRecordIfNeeded(key)}
                 style={inp} placeholder="0"
               />
             </div>
