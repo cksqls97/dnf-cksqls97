@@ -57,6 +57,11 @@ function formatKSTDate(utcMidnight) {
   const d = new Date(utcMidnight);
   return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 (${DOW_KOR[d.getUTCDay()]})`;
 }
+// 게임 데이(dateISO, "YYYY-MM-DD")의 실제 기간(KST 06:00:00 ~ 다음날 05:59:59)을 문자열로 표시한다.
+function formatGameDayRange(dateISO) {
+  const nextDayISO = new Date(new Date(dateISO + 'T00:00:00Z').getTime() + 86400000).toISOString().slice(0, 10);
+  return `${dateISO} 06:00:00~${nextDayISO} 05:59:59`;
+}
 
 // 입력값을 "그 날의 최종 보유량"으로 보고, 최초 기록 시점 대비 증가분을 경과일로 나눠 일평균
 // 수급량을 구한 뒤, 남은 물량을 그 페이스로 채우면 며칠 걸리는지 계산한다.
@@ -195,7 +200,7 @@ function DailyLogTable({ dailyLog }) {
             {rows.map(row => (
               <tr key={row.date} style={row.isFirst ? { background: 'rgba(255,255,255,0.03)' } : undefined}>
                 <td style={{ ...td, textAlign: 'left', color: '#cbd5e1' }}>
-                  {formatKSTDate(new Date(row.date).getTime())}
+                  {formatGameDayRange(row.date)}
                   {row.isFirst && <span style={{ marginLeft: '0.4rem', fontSize: '0.6rem', color: '#94a3b8' }}>(최초 기록)</span>}
                 </td>
                 {row.cells.map(cell => (
