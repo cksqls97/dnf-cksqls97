@@ -158,6 +158,7 @@ function MaterialRow({ label, owned, required, completion }) {
 }
 
 // 날짜별 기록(dailyLog)을 오름차순으로 정리해, 전날 대비 증가량을 함께 계산한다.
+// 가장 오래된(최초) 기록은 비교 대상이 없으므로 isFirst로 표시해 절대값을, 그 외에는 증가량만 쓴다.
 function computeDailyDeltaRows(dailyLog) {
   const asc = [...dailyLog].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   return asc.map((entry, i) => {
@@ -167,7 +168,7 @@ function computeDailyDeltaRows(dailyLog) {
       const prevValue = prevEntry ? getMaterialOwned(m, prevEntry.owned) : null;
       return { key: m.key, value, delta: prevValue === null ? null : value - prevValue };
     });
-    return { date: entry.date, cells };
+    return { date: entry.date, isFirst: i === 0, cells };
   }).reverse(); // 최신 날짜가 위로 오도록
 }
 
@@ -192,16 +193,18 @@ function DailyLogTable({ dailyLog }) {
           </thead>
           <tbody>
             {rows.map(row => (
-              <tr key={row.date}>
-                <td style={{ ...td, textAlign: 'left', color: '#cbd5e1' }}>{formatKSTDate(new Date(row.date).getTime())}</td>
+              <tr key={row.date} style={row.isFirst ? { background: 'rgba(255,255,255,0.03)' } : undefined}>
+                <td style={{ ...td, textAlign: 'left', color: '#cbd5e1' }}>
+                  {formatKSTDate(new Date(row.date).getTime())}
+                  {row.isFirst && <span style={{ marginLeft: '0.4rem', fontSize: '0.6rem', color: '#94a3b8' }}>(최초 기록)</span>}
+                </td>
                 {row.cells.map(cell => (
-                  <td key={cell.key} style={{ ...td, color: '#e2e8f0' }}>
-                    {cell.value.toLocaleString()}
-                    {cell.delta !== null && cell.delta !== 0 && (
-                      <span style={{ marginLeft: '0.4rem', color: cell.delta > 0 ? '#4ade80' : '#f87171' }}>
-                        ({cell.delta > 0 ? '+' : ''}{cell.delta.toLocaleString()})
-                      </span>
-                    )}
+                  <td key={cell.key} style={{ ...td, color: row.isFirst ? '#94a3b8' : '#e2e8f0' }}>
+                    {row.isFirst
+                      ? cell.value.toLocaleString()
+                      : (cell.delta === 0
+                          ? '-'
+                          : <span style={{ color: cell.delta > 0 ? '#4ade80' : '#f87171' }}>{cell.delta > 0 ? '+' : ''}{cell.delta.toLocaleString()}</span>)}
                   </td>
                 ))}
               </tr>
