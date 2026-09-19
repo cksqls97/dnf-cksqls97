@@ -297,10 +297,26 @@ export default function UniqueEquipTab() {
     });
     setRaw(setFirstRecords, loadedFirstRecord);
 
-    // 일별 기록 로그. 이 기능이 생기기 전부터 값이 들어있었다면 오늘 기록으로 한 줄 소급 기록한다.
+    // 일별 기록 로그. 이 기능보다 firstRecords(최초 기록) 추적이 먼저 생겼기 때문에, 로그가 아직
+    // 그 최초 기록 시점(가장 오래된 날짜)을 담고 있지 않다면 그 시점의 값을 소급 복원해 채워 넣는다.
+    // (firstRecords에 없는 재료는 그 시점 값을 알 수 없으므로 현재값으로 대신한다.)
+    // firstRecords조차 없으면(완전히 새로운 사용자) 오늘 값으로만 한 줄 기록한다.
     let loadedDailyLog = readJson('DNF_UNIQUE_EQUIP_DAILY_LOG') || [];
-    if (loadedDailyLog.length === 0 && loadedOwned) {
-      loadedDailyLog = [{ date: today, owned: loadedOwned }];
+    if (loadedOwned) {
+      const knownRecords = DAILY_TRACKED_KEYS.map(key => loadedFirstRecord[key]).filter(Boolean);
+      if (knownRecords.length > 0) {
+        const earliestDate = knownRecords.reduce((min, r) => (r.date < min ? r.date : min), knownRecords[0].date);
+        const alreadyCovered = loadedDailyLog.some(e => e.date <= earliestDate);
+        if (!alreadyCovered) {
+          const backfillOwned = { ...loadedOwned };
+          DAILY_TRACKED_KEYS.forEach(key => {
+            if (loadedFirstRecord[key]) backfillOwned[key] = String(loadedFirstRecord[key].value);
+          });
+          loadedDailyLog = [{ date: earliestDate, owned: backfillOwned }, ...loadedDailyLog];
+        }
+      } else if (loadedDailyLog.length === 0) {
+        loadedDailyLog = [{ date: today, owned: loadedOwned }];
+      }
     }
     setRaw(setDailyLog, loadedDailyLog);
 
