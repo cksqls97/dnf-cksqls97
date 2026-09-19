@@ -177,7 +177,42 @@ function computeDailyDeltaRows(dailyLog) {
   }).reverse(); // 최신 날짜가 위로 오도록
 }
 
+// 가공(증감 계산) 없이, 실제로 저장된 원본 입력값(각 입력창 단위, 날짜별)을 그대로 보여준다.
+function RawLogTable({ dailyLog }) {
+  const rowsDesc = [...dailyLog].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).reverse();
+  const th = { textAlign: 'right', padding: '0.5rem 0.7rem', fontSize: '0.7rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' };
+  const td = { textAlign: 'right', padding: '0.45rem 0.7rem', fontSize: '0.72rem', borderBottom: '1px solid rgba(255,255,255,0.05)', whiteSpace: 'nowrap', color: '#e2e8f0' };
+
+  return (
+    <div style={{ marginTop: '0.8rem' }}>
+      <div style={{ overflowX: 'auto', maxHeight: '360px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px' }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+          <thead>
+            <tr>
+              <th style={{ ...th, textAlign: 'left', position: 'sticky', top: 0, background: '#111827' }}>날짜</th>
+              {MATERIAL_FIELDS.map(([key, label]) => (
+                <th key={key} style={{ ...th, position: 'sticky', top: 0, background: '#111827' }}>{label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rowsDesc.map(entry => (
+              <tr key={entry.date}>
+                <td style={{ ...td, textAlign: 'left', color: '#cbd5e1' }}>{formatGameDayRange(entry.date)}</td>
+                {MATERIAL_FIELDS.map(([key]) => (
+                  <td key={key} style={td}>{Number(entry.owned[key] || 0).toLocaleString()}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function DailyLogTable({ dailyLog }) {
+  const [showRaw, setShowRaw] = useState(false);
   const rows = computeDailyDeltaRows(dailyLog);
   if (rows.length === 0) return null;
   const th = { textAlign: 'right', padding: '0.5rem 0.7rem', fontSize: '0.7rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' };
@@ -185,38 +220,50 @@ function DailyLogTable({ dailyLog }) {
 
   return (
     <div style={{ marginTop: '2rem' }}>
-      <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '0.6rem' }}>📈 일별 증가량</div>
-      <div style={{ overflowX: 'auto', maxHeight: '360px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px' }}>
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th style={{ ...th, textAlign: 'left', position: 'sticky', top: 0, background: '#111827' }}>날짜</th>
-              {DISPLAY_MATERIALS.map(m => (
-                <th key={m.key} style={{ ...th, position: 'sticky', top: 0, background: '#111827' }}>{m.name}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(row => (
-              <tr key={row.date} style={row.isFirst ? { background: 'rgba(255,255,255,0.03)' } : undefined}>
-                <td style={{ ...td, textAlign: 'left', color: '#cbd5e1' }}>
-                  {formatGameDayRange(row.date)}
-                  {row.isFirst && <span style={{ marginLeft: '0.4rem', fontSize: '0.6rem', color: '#94a3b8' }}>(최초 기록)</span>}
-                </td>
-                {row.cells.map(cell => (
-                  <td key={cell.key} style={{ ...td, color: row.isFirst ? '#94a3b8' : '#e2e8f0' }}>
-                    {row.isFirst
-                      ? cell.value.toLocaleString()
-                      : (cell.delta === 0
-                          ? '-'
-                          : <span style={{ color: cell.delta > 0 ? '#4ade80' : '#f87171' }}>{cell.delta > 0 ? '+' : ''}{cell.delta.toLocaleString()}</span>)}
-                  </td>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold' }}>📈 일별 증가량</div>
+        <button
+          onClick={() => setShowRaw(v => !v)}
+          style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem', background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.25)', borderRadius: '3px', cursor: 'pointer' }}
+        >
+          {showRaw ? '증가량 표로 돌아가기' : '🗂 입력된 원본 데이터 전체 보기'}
+        </button>
+      </div>
+      {showRaw ? (
+        <RawLogTable dailyLog={dailyLog} />
+      ) : (
+        <div style={{ overflowX: 'auto', maxHeight: '360px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px' }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead>
+              <tr>
+                <th style={{ ...th, textAlign: 'left', position: 'sticky', top: 0, background: '#111827' }}>날짜</th>
+                {DISPLAY_MATERIALS.map(m => (
+                  <th key={m.key} style={{ ...th, position: 'sticky', top: 0, background: '#111827' }}>{m.name}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map(row => (
+                <tr key={row.date} style={row.isFirst ? { background: 'rgba(255,255,255,0.03)' } : undefined}>
+                  <td style={{ ...td, textAlign: 'left', color: '#cbd5e1' }}>
+                    {formatGameDayRange(row.date)}
+                    {row.isFirst && <span style={{ marginLeft: '0.4rem', fontSize: '0.6rem', color: '#94a3b8' }}>(최초 기록)</span>}
+                  </td>
+                  {row.cells.map(cell => (
+                    <td key={cell.key} style={{ ...td, color: row.isFirst ? '#94a3b8' : '#e2e8f0' }}>
+                      {row.isFirst
+                        ? cell.value.toLocaleString()
+                        : (cell.delta === 0
+                            ? '-'
+                            : <span style={{ color: cell.delta > 0 ? '#4ade80' : '#f87171' }}>{cell.delta > 0 ? '+' : ''}{cell.delta.toLocaleString()}</span>)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
