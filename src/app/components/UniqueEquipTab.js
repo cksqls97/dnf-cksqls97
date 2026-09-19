@@ -18,6 +18,16 @@ function collectInputFields(items) {
 const MATERIAL_FIELDS = collectInputFields(UNIQUE_EQUIPMENT_ITEMS);
 const getMaterialOwned = (m, owned) => (m.sourceKeys || [{ key: m.key }]).reduce((sum, f) => sum + Number(owned[f.key] || 0), 0);
 
+// 일일 증가량 표에 표시할 "합산 재료" 목록(같은 key를 공유하는 재료는 한 열로 합쳐서 보여준다).
+function collectDisplayMaterials(items) {
+  const seen = new Map();
+  for (const item of items) {
+    for (const m of item.materials) { if (!seen.has(m.key)) seen.set(m.key, m); }
+  }
+  return [...seen.values()];
+}
+const DISPLAY_MATERIALS = collectDisplayMaterials(UNIQUE_EQUIPMENT_ITEMS);
+
 // 여명의 빛망울은 주간 수급량이 고정값으로 정해져 있어 일일 페이스 추적 대상에서 제외한다.
 const DAILY_TRACKED_KEYS = ['primordialSoul', 'epicSoul', 'pilgrimageSeal'];
 
@@ -147,10 +157,67 @@ function MaterialRow({ label, owned, required, completion }) {
   );
 }
 
+// 날짜별 기록(dailyLog)을 오름차순으로 정리해, 전날 대비 증가량을 함께 계산한다.
+function computeDailyDeltaRows(dailyLog) {
+  const asc = [...dailyLog].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  return asc.map((entry, i) => {
+    const prevEntry = i > 0 ? asc[i - 1] : null;
+    const cells = DISPLAY_MATERIALS.map(m => {
+      const value = getMaterialOwned(m, entry.owned);
+      const prevValue = prevEntry ? getMaterialOwned(m, prevEntry.owned) : null;
+      return { key: m.key, value, delta: prevValue === null ? null : value - prevValue };
+    });
+    return { date: entry.date, cells };
+  }).reverse(); // 최신 날짜가 위로 오도록
+}
+
+function DailyLogTable({ dailyLog }) {
+  const rows = computeDailyDeltaRows(dailyLog);
+  if (rows.length === 0) return null;
+  const th = { textAlign: 'right', padding: '0.5rem 0.7rem', fontSize: '0.7rem', color: '#94a3b8', borderBottom: '1px solid rgba(255,255,255,0.1)', whiteSpace: 'nowrap' };
+  const td = { textAlign: 'right', padding: '0.45rem 0.7rem', fontSize: '0.72rem', borderBottom: '1px solid rgba(255,255,255,0.05)', whiteSpace: 'nowrap' };
+
+  return (
+    <div style={{ marginTop: '2rem' }}>
+      <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '0.6rem' }}>📈 일별 증가량</div>
+      <div style={{ overflowX: 'auto', maxHeight: '360px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px' }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+          <thead>
+            <tr>
+              <th style={{ ...th, textAlign: 'left', position: 'sticky', top: 0, background: '#111827' }}>날짜</th>
+              {DISPLAY_MATERIALS.map(m => (
+                <th key={m.key} style={{ ...th, position: 'sticky', top: 0, background: '#111827' }}>{m.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(row => (
+              <tr key={row.date}>
+                <td style={{ ...td, textAlign: 'left', color: '#cbd5e1' }}>{formatKSTDate(new Date(row.date).getTime())}</td>
+                {row.cells.map(cell => (
+                  <td key={cell.key} style={{ ...td, color: '#e2e8f0' }}>
+                    {cell.value.toLocaleString()}
+                    {cell.delta !== null && cell.delta !== 0 && (
+                      <span style={{ marginLeft: '0.4rem', color: cell.delta > 0 ? '#4ade80' : '#f87171' }}>
+                        ({cell.delta > 0 ? '+' : ''}{cell.delta.toLocaleString()})
+                      </span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function UniqueEquipTab() {
   const [owned, setOwned] = useState(EMPTY_OWNED());
   const [weeklyDawnDroplet, setWeeklyDawnDroplet] = useState('');
   const [firstRecords, setFirstRecords] = useState(EMPTY_FIRST_RECORD());
+  const [dailyLog, setDailyLog] = useState([]);
   // 마운트 시 저장된 값을 불러오기 전까지 저장 effect가 초기 빈 값으로 덮어쓰지 않도록 막는 플래그.
   const [hydrated, setHydrated] = useState(false);
 
@@ -174,11 +241,20 @@ export default function UniqueEquipTab() {
       }
     });
     setRaw(setFirstRecords, loadedFirstRecord);
+
+    // 일별 기록 로그. 이 기능이 생기기 전부터 값이 들어있었다면 오늘 기록으로 한 줄 소급 기록한다.
+    let loadedDailyLog = readJson('DNF_UNIQUE_EQUIP_DAILY_LOG') || [];
+    if (loadedDailyLog.length === 0 && loadedOwned) {
+      loadedDailyLog = [{ date: today, owned: loadedOwned }];
+    }
+    setRaw(setDailyLog, loadedDailyLog);
+
     setRaw(setHydrated, true);
   }, []);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_OWNED', JSON.stringify(owned)); }, [owned, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN', weeklyDawnDroplet); }, [weeklyDawnDroplet, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_FIRST_RECORD', JSON.stringify(firstRecords)); }, [firstRecords, hydrated]);
+  useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_DAILY_LOG', JSON.stringify(dailyLog)); }, [dailyLog, hydrated]);
 
   // 일일 페이스 추적 대상 재료에 최초로 값을 입력하면, 그 날을 기준(최초 기록)으로 한 번만 고정한다.
   const commitFirstRecordIfNeeded = (key) => {
@@ -186,6 +262,19 @@ export default function UniqueEquipTab() {
     const val = Number(owned[key] || 0);
     if (val <= 0) return;
     setFirstRecords(prev => ({ ...prev, [key]: { date: kstGameDayISO(), value: val } }));
+  };
+
+  // 입력창에서 포커스가 빠질 때마다 "오늘(KST 6시 기준) 최종 보유량"을 일별 기록 로그에 덮어써 남긴다.
+  const recordDailyLogSnapshot = () => {
+    const today = kstGameDayISO();
+    const snapshot = { ...owned };
+    setDailyLog(prev => {
+      const idx = prev.findIndex(e => e.date === today);
+      if (idx === -1) return [...prev, { date: today, owned: snapshot }];
+      const next = [...prev];
+      next[idx] = { date: today, owned: snapshot };
+      return next;
+    });
   };
 
   const resetTracking = () => {
@@ -217,7 +306,7 @@ export default function UniqueEquipTab() {
               <input
                 type="number" min="0" value={owned[key]}
                 onChange={e => setOwned(p => ({ ...p, [key]: e.target.value }))}
-                onBlur={() => commitFirstRecordIfNeeded(key)}
+                onBlur={() => { commitFirstRecordIfNeeded(key); recordDailyLogSnapshot(); }}
                 style={inp} placeholder="0"
               />
             </div>
@@ -263,6 +352,8 @@ export default function UniqueEquipTab() {
           );
         })}
       </div>
+
+      <DailyLogTable dailyLog={dailyLog} />
     </section>
   );
 }
