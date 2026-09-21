@@ -133,12 +133,12 @@ function materialCompletionLabel(info) {
   }
 }
 
-// 아이템의 예상 완성일 = 그 아이템에 필요한 재료들 중 가장 늦게 채워지는 재료의 완성일(병목).
+// 재료 목록의 예상 완성일 = 그 중 가장 늦게 채워지는 재료의 완성일(병목).
 // 아직 계산 불가능한(진행 추이 미확인 등) 재료가 하나라도 있으면 전체 완성일도 "정보 부족"으로 둔다.
-function getItemCompletion(item, owned, firstRecords, weeklyDawnDroplet) {
+function getMaterialsCompletion(materials, owned, firstRecords, weeklyDawnDroplet) {
   let maxDateUTC = null;
   let allDone = true;
-  for (const m of item.materials) {
+  for (const m of materials) {
     const ownedVal = getMaterialOwned(m, owned);
     const info = getMaterialCompletion(m, ownedVal, firstRecords, weeklyDawnDroplet);
     if (info.status === 'done') continue;
@@ -148,6 +148,16 @@ function getItemCompletion(item, owned, firstRecords, weeklyDawnDroplet) {
   }
   if (allDone) return { status: 'done' };
   return { status: 'ok', dateUTC: maxDateUTC };
+}
+// 아이템 하나의 완성 정보(요구 재료만 대상).
+const getItemCompletion = (item, owned, firstRecords, weeklyDawnDroplet) =>
+  getMaterialsCompletion(item.materials, owned, firstRecords, weeklyDawnDroplet);
+
+function getBottleneckPct(materials, owned) {
+  return Math.min(...materials.map(m => {
+    const ownedVal = getMaterialOwned(m, owned);
+    return m.required > 0 ? Math.min(100, ownedVal / m.required * 100) : 100;
+  }));
 }
 
 function ProgressBar({ pct, color }) {
@@ -423,12 +433,30 @@ export default function UniqueEquipTab() {
         </div>
       </div>
 
+      {(() => {
+        const overallPct = getBottleneckPct(DISPLAY_MATERIALS, owned);
+        const overallCompletion = getMaterialsCompletion(DISPLAY_MATERIALS, owned, firstRecords, weeklyDawnDroplet);
+        return (
+          <div style={{ marginBottom: '1.2rem', background: 'rgba(250,204,21,0.06)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(250,204,21,0.25)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#fde047' }}>🏆 유일장비 2종 전체 제작 완료</h3>
+              <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
+            </div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallCompletion.status === 'done' ? '#4ade80' : overallCompletion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
+              {overallCompletion.status === 'done' && '✅ 두 장비 모두 재료 준비 완료'}
+              {overallCompletion.status === 'ok' && `📅 두 장비 모두 완료 예상일: ${formatKSTDate(overallCompletion.dateUTC)}`}
+              {overallCompletion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
+            </div>
+            <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: '0.5rem 0 0' }}>
+              태초 소울 결정·순례의 인장은 두 장비가 요구량을 공유하므로 한 번만 채우면 되고, 에픽 소울 결정(역병의 심장)과 여명의 빛망울(눈동자)은 장비 전용 재료라 둘 다 따로 채워야 합니다.
+            </p>
+          </div>
+        );
+      })()}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.2rem' }}>
         {UNIQUE_EQUIPMENT_ITEMS.map(item => {
-          const overallPct = Math.min(...item.materials.map(m => {
-            const ownedVal = getMaterialOwned(m, owned);
-            return m.required > 0 ? Math.min(100, ownedVal / m.required * 100) : 100;
-          }));
+          const overallPct = getBottleneckPct(item.materials, owned);
           const itemCompletion = getItemCompletion(item, owned, firstRecords, weeklyDawnDroplet);
           return (
             <div key={item.key} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
