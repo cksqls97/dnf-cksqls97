@@ -18,6 +18,21 @@ function collectInputFields(items) {
 const MATERIAL_FIELDS = collectInputFields(UNIQUE_EQUIPMENT_ITEMS);
 const getMaterialOwned = (m, owned) => (m.sourceKeys || [{ key: m.key }]).reduce((sum, f) => sum + Number(owned[f.key] || 0), 0);
 
+// weeklyTracked 재료(여명의 빛망울)의 입력 필드는 별도 섹션으로 분리해서 보여준다.
+function collectWeeklyFieldKeys(items) {
+  const keys = new Set();
+  for (const item of items) {
+    for (const m of item.materials) {
+      if (!m.weeklyTracked) continue;
+      (m.sourceKeys || [{ key: m.key }]).forEach(f => keys.add(f.key));
+    }
+  }
+  return keys;
+}
+const WEEKLY_FIELD_KEYS = collectWeeklyFieldKeys(UNIQUE_EQUIPMENT_ITEMS);
+const DAILY_MATERIAL_FIELDS = MATERIAL_FIELDS.filter(([key]) => !WEEKLY_FIELD_KEYS.has(key));
+const WEEKLY_MATERIAL_FIELDS = MATERIAL_FIELDS.filter(([key]) => WEEKLY_FIELD_KEYS.has(key));
+
 // 일일 증가량 표에 표시할 "합산 재료" 목록(같은 key를 공유하는 재료는 한 열로 합쳐서 보여준다).
 function collectDisplayMaterials(items) {
   const seen = new Map();
@@ -368,19 +383,35 @@ export default function UniqueEquipTab() {
         여명의 빛망울은 KST 기준 매주 토요일에만 수급 가능한 점을 반영합니다.
       </p>
 
-      <div style={{ marginBottom: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div style={{ marginBottom: '1.2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold' }}>📦 보유 재화 입력</div>
           <button onClick={resetTracking} style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem', background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', borderRadius: '3px', cursor: 'pointer' }}>페이스 기록 초기화</button>
         </div>
         <div style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
-          {MATERIAL_FIELDS.map(([key, label]) => (
+          {DAILY_MATERIAL_FIELDS.map(([key, label]) => (
             <div key={key}>
               <label style={lbl}>{label}</label>
               <input
                 type="number" min="0" value={owned[key]}
                 onChange={e => setOwned(p => ({ ...p, [key]: e.target.value }))}
                 onBlur={() => commitFirstRecordIfNeeded(key)}
+                style={inp} placeholder="0"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 'bold', marginBottom: '1rem' }}>🌙 여명의 빛망울 입력 (광휘를 머금은 눈동자)</div>
+        <div style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
+          {WEEKLY_MATERIAL_FIELDS.map(([key, label]) => (
+            <div key={key}>
+              <label style={lbl}>{label}</label>
+              <input
+                type="number" min="0" value={owned[key]}
+                onChange={e => setOwned(p => ({ ...p, [key]: e.target.value }))}
                 style={inp} placeholder="0"
               />
             </div>

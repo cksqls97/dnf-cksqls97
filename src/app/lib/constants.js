@@ -63,7 +63,7 @@ export const UNIQUE_EQUIPMENT_ITEMS = [
       { key: 'primordialSoul', name: '태초 소울 결정', required: 25 },
       { key: 'pilgrimageSeal', name: '순례의 인장', required: 20000 },
       {
-        key: 'dawnDroplet', name: '여명의 빛망울', required: 3360, weeklyTracked: true,
+        key: 'dawnDroplet', name: '여명의 빛망울', required: 2400, weeklyTracked: true,
         sourceKeys: [
           { key: 'dawnDropletUntradeable', name: '여명의 빛망울 (교환불가)' },
           { key: 'dawnDropletBound', name: '여명의 빛망울 (계정귀속)' }
