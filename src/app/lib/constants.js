@@ -42,8 +42,9 @@ export const DIREGIE_TIERS = [
   { key: 'akyeon', name: '악연', type: 'score', dealer: 50000, buffer: 60000 }
 ];
 
-// 유일장비 제작 현황: 태초 소울 결정/순례의 인장은 두 장비가 요구량을 공유하므로
-// (material.key가 같으면) 보유량 입력 한 번으로 두 장비 진행률에 동시 반영된다.
+// 유일장비 제작 현황: 태초 소울/순례의 인장은 두 장비 모두에 각각 필요하므로(material.key가
+// 같으면), 두 장비를 전부 만들려면 두 장비의 요구량을 합산한 만큼 있어야 한다(개별 장비
+// 카드에서는 그 장비 하나에 필요한 만큼만, 전체 합산 카드에서는 두 장비 몫을 합해서 보여준다).
 // weeklyTracked: true인 재료만 "현재 보유 + 주간 수급량"으로 소요 주차를 계산한다.
 // sourceKeys가 있으면 보유량 입력창을 여러 개로 나누고 합산해서 그 재료의 보유량으로 쓴다.
 export const UNIQUE_EQUIPMENT_ITEMS = [
@@ -51,8 +52,8 @@ export const UNIQUE_EQUIPMENT_ITEMS = [
     key: 'plagueHeart',
     name: '만병을 잉태한 역병의 심장',
     materials: [
-      { key: 'primordialSoul', name: '태초 소울 결정', required: 25 },
-      { key: 'epicSoul', name: '에픽 소울 결정', required: 500 },
+      { key: 'primordialSoul', name: '태초 소울', required: 25 },
+      { key: 'epicSoul', name: '에픽 소울', required: 500 },
       { key: 'pilgrimageSeal', name: '순례의 인장', required: 20000 }
     ]
   },
@@ -60,7 +61,7 @@ export const UNIQUE_EQUIPMENT_ITEMS = [
     key: 'radiantEye',
     name: '광휘를 머금은 눈동자',
     materials: [
-      { key: 'primordialSoul', name: '태초 소울 결정', required: 25 },
+      { key: 'primordialSoul', name: '태초 소울', required: 25 },
       { key: 'pilgrimageSeal', name: '순례의 인장', required: 20000 },
       {
         key: 'dawnDroplet', name: '여명의 빛망울', required: 2400, weeklyTracked: true,

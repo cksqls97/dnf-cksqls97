@@ -43,6 +43,20 @@ function collectDisplayMaterials(items) {
 }
 const DISPLAY_MATERIALS = collectDisplayMaterials(UNIQUE_EQUIPMENT_ITEMS);
 
+// 두 장비를 모두 만드는 데 필요한 재료 목록. 같은 재료가 여러 장비에 쓰이면(태초 소울, 순례의
+// 인장) 요구량을 합산한다(한 장비에만 쓰이는 재료는 그 장비의 요구량 그대로).
+function collectCombinedMaterials(items) {
+  const map = new Map();
+  for (const item of items) {
+    for (const m of item.materials) {
+      const existing = map.get(m.key);
+      map.set(m.key, existing ? { ...existing, required: existing.required + m.required } : { ...m });
+    }
+  }
+  return [...map.values()];
+}
+const COMBINED_MATERIALS = collectCombinedMaterials(UNIQUE_EQUIPMENT_ITEMS);
+
 // 여명의 빛망울은 주간 수급량이 고정값으로 정해져 있어 일일 페이스 추적 대상에서 제외한다.
 const DAILY_TRACKED_KEYS = ['primordialSoul', 'epicSoul', 'pilgrimageSeal'];
 
@@ -388,7 +402,7 @@ export default function UniqueEquipTab() {
     <section className="glass-panel" style={{ minHeight: '60vh' }}>
       <h2 style={{ marginTop: 0, marginBottom: '0.4rem' }}>🔨 유일 장비 제작 현황</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: 0, marginBottom: '1.5rem' }}>
-        보유 재화를 입력하면 유일장비별 제작 진행률을 계산합니다. 태초 소울 결정·순례의 인장은 두 장비가 요구량을 공유합니다.
+        보유 재화를 입력하면 유일장비별 제작 진행률을 계산합니다. 태초 소울·순례의 인장은 두 장비 모두에 각각 필요하므로, 두 장비를 전부 만들려면 요구량을 합산한 만큼 있어야 합니다.
         입력값은 항상 그 날의 최종 보유량으로 취급되며(하루는 KST 오전 6시에 갱신), 최초 입력 시점 대비 증가분으로 일평균 수급량과 예상 완성일을 계산합니다.
         여명의 빛망울은 KST 기준 매주 토요일에만 수급 가능한 점을 반영합니다.
       </p>
@@ -433,28 +447,36 @@ export default function UniqueEquipTab() {
         </div>
       </div>
 
-      {(() => {
-        const overallPct = getBottleneckPct(DISPLAY_MATERIALS, owned);
-        const overallCompletion = getMaterialsCompletion(DISPLAY_MATERIALS, owned, firstRecords, weeklyDawnDroplet);
-        return (
-          <div style={{ marginBottom: '1.2rem', background: 'rgba(250,204,21,0.06)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(250,204,21,0.25)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#fde047' }}>🏆 유일장비 2종 전체 제작 완료</h3>
-              <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
-            </div>
-            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallCompletion.status === 'done' ? '#4ade80' : overallCompletion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
-              {overallCompletion.status === 'done' && '✅ 두 장비 모두 재료 준비 완료'}
-              {overallCompletion.status === 'ok' && `📅 두 장비 모두 완료 예상일: ${formatKSTDate(overallCompletion.dateUTC)}`}
-              {overallCompletion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
-            </div>
-            <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: '0.5rem 0 0' }}>
-              태초 소울 결정·순례의 인장은 두 장비가 요구량을 공유하므로 한 번만 채우면 되고, 에픽 소울 결정(역병의 심장)과 여명의 빛망울(눈동자)은 장비 전용 재료라 둘 다 따로 채워야 합니다.
-            </p>
-          </div>
-        );
-      })()}
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.2rem' }}>
+        {(() => {
+          const overallPct = getBottleneckPct(COMBINED_MATERIALS, owned);
+          const overallCompletion = getMaterialsCompletion(COMBINED_MATERIALS, owned, firstRecords, weeklyDawnDroplet);
+          return (
+            <div style={{ background: 'rgba(250,204,21,0.05)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(250,204,21,0.25)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#fde047' }}>🏆 유일장비 2종 전체 제작</h3>
+                <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
+              </div>
+              <div style={{ fontSize: '0.7rem', marginBottom: '1rem', fontWeight: 'bold', color: overallCompletion.status === 'done' ? '#4ade80' : overallCompletion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
+                {overallCompletion.status === 'done' && '✅ 재료 준비 완료'}
+                {overallCompletion.status === 'ok' && `📅 예상 완성일: ${formatKSTDate(overallCompletion.dateUTC)}`}
+                {overallCompletion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
+              </div>
+              {COMBINED_MATERIALS.map(m => {
+                const ownedVal = getMaterialOwned(m, owned);
+                return (
+                  <MaterialRow
+                    key={m.key}
+                    label={m.name}
+                    owned={ownedVal}
+                    required={m.required}
+                    completion={getMaterialCompletion(m, ownedVal, firstRecords, weeklyDawnDroplet)}
+                  />
+                );
+              })}
+            </div>
+          );
+        })()}
         {UNIQUE_EQUIPMENT_ITEMS.map(item => {
           const overallPct = getBottleneckPct(item.materials, owned);
           const itemCompletion = getItemCompletion(item, owned, firstRecords, weeklyDawnDroplet);
