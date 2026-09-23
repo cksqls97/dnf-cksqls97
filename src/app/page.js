@@ -53,6 +53,23 @@ export default function Home() {
 
   // ─── Cloud sync ──────────────────────────────────────────────────────────────
 
+  // 유일장비 제작 현황 탭은 자체적으로 localStorage에 저장하므로(page.js 상태로 끌어올리지 않음),
+  // 클라우드 업로드 시점에 직접 읽어 동봉한다. 캐릭터 로스터와 같은 syncUpCloudData 호출(추가/전체
+  // 갱신/옵션 변경 등, 매시간 자동 갱신 포함)에 얹혀가므로 같은 주기로 업로드된다.
+  const readUniqueEquipCloudPayload = () => {
+    const readJson = (key) => { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } };
+    const owned = readJson('DNF_UNIQUE_EQUIP_OWNED');
+    // 이 기기에서 유일장비 탭을 아직 한 번도 안 썼다면 undefined를 보내 필드 자체를 생략한다.
+    // null을 보내면 서버가 다른 기기가 이미 올려둔 클라우드 데이터를 null로 덮어써 버린다.
+    if (!owned) return undefined;
+    return {
+      owned,
+      weeklyDawnDroplet: localStorage.getItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN') || '',
+      firstRecords: readJson('DNF_UNIQUE_EQUIP_FIRST_RECORD') || {},
+      dailyLog: readJson('DNF_UNIQUE_EQUIP_DAILY_LOG') || []
+    };
+  };
+
   const syncUpCloudData = async (key, updatedChars, updatedLogs, updatedOpts, updatedMerc, forceOverride = false, updatedPilgrimage = null) => {
     if (!key) return;
     try {
@@ -67,6 +84,7 @@ export default function Home() {
           customOptions: updatedOpts,
           merc: updatedMerc,
           pilgrimage: pilgrimageData,
+          uniqueEquip: readUniqueEquipCloudPayload(),
           clientUpdateAt: lastCloudUpdateAtRef.current,
           forceOverride
         })
@@ -122,6 +140,15 @@ export default function Home() {
           if (cData.merc.level) setMercLevel(cData.merc.level);
           if (cData.merc.target) setMercNextLevelTarget(cData.merc.target);
           localStorage.setItem('DNF_MERC', JSON.stringify(cData.merc));
+          modified = true;
+        }
+        if (cData.uniqueEquip) {
+          // 유일장비 탭은 자체 state라 여기선 localStorage만 갱신한다(다음에 그 탭을 열 때 반영됨).
+          const ue = cData.uniqueEquip;
+          if (ue.owned) localStorage.setItem('DNF_UNIQUE_EQUIP_OWNED', JSON.stringify(ue.owned));
+          if (ue.weeklyDawnDroplet !== undefined) localStorage.setItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN', ue.weeklyDawnDroplet);
+          if (ue.firstRecords) localStorage.setItem('DNF_UNIQUE_EQUIP_FIRST_RECORD', JSON.stringify(ue.firstRecords));
+          if (ue.dailyLog) localStorage.setItem('DNF_UNIQUE_EQUIP_DAILY_LOG', JSON.stringify(ue.dailyLog));
           modified = true;
         }
         if (modified) {

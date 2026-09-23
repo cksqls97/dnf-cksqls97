@@ -45,7 +45,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { apiKey, characters, historyLogs, customOptions, merc, pilgrimage, clientUpdateAt, forceOverride } = body;
+    const { apiKey, characters, historyLogs, customOptions, merc, pilgrimage, uniqueEquip, clientUpdateAt, forceOverride } = body;
     if (!apiKey) return NextResponse.json({ success: false, error: "Missing API Key" }, { status: 400 });
     
     // 기존 데이터 버전 확인
@@ -59,13 +59,16 @@ export async function POST(request) {
        }
     }
     
-    // 객체 필드들만 수합해서 KV에 저장 (Overwriting)
-    const payload = {};
+    // 기존 데이터 위에 이번 요청에 실려온 필드만 덮어써서 저장한다. 요청에 없는(undefined) 필드는
+    // 기존 값을 그대로 유지한다 - 그렇지 않으면 그 필드를 아직 쓰지 않는 기기가 동기화할 때마다
+    // 다른 기기가 이미 올려둔 데이터를 통째로 지워버리게 된다(uniqueEquip이 대표적인 경우).
+    const payload = { ...(existing || {}) };
     if (characters !== undefined) payload.characters = characters;
     if (historyLogs !== undefined) payload.historyLogs = historyLogs;
     if (customOptions !== undefined) payload.customOptions = customOptions;
     if (merc !== undefined) payload.merc = merc;
     if (pilgrimage !== undefined) payload.pilgrimage = pilgrimage;
+    if (uniqueEquip !== undefined) payload.uniqueEquip = uniqueEquip;
     
     // 새 버전(타임스탬프) 부여
     const newUpdateAt = Date.now();
