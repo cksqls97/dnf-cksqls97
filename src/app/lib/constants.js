@@ -74,6 +74,22 @@ export const UNIQUE_EQUIPMENT_ITEMS = [
   }
 ];
 
+// 유일장비 정밀도: 완성 후 정밀도 100%를 채우기 위해 "시도"를 반복해야 하며, 시도 1회마다
+// 아래 재료가 추가로(완성 재료와는 별개로) 소모된다. 100% 도달까지 필요한 평균 시도 횟수는
+// 정확히 알 수 없어 25회로 가정한다(UI에도 이 가정을 명시해서 보여준다).
+export const PRECISION_AVG_ATTEMPTS = 25;
+export const UNIQUE_EQUIPMENT_PRECISION_COST = {
+  plagueHeart: [
+    { key: 'epicSoul', name: '에픽 소울', perAttempt: 40 },
+    { key: 'pilgrimageSeal', name: '순례의 인장', perAttempt: 800 }
+  ],
+  radiantEye: [
+    { key: 'epicSoul', name: '에픽 소울', perAttempt: 60 },
+    { key: 'pilgrimageSeal', name: '순례의 인장', perAttempt: 800 },
+    { key: 'dawnDroplet', name: '여명의 빛망울', perAttempt: 60 }
+  ]
+};
+
 export const BUFFER_KEYWORDS = ['패러메딕', '크루세이더', '뮤즈', '인챈트리스'];
 
 export const DEFAULT_CUSTOM_OPTIONS = {

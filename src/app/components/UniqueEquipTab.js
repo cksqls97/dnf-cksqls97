@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { UNIQUE_EQUIPMENT_ITEMS } from '../lib/constants';
+import { UNIQUE_EQUIPMENT_ITEMS, PRECISION_AVG_ATTEMPTS, UNIQUE_EQUIPMENT_PRECISION_COST } from '../lib/constants';
 
 // 재료별 보유량 입력창 목록. sourceKeys가 있는 재료(예: 여명의 빛망울)는 입력창을 여러 개로
 // 나눠서(교환불가/계정귀속 등) 각각 입력받고, 합산해서 그 재료의 보유량으로 쓴다.
@@ -56,6 +56,33 @@ function collectCombinedMaterials(items) {
   return [...map.values()];
 }
 const COMBINED_MATERIALS = collectCombinedMaterials(UNIQUE_EQUIPMENT_ITEMS);
+
+// 정밀도 100% 도달까지 필요한 재료 = 기존 완성 재료 + (시도 1회당 소모량 × 평균 시도 횟수).
+// 완성 재료에는 없던 재료(예: 눈동자 정밀도의 에픽 소울)라면 새 항목으로 추가한다.
+function withPrecisionRequirement(materials, precisionCosts) {
+  const merged = new Map(materials.map(m => [m.key, { ...m }]));
+  for (const p of precisionCosts) {
+    const addAmount = p.perAttempt * PRECISION_AVG_ATTEMPTS;
+    const existing = merged.get(p.key);
+    merged.set(p.key, existing ? { ...existing, required: existing.required + addAmount } : { key: p.key, name: p.name, required: addAmount });
+  }
+  return [...merged.values()];
+}
+const PRECISION_MATERIALS_BY_ITEM = Object.fromEntries(
+  UNIQUE_EQUIPMENT_ITEMS.map(item => [item.key, withPrecisionRequirement(item.materials, UNIQUE_EQUIPMENT_PRECISION_COST[item.key] || [])])
+);
+// 두 장비 모두의 시도 재료를 합산한 뒤, 완성 재료 합산치(COMBINED_MATERIALS)에 더한다.
+const COMBINED_PRECISION_COST = (() => {
+  const map = new Map();
+  for (const list of Object.values(UNIQUE_EQUIPMENT_PRECISION_COST)) {
+    for (const p of list) {
+      const existing = map.get(p.key);
+      map.set(p.key, { key: p.key, name: p.name, perAttempt: (existing?.perAttempt || 0) + p.perAttempt });
+    }
+  }
+  return [...map.values()];
+})();
+const COMBINED_MATERIALS_WITH_PRECISION = withPrecisionRequirement(COMBINED_MATERIALS, COMBINED_PRECISION_COST);
 
 // 여명의 빛망울은 주간 수급량이 고정값으로 정해져 있어 일일 페이스 추적 대상에서 제외한다.
 const DAILY_TRACKED_KEYS = ['primordialSoul', 'epicSoul', 'pilgrimageSeal'];
@@ -197,6 +224,37 @@ function MaterialRow({ label, owned, required, completion }) {
         </span>
       </div>
       <ProgressBar pct={pct} color={isDone ? '#4ade80' : '#38bdf8'} />
+    </div>
+  );
+}
+
+// 완성 재료 + 정밀도 100%(평균 PRECISION_AVG_ATTEMPTS회 시도 가정) 시도 재료까지 합친 예상 완성 시간.
+// 기존 카드(전체 합산/심장/눈동자) 맨 아래에 하나씩 덧붙여서 보여준다.
+function PrecisionSection({ materials, owned, firstRecords, weeklyDawnDroplet }) {
+  const completion = getMaterialsCompletion(materials, owned, firstRecords, weeklyDawnDroplet);
+  return (
+    <div style={{ marginTop: '1rem', paddingTop: '0.9rem', borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
+      <div style={{ fontSize: '0.7rem', color: '#c084fc', fontWeight: 'bold', marginBottom: '0.2rem' }}>🎯 정밀도 포함 예상 완성 시간</div>
+      <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+        정밀도 100% 도달까지 평균 {PRECISION_AVG_ATTEMPTS}회 시도가 필요하다고 가정하고, 시도당 소모 재료를 완성 재료에 더해 계산합니다.
+      </div>
+      <div style={{ fontSize: '0.7rem', marginBottom: '0.8rem', fontWeight: 'bold', color: completion.status === 'done' ? '#4ade80' : completion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
+        {completion.status === 'done' && '✅ 재료 준비 완료'}
+        {completion.status === 'ok' && `📅 예상 완성일: ${formatKSTDate(completion.dateUTC)}`}
+        {completion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
+      </div>
+      {materials.map(m => {
+        const ownedVal = getMaterialOwned(m, owned);
+        return (
+          <MaterialRow
+            key={m.key}
+            label={m.name}
+            owned={ownedVal}
+            required={m.required}
+            completion={getMaterialCompletion(m, ownedVal, firstRecords, weeklyDawnDroplet)}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -474,6 +532,7 @@ export default function UniqueEquipTab() {
                   />
                 );
               })}
+              <PrecisionSection materials={COMBINED_MATERIALS_WITH_PRECISION} owned={owned} firstRecords={firstRecords} weeklyDawnDroplet={weeklyDawnDroplet} />
             </div>
           );
         })()}
@@ -503,6 +562,7 @@ export default function UniqueEquipTab() {
                   />
                 );
               })}
+              <PrecisionSection materials={PRECISION_MATERIALS_BY_ITEM[item.key]} owned={owned} firstRecords={firstRecords} weeklyDawnDroplet={weeklyDawnDroplet} />
             </div>
           );
         })}
