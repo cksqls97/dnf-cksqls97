@@ -259,10 +259,29 @@ function PrecisionSection({ materials, owned, firstRecords, weeklyDawnDroplet })
   );
 }
 
-// 날짜별 기록(dailyLog)을 오름차순으로 정리해, 전날 대비 증가량을 함께 계산한다.
+const addDaysISO = (dateISO, n) => new Date(new Date(dateISO + 'T00:00:00Z').getTime() + n * 86400000).toISOString().slice(0, 10);
+
+// 실제 기록 사이에 하루 이상 비어 있는 날짜(그 날 앱을 켜지 않아 기록이 생기지 않은 날)가 있으면,
+// 삭제/생략하지 않고 직전 기록값을 그대로 이어받은 "변동 없음" 날짜로 채워 넣는다.
+function fillDailyLogGaps(dailyLog) {
+  const asc = [...dailyLog].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  if (asc.length === 0) return asc;
+  const filled = [asc[0]];
+  for (let i = 1; i < asc.length; i++) {
+    let cursor = addDaysISO(filled[filled.length - 1].date, 1);
+    while (cursor < asc[i].date) {
+      filled.push({ date: cursor, owned: filled[filled.length - 1].owned });
+      cursor = addDaysISO(cursor, 1);
+    }
+    filled.push(asc[i]);
+  }
+  return filled;
+}
+
+// 날짜별 기록(dailyLog)을 오름차순으로 정리해(빈 날짜는 채워 넣고), 전날 대비 증가량을 함께 계산한다.
 // 가장 오래된(최초) 기록은 비교 대상이 없으므로 isFirst로 표시해 절대값을, 그 외에는 증가량만 쓴다.
 function computeDailyDeltaRows(dailyLog) {
-  const asc = [...dailyLog].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  const asc = fillDailyLogGaps(dailyLog);
   return asc.map((entry, i) => {
     const prevEntry = i > 0 ? asc[i - 1] : null;
     const cells = DISPLAY_MATERIALS.map(m => {
