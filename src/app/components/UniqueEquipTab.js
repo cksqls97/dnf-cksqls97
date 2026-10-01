@@ -59,11 +59,27 @@ function collectCombinedMaterials(items) {
 // - 제작 전: 완성 재료(item.materials) 그대로.
 // - 제작 완료, 정밀도 미달성: 정밀도 전용 재료(시도 1회당 소모량 × 평균 시도 횟수)만.
 // - 정밀도까지 완료: 더 모을 필요 없음(빈 배열).
+// 시도 재료가 그 장비의 완성 재료에도 있는 재료(예: 눈동자의 여명의 빛망울)라면, weeklyTracked/
+// sourceKeys 같은 "이 재료를 어떻게 읽고 계산할지"에 대한 메타데이터를 그대로 물려받아야 한다.
+// 안 그러면 보유량을 엉뚱한 키(존재하지 않는 'dawnDroplet')에서 읽어서 항상 0으로 보이고,
+// 주간 수급량 기반 계산 대신 일평균 계산 로직을 타게 된다.
 const PRECISION_ONLY_MATERIALS_BY_ITEM = Object.fromEntries(
-  UNIQUE_EQUIPMENT_ITEMS.map(item => [
-    item.key,
-    (UNIQUE_EQUIPMENT_PRECISION_COST[item.key] || []).map(p => ({ key: p.key, name: p.name, required: p.perAttempt * PRECISION_AVG_ATTEMPTS }))
-  ])
+  UNIQUE_EQUIPMENT_ITEMS.map(item => {
+    const baseByKey = new Map(item.materials.map(m => [m.key, m]));
+    return [
+      item.key,
+      (UNIQUE_EQUIPMENT_PRECISION_COST[item.key] || []).map(p => {
+        const base = baseByKey.get(p.key);
+        return {
+          key: p.key,
+          name: p.name,
+          required: p.perAttempt * PRECISION_AVG_ATTEMPTS,
+          ...(base?.weeklyTracked ? { weeklyTracked: true } : {}),
+          ...(base?.sourceKeys ? { sourceKeys: base.sourceKeys } : {})
+        };
+      })
+    ];
+  })
 );
 const EMPTY_ITEM_STATUS = () => Object.fromEntries(UNIQUE_EQUIPMENT_ITEMS.map(item => [item.key, { crafted: false, precisionDone: false }]));
 
