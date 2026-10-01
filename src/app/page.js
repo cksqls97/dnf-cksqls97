@@ -97,7 +97,10 @@ export default function Home() {
       const resData = await res.json();
       if (resData.conflict) {
         console.warn("다중 탭 충돌 감지! 클라우드를 내려받습니다.");
-        await syncDownCloudData(key, updatedChars, updatedLogs, updatedOpts);
+        // 유일장비 탭의 로컬 데이터는 이 경로(세션 도중 자동으로 반복될 수 있음)에서는 복원하지
+        // 않는다 - 그 탭은 수정할 때마다 바로 업로드하지 않으므로, 여기서 복원하면 아직 올리지
+        // 못한 최신 입력이 더 오래된 클라우드 값으로 되돌아가 버릴 수 있다.
+        await syncDownCloudData(key, updatedChars, updatedLogs, updatedOpts, { restoreUniqueEquip: false });
         return;
       }
       if (resData.success && resData.newUpdateAt) {
@@ -106,7 +109,7 @@ export default function Home() {
     } catch (e) { console.error(e); }
   };
 
-  const syncDownCloudData = async (targetKey, localChars, localLogs, localOpts, { silent = false } = {}) => {
+  const syncDownCloudData = async (targetKey, localChars, localLogs, localOpts, { silent = false, restoreUniqueEquip = true } = {}) => {
     if (!targetKey) return;
     setIsCloudSyncing(true);
     try {
@@ -147,17 +150,18 @@ export default function Home() {
           localStorage.setItem('DNF_MERC', JSON.stringify(cData.merc));
           modified = true;
         }
-        if (cData.uniqueEquip) {
-          // 유일장비 탭은 자체 state라 여기선 localStorage만 갱신한다(다음에 그 탭을 열 때 반영됨).
+        if (cData.uniqueEquip && restoreUniqueEquip) {
+          // 유일장비 탭은 자체 state라 여기선 localStorage만 갱신한다(이미 마운트된 탭에 강제로
+          // 반영하진 않고, 다음에 그 탭을 새로 마운트할 때 - 탭 전환, 새로고침 - 반영된다).
+          // restoreUniqueEquip=false(다중 탭 충돌로 세션 도중 반복될 수 있는 경로)로 호출된
+          // 경우엔 건드리지 않는다 - 그 탭은 입력할 때마다 바로 클라우드에 올리는 게 아니라서,
+          // 거기서 복원하면 아직 올리지 못한 최신 입력이 더 오래된 클라우드 값으로 되돌아가 버린다.
           const ue = cData.uniqueEquip;
           if (ue.owned) localStorage.setItem('DNF_UNIQUE_EQUIP_OWNED', JSON.stringify(ue.owned));
           if (ue.weeklyDawnDroplet !== undefined) localStorage.setItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN', ue.weeklyDawnDroplet);
           if (ue.firstRecords) localStorage.setItem('DNF_UNIQUE_EQUIP_FIRST_RECORD', JSON.stringify(ue.firstRecords));
           if (ue.dailyLog) localStorage.setItem('DNF_UNIQUE_EQUIP_DAILY_LOG', JSON.stringify(ue.dailyLog));
           if (ue.status) localStorage.setItem('DNF_UNIQUE_EQUIP_STATUS', JSON.stringify(ue.status));
-          // 유일장비 탭이 이미 마운트된 상태(새로고침 시 마지막 활성 탭이었던 경우)라면, 탭이
-          // 자기 마운트 시점에 미리 읽어둔(클라우드 반영 전) 값으로 굳어 있지 않도록 다시 읽게 한다.
-          window.dispatchEvent(new Event('dnf:uniqueEquipSynced'));
           modified = true;
         }
         if (modified) {

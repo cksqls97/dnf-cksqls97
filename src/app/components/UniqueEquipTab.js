@@ -436,12 +436,12 @@ export default function UniqueEquipTab() {
     const setJson = (setter, value) => setter(prev => ({ ...prev, ...value }));
     const setRaw = (setter, value) => setter(value);
 
-    // localStorage에서 다시 읽어와 state를 맞춘다. 마운트 시 한 번, 그리고 page.js의 클라우드
-    // 동기화가 이 탭의 localStorage 키들을 갱신했을 때(아래 이벤트) 다시 호출된다. 마지막으로
-    // 활성 탭이 이 탭이었다면 새로고침 시 거의 즉시 마운트되는데, 클라우드 다운로드는 네트워크
-    // 요청이라 그보다 늦게 끝나므로, 재동기화 없이 마운트 시 1회만 읽으면 그 사이의 구버전
-    // localStorage로 하이드레이션된 채 고정되고, 이후 저장 effect들이 그 구버전 값을 되써서
-    // 막 받아온 최신 클라우드 데이터를 덮어쓸 수 있었다.
+    // localStorage에서 state를 읽어온다. 마운트 시 1회만 한다 - page.js가 백그라운드로 클라우드
+    // 동기화를 할 때마다 다시 읽어오게 했더니(이전 시도), 이 탭은 입력할 때마다 클라우드에
+    // 올라가는 게 아니라 page.js의 다른 동작(전체 갱신 등) 때만 업로드되기 때문에, 그 사이
+    // 클라우드 쪽이 더 오래된 값을 들고 있는 경우가 흔해서 방금 입력한 값이 그 오래된 값으로
+    // 되돌아가 버렸다. 이 탭이 일단 마운트된 뒤로는 이 탭이 자기 데이터의 소유자이고, page.js의
+    // 백그라운드 동기화가 그 위를 덮어쓰면 안 된다.
     const loadAll = () => {
       const loadedOwned = readJson('DNF_UNIQUE_EQUIP_OWNED');
       if (loadedOwned) setJson(setOwned, loadedOwned);
@@ -489,9 +489,6 @@ export default function UniqueEquipTab() {
     };
 
     loadAll();
-    const onCloudSync = () => loadAll();
-    window.addEventListener('dnf:uniqueEquipSynced', onCloudSync);
-    return () => window.removeEventListener('dnf:uniqueEquipSynced', onCloudSync);
   }, []);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_OWNED', JSON.stringify(owned)); }, [owned, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN', weeklyDawnDroplet); }, [weeklyDawnDroplet, hydrated]);
