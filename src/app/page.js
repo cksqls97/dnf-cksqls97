@@ -62,13 +62,17 @@ export default function Home() {
     // 이 기기에서 유일장비 탭을 아직 한 번도 안 썼다면 undefined를 보내 필드 자체를 생략한다.
     // null을 보내면 서버가 다른 기기가 이미 올려둔 클라우드 데이터를 null로 덮어써 버린다.
     if (!owned) return undefined;
-    return {
+    const payload = {
       owned,
       weeklyDawnDroplet: localStorage.getItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN') || '',
       firstRecords: readJson('DNF_UNIQUE_EQUIP_FIRST_RECORD') || {},
-      dailyLog: readJson('DNF_UNIQUE_EQUIP_DAILY_LOG') || [],
-      status: readJson('DNF_UNIQUE_EQUIP_STATUS') || {}
+      dailyLog: readJson('DNF_UNIQUE_EQUIP_DAILY_LOG') || []
     };
+    // status는 나중에 추가된 필드라, 이 필드가 아직 없는 기기(과거 세션 등)가 동기화할 때 {}를
+    // 보내 다른 기기가 이미 올려둔 상태 토글을 지워버리지 않도록, 로컬에 실제로 있을 때만 포함한다.
+    const status = readJson('DNF_UNIQUE_EQUIP_STATUS');
+    if (status) payload.status = status;
+    return payload;
   };
 
   const syncUpCloudData = async (key, updatedChars, updatedLogs, updatedOpts, updatedMerc, forceOverride = false, updatedPilgrimage = null) => {
@@ -151,6 +155,9 @@ export default function Home() {
           if (ue.firstRecords) localStorage.setItem('DNF_UNIQUE_EQUIP_FIRST_RECORD', JSON.stringify(ue.firstRecords));
           if (ue.dailyLog) localStorage.setItem('DNF_UNIQUE_EQUIP_DAILY_LOG', JSON.stringify(ue.dailyLog));
           if (ue.status) localStorage.setItem('DNF_UNIQUE_EQUIP_STATUS', JSON.stringify(ue.status));
+          // 유일장비 탭이 이미 마운트된 상태(새로고침 시 마지막 활성 탭이었던 경우)라면, 탭이
+          // 자기 마운트 시점에 미리 읽어둔(클라우드 반영 전) 값으로 굳어 있지 않도록 다시 읽게 한다.
+          window.dispatchEvent(new Event('dnf:uniqueEquipSynced'));
           modified = true;
         }
         if (modified) {

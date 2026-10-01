@@ -68,7 +68,11 @@ export async function POST(request) {
     if (customOptions !== undefined) payload.customOptions = customOptions;
     if (merc !== undefined) payload.merc = merc;
     if (pilgrimage !== undefined) payload.pilgrimage = pilgrimage;
-    if (uniqueEquip !== undefined) payload.uniqueEquip = uniqueEquip;
+    // uniqueEquip은 그 안에 여러 하위 필드(owned/firstRecords/dailyLog/status 등)를 묶어서 보내는
+    // 객체라, 통째로 교체하면 클라이언트가 아직 갖고 있지 않아 생략한 하위 필드(예: status가 막
+    // 추가된 기기)가 기존에 다른 기기가 올려둔 값을 지워버린다. 그래서 uniqueEquip 자체도 하위
+    // 필드 단위로 기존 값 위에 덮어쓴다.
+    if (uniqueEquip !== undefined) payload.uniqueEquip = { ...(existing?.uniqueEquip || {}), ...uniqueEquip };
     
     // 새 버전(타임스탬프) 부여
     const newUpdateAt = Date.now();
