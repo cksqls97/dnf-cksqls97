@@ -79,21 +79,41 @@ function getActiveMaterials(item, status) {
   if (phase === 'precision') return PRECISION_ONLY_MATERIALS_BY_ITEM[item.key];
   return [];
 }
-// 두 장비 각각의 "지금 당장 필요한 재료"를 합산한다(같은 재료면 요구량을 더함).
-function collectActiveCombinedMaterials(items, statusMap) {
+// 완성 재료 + 정밀도 재료(시도 1회당 소모량 × 평균 시도 횟수)를 합친 목록.
+// 완성 재료에는 없던 재료(예: 눈동자 정밀도의 에픽 소울)라면 새 항목으로 추가한다.
+function withPrecisionRequirement(materials, precisionCosts) {
+  const merged = new Map(materials.map(m => [m.key, { ...m }]));
+  for (const p of precisionCosts) {
+    const addAmount = p.perAttempt * PRECISION_AVG_ATTEMPTS;
+    const existing = merged.get(p.key);
+    merged.set(p.key, existing ? { ...existing, required: existing.required + addAmount } : { key: p.key, name: p.name, required: addAmount });
+  }
+  return [...merged.values()];
+}
+// 제작 전 단계에서도 "정밀도 포함 보기"를 켜면, 완성 재료 + 정밀도 재료까지 합친 총량을 미리 보여준다.
+// (제작 완료/정밀도 단계에서는 이미 그 단계에 맞는 재료만 보여주고 있으므로 영향이 없다.)
+function getDisplayMaterials(item, status, previewPrecision) {
+  const phase = getItemGoalPhase(status);
+  if (phase === 'craft' && previewPrecision) {
+    return withPrecisionRequirement(item.materials, UNIQUE_EQUIPMENT_PRECISION_COST[item.key] || []);
+  }
+  return getActiveMaterials(item, status);
+}
+// 두 장비 각각의 "현재 화면에 표시 중인 재료"를 합산한다(같은 재료면 요구량을 더함).
+function collectDisplayCombinedMaterials(items, statusMap, previewMap) {
   const map = new Map();
   for (const item of items) {
-    for (const m of getActiveMaterials(item, statusMap[item.key])) {
+    for (const m of getDisplayMaterials(item, statusMap[item.key], previewMap[item.key])) {
       const existing = map.get(m.key);
       map.set(m.key, existing ? { ...existing, required: existing.required + m.required } : { ...m });
     }
   }
   return [...map.values()];
 }
-function phaseCompletionLabel(phase, completion) {
+function phaseCompletionLabel(phase, completion, previewing) {
   if (phase === 'done') return { text: '✅ 제작 + 정밀도 100% 모두 완료', color: '#4ade80' };
-  const dateLabel = phase === 'craft' ? '예상 제작 완료일' : '정밀도 100% 예상일';
-  const doneText = phase === 'craft' ? '✅ 재료 준비 완료 (제작 가능)' : '✅ 정밀도 재료 준비 완료';
+  const dateLabel = phase === 'precision' ? '정밀도 100% 예상일' : (previewing ? '정밀도 포함 예상 완료일' : '예상 제작 완료일');
+  const doneText = phase === 'precision' ? '✅ 정밀도 재료 준비 완료' : (previewing ? '✅ 정밀도까지 포함한 재료 준비 완료' : '✅ 재료 준비 완료 (제작 가능)');
   if (completion.status === 'done') return { text: doneText, color: '#4ade80' };
   if (completion.status === 'ok') return { text: `📅 ${dateLabel}: ${formatKSTDate(completion.dateUTC)}`, color: '#fbbf24' };
   return { text: '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)', color: '#64748b' };
@@ -243,7 +263,7 @@ function MaterialRow({ label, owned, required, completion }) {
 
 // 장비 하나의 "제작 완료" / "정밀도 100%" 토글. 정밀도는 제작 완료 전에는 의미가 없으므로
 // 제작 완료 전에는 비활성화해 둔다(토글 해제 시 정밀도도 같이 초기화됨은 호출부에서 처리).
-function StatusToggles({ status, onToggleCrafted, onTogglePrecision }) {
+function StatusToggles({ status, onToggleCrafted, onTogglePrecision, showPreview, onTogglePreview }) {
   const btn = (active, disabled) => ({
     fontSize: '0.65rem', padding: '0.25rem 0.6rem', borderRadius: '999px', fontWeight: 'bold',
     cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1,
@@ -251,6 +271,12 @@ function StatusToggles({ status, onToggleCrafted, onTogglePrecision }) {
     color: active ? '#4ade80' : '#94a3b8',
     border: `1px solid ${active ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.15)'}`
   });
+  const previewBtn = {
+    fontSize: '0.65rem', padding: '0.25rem 0.6rem', borderRadius: '999px', fontWeight: 'bold', cursor: 'pointer',
+    background: showPreview ? 'rgba(192,132,252,0.15)' : 'rgba(255,255,255,0.06)',
+    color: showPreview ? '#c084fc' : '#94a3b8',
+    border: `1px solid ${showPreview ? 'rgba(192,132,252,0.4)' : 'rgba(255,255,255,0.15)'}`
+  };
   return (
     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
       <button onClick={onToggleCrafted} style={btn(status.crafted, false)}>
@@ -259,6 +285,11 @@ function StatusToggles({ status, onToggleCrafted, onTogglePrecision }) {
       <button onClick={onTogglePrecision} disabled={!status.crafted} style={btn(status.precisionDone, !status.crafted)} title={!status.crafted ? '제작 완료 후에 정밀도를 올릴 수 있습니다' : undefined}>
         {status.precisionDone ? '✨ 정밀도 100%' : '⬜ 정밀도 진행 중'}
       </button>
+      {!status.crafted && (
+        <button onClick={onTogglePreview} style={previewBtn} title="제작 전이어도 정밀도 재료까지 포함한 총량을 함께 볼 수 있습니다">
+          {showPreview ? '🎯 정밀도 포함 보기 중' : '🎯 정밀도 포함 보기'}
+        </button>
+      )}
     </div>
   );
 }
@@ -394,6 +425,9 @@ export default function UniqueEquipTab() {
   const [firstRecords, setFirstRecords] = useState(EMPTY_FIRST_RECORD());
   const [dailyLog, setDailyLog] = useState([]);
   const [itemStatus, setItemStatus] = useState(EMPTY_ITEM_STATUS());
+  // 제작 전 단계에서 "정밀도 포함 보기"를 켰는지 여부. 그냥 화면에 뭘 보여줄지에 대한 선택일 뿐이라
+  // 기기/계정을 넘나들며 유지할 필요는 없다고 보고 저장하지 않는다(탭을 새로 열면 꺼진 상태로 시작).
+  const [precisionPreview, setPrecisionPreview] = useState({});
   // 마운트 시 저장된 값을 불러오기 전까지 저장 effect가 초기 빈 값으로 덮어쓰지 않도록 막는 플래그.
   const [hydrated, setHydrated] = useState(false);
 
@@ -490,6 +524,7 @@ export default function UniqueEquipTab() {
     if (!prev[itemKey].crafted) return prev;
     return { ...prev, [itemKey]: { ...prev[itemKey], precisionDone: !prev[itemKey].precisionDone } };
   });
+  const togglePrecisionPreview = (itemKey) => setPrecisionPreview(prev => ({ ...prev, [itemKey]: !prev[itemKey] }));
 
   const inp = { width: '120px', padding: '0.4rem', fontSize: '0.75rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
   const lbl = { fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem', display: 'block' };
@@ -545,7 +580,7 @@ export default function UniqueEquipTab() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.2rem' }}>
         {(() => {
-          const activeMaterials = collectActiveCombinedMaterials(UNIQUE_EQUIPMENT_ITEMS, itemStatus);
+          const activeMaterials = collectDisplayCombinedMaterials(UNIQUE_EQUIPMENT_ITEMS, itemStatus, precisionPreview);
           const overallPct = getBottleneckPct(activeMaterials, owned);
           const overallCompletion = getMaterialsCompletion(activeMaterials, owned, firstRecords, weeklyDawnDroplet);
           const bothDone = UNIQUE_EQUIPMENT_ITEMS.every(item => getItemGoalPhase(itemStatus[item.key]) === 'done');
@@ -583,18 +618,25 @@ export default function UniqueEquipTab() {
         {UNIQUE_EQUIPMENT_ITEMS.map(item => {
           const status = itemStatus[item.key];
           const phase = getItemGoalPhase(status);
-          const activeMaterials = getActiveMaterials(item, status);
+          const previewing = phase === 'craft' && !!precisionPreview[item.key];
+          const activeMaterials = getDisplayMaterials(item, status, precisionPreview[item.key]);
           const overallPct = getBottleneckPct(activeMaterials, owned);
           const completion = getMaterialsCompletion(activeMaterials, owned, firstRecords, weeklyDawnDroplet);
-          const { text: completionText, color: completionColor } = phaseCompletionLabel(phase, completion);
+          const { text: completionText, color: completionColor } = phaseCompletionLabel(phase, completion, previewing);
           return (
             <div key={item.key} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
                 <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0' }}>{item.name}</h3>
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
               </div>
-              <StatusToggles status={status} onToggleCrafted={() => toggleCrafted(item.key)} onTogglePrecision={() => togglePrecisionDone(item.key)} />
-              {phase === 'precision' && (
+              <StatusToggles
+                status={status}
+                onToggleCrafted={() => toggleCrafted(item.key)}
+                onTogglePrecision={() => togglePrecisionDone(item.key)}
+                showPreview={!!precisionPreview[item.key]}
+                onTogglePreview={() => togglePrecisionPreview(item.key)}
+              />
+              {(phase === 'precision' || previewing) && (
                 <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
                   정밀도 100% 도달까지 평균 {PRECISION_AVG_ATTEMPTS}회 시도가 필요하다고 가정하고, 시도당 소모 재료 기준으로 계산합니다.
                 </div>
