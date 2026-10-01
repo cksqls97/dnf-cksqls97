@@ -55,34 +55,49 @@ function collectCombinedMaterials(items) {
   }
   return [...map.values()];
 }
-const COMBINED_MATERIALS = collectCombinedMaterials(UNIQUE_EQUIPMENT_ITEMS);
-
-// 정밀도 100% 도달까지 필요한 재료 = 기존 완성 재료 + (시도 1회당 소모량 × 평균 시도 횟수).
-// 완성 재료에는 없던 재료(예: 눈동자 정밀도의 에픽 소울)라면 새 항목으로 추가한다.
-function withPrecisionRequirement(materials, precisionCosts) {
-  const merged = new Map(materials.map(m => [m.key, { ...m }]));
-  for (const p of precisionCosts) {
-    const addAmount = p.perAttempt * PRECISION_AVG_ATTEMPTS;
-    const existing = merged.get(p.key);
-    merged.set(p.key, existing ? { ...existing, required: existing.required + addAmount } : { key: p.key, name: p.name, required: addAmount });
-  }
-  return [...merged.values()];
-}
-const PRECISION_MATERIALS_BY_ITEM = Object.fromEntries(
-  UNIQUE_EQUIPMENT_ITEMS.map(item => [item.key, withPrecisionRequirement(item.materials, UNIQUE_EQUIPMENT_PRECISION_COST[item.key] || [])])
+// 목표 상태(제작 완료 / 정밀도 100%)에 따라 "지금 당장 필요한 재료"가 달라진다.
+// - 제작 전: 완성 재료(item.materials) 그대로.
+// - 제작 완료, 정밀도 미달성: 정밀도 전용 재료(시도 1회당 소모량 × 평균 시도 횟수)만.
+// - 정밀도까지 완료: 더 모을 필요 없음(빈 배열).
+const PRECISION_ONLY_MATERIALS_BY_ITEM = Object.fromEntries(
+  UNIQUE_EQUIPMENT_ITEMS.map(item => [
+    item.key,
+    (UNIQUE_EQUIPMENT_PRECISION_COST[item.key] || []).map(p => ({ key: p.key, name: p.name, required: p.perAttempt * PRECISION_AVG_ATTEMPTS }))
+  ])
 );
-// 두 장비 모두의 시도 재료를 합산한 뒤, 완성 재료 합산치(COMBINED_MATERIALS)에 더한다.
-const COMBINED_PRECISION_COST = (() => {
+const EMPTY_ITEM_STATUS = () => Object.fromEntries(UNIQUE_EQUIPMENT_ITEMS.map(item => [item.key, { crafted: false, precisionDone: false }]));
+
+function getItemGoalPhase(status) {
+  if (!status?.crafted) return 'craft';
+  if (!status?.precisionDone) return 'precision';
+  return 'done';
+}
+const PHASE_LABEL = { craft: '제작 전', precision: '정밀도 진행 중', done: '완료' };
+function getActiveMaterials(item, status) {
+  const phase = getItemGoalPhase(status);
+  if (phase === 'craft') return item.materials;
+  if (phase === 'precision') return PRECISION_ONLY_MATERIALS_BY_ITEM[item.key];
+  return [];
+}
+// 두 장비 각각의 "지금 당장 필요한 재료"를 합산한다(같은 재료면 요구량을 더함).
+function collectActiveCombinedMaterials(items, statusMap) {
   const map = new Map();
-  for (const list of Object.values(UNIQUE_EQUIPMENT_PRECISION_COST)) {
-    for (const p of list) {
-      const existing = map.get(p.key);
-      map.set(p.key, { key: p.key, name: p.name, perAttempt: (existing?.perAttempt || 0) + p.perAttempt });
+  for (const item of items) {
+    for (const m of getActiveMaterials(item, statusMap[item.key])) {
+      const existing = map.get(m.key);
+      map.set(m.key, existing ? { ...existing, required: existing.required + m.required } : { ...m });
     }
   }
   return [...map.values()];
-})();
-const COMBINED_MATERIALS_WITH_PRECISION = withPrecisionRequirement(COMBINED_MATERIALS, COMBINED_PRECISION_COST);
+}
+function phaseCompletionLabel(phase, completion) {
+  if (phase === 'done') return { text: '✅ 제작 + 정밀도 100% 모두 완료', color: '#4ade80' };
+  const dateLabel = phase === 'craft' ? '예상 제작 완료일' : '정밀도 100% 예상일';
+  const doneText = phase === 'craft' ? '✅ 재료 준비 완료 (제작 가능)' : '✅ 정밀도 재료 준비 완료';
+  if (completion.status === 'done') return { text: doneText, color: '#4ade80' };
+  if (completion.status === 'ok') return { text: `📅 ${dateLabel}: ${formatKSTDate(completion.dateUTC)}`, color: '#fbbf24' };
+  return { text: '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)', color: '#64748b' };
+}
 
 // 여명의 빛망울은 주간 수급량이 고정값으로 정해져 있어 일일 페이스 추적 대상에서 제외한다.
 const DAILY_TRACKED_KEYS = ['primordialSoul', 'epicSoul', 'pilgrimageSeal'];
@@ -190,11 +205,9 @@ function getMaterialsCompletion(materials, owned, firstRecords, weeklyDawnDrople
   if (allDone) return { status: 'done' };
   return { status: 'ok', dateUTC: maxDateUTC };
 }
-// 아이템 하나의 완성 정보(요구 재료만 대상).
-const getItemCompletion = (item, owned, firstRecords, weeklyDawnDroplet) =>
-  getMaterialsCompletion(item.materials, owned, firstRecords, weeklyDawnDroplet);
 
 function getBottleneckPct(materials, owned) {
+  if (materials.length === 0) return 100;
   return Math.min(...materials.map(m => {
     const ownedVal = getMaterialOwned(m, owned);
     return m.required > 0 ? Math.min(100, ownedVal / m.required * 100) : 100;
@@ -228,33 +241,24 @@ function MaterialRow({ label, owned, required, completion }) {
   );
 }
 
-// 완성 재료 + 정밀도 100%(평균 PRECISION_AVG_ATTEMPTS회 시도 가정) 시도 재료까지 합친 예상 완성 시간.
-// 기존 카드(전체 합산/심장/눈동자) 맨 아래에 하나씩 덧붙여서 보여준다.
-function PrecisionSection({ materials, owned, firstRecords, weeklyDawnDroplet }) {
-  const completion = getMaterialsCompletion(materials, owned, firstRecords, weeklyDawnDroplet);
+// 장비 하나의 "제작 완료" / "정밀도 100%" 토글. 정밀도는 제작 완료 전에는 의미가 없으므로
+// 제작 완료 전에는 비활성화해 둔다(토글 해제 시 정밀도도 같이 초기화됨은 호출부에서 처리).
+function StatusToggles({ status, onToggleCrafted, onTogglePrecision }) {
+  const btn = (active, disabled) => ({
+    fontSize: '0.65rem', padding: '0.25rem 0.6rem', borderRadius: '999px', fontWeight: 'bold',
+    cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.5 : 1,
+    background: active ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.06)',
+    color: active ? '#4ade80' : '#94a3b8',
+    border: `1px solid ${active ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.15)'}`
+  });
   return (
-    <div style={{ marginTop: '1rem', paddingTop: '0.9rem', borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
-      <div style={{ fontSize: '0.7rem', color: '#c084fc', fontWeight: 'bold', marginBottom: '0.2rem' }}>🎯 정밀도 포함 예상 완성 시간</div>
-      <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
-        정밀도 100% 도달까지 평균 {PRECISION_AVG_ATTEMPTS}회 시도가 필요하다고 가정하고, 시도당 소모 재료를 완성 재료에 더해 계산합니다.
-      </div>
-      <div style={{ fontSize: '0.7rem', marginBottom: '0.8rem', fontWeight: 'bold', color: completion.status === 'done' ? '#4ade80' : completion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
-        {completion.status === 'done' && '✅ 재료 준비 완료'}
-        {completion.status === 'ok' && `📅 예상 완성일: ${formatKSTDate(completion.dateUTC)}`}
-        {completion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
-      </div>
-      {materials.map(m => {
-        const ownedVal = getMaterialOwned(m, owned);
-        return (
-          <MaterialRow
-            key={m.key}
-            label={m.name}
-            owned={ownedVal}
-            required={m.required}
-            completion={getMaterialCompletion(m, ownedVal, firstRecords, weeklyDawnDroplet)}
-          />
-        );
-      })}
+    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
+      <button onClick={onToggleCrafted} style={btn(status.crafted, false)}>
+        {status.crafted ? '✅ 제작 완료' : '⬜ 제작 전'}
+      </button>
+      <button onClick={onTogglePrecision} disabled={!status.crafted} style={btn(status.precisionDone, !status.crafted)} title={!status.crafted ? '제작 완료 후에 정밀도를 올릴 수 있습니다' : undefined}>
+        {status.precisionDone ? '✨ 정밀도 100%' : '⬜ 정밀도 진행 중'}
+      </button>
     </div>
   );
 }
@@ -389,6 +393,7 @@ export default function UniqueEquipTab() {
   const [weeklyDawnDroplet, setWeeklyDawnDroplet] = useState('');
   const [firstRecords, setFirstRecords] = useState(EMPTY_FIRST_RECORD());
   const [dailyLog, setDailyLog] = useState([]);
+  const [itemStatus, setItemStatus] = useState(EMPTY_ITEM_STATUS());
   // 마운트 시 저장된 값을 불러오기 전까지 저장 effect가 초기 빈 값으로 덮어쓰지 않도록 막는 플래그.
   const [hydrated, setHydrated] = useState(false);
 
@@ -436,12 +441,16 @@ export default function UniqueEquipTab() {
     }
     setRaw(setDailyLog, loadedDailyLog);
 
+    const loadedStatus = { ...EMPTY_ITEM_STATUS(), ...(readJson('DNF_UNIQUE_EQUIP_STATUS') || {}) };
+    setRaw(setItemStatus, loadedStatus);
+
     setRaw(setHydrated, true);
   }, []);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_OWNED', JSON.stringify(owned)); }, [owned, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN', weeklyDawnDroplet); }, [weeklyDawnDroplet, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_FIRST_RECORD', JSON.stringify(firstRecords)); }, [firstRecords, hydrated]);
   useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_DAILY_LOG', JSON.stringify(dailyLog)); }, [dailyLog, hydrated]);
+  useEffect(() => { if (hydrated) localStorage.setItem('DNF_UNIQUE_EQUIP_STATUS', JSON.stringify(itemStatus)); }, [itemStatus, hydrated]);
 
   // "오늘(KST 6시 기준 게임데이)"의 기록을 항상 최신 보유량으로 맞춰 둔다. 입력을 바꿀 때뿐 아니라
   // 아무 입력 없이 날짜만 넘어가도(하루 종일 값이 그대로였어도) 그 날의 행이 생기도록,
@@ -471,6 +480,16 @@ export default function UniqueEquipTab() {
     if (!window.confirm('일일 수급 페이스 기록(최초 기록 시점)을 초기화할까요? 보유 재화 입력값은 그대로 유지됩니다.')) return;
     setFirstRecords(EMPTY_FIRST_RECORD());
   };
+
+  // 제작 완료를 해제하면 정밀도는 애초에 시작할 수 없는 상태이므로 함께 초기화한다.
+  const toggleCrafted = (itemKey) => setItemStatus(prev => {
+    const nextCrafted = !prev[itemKey].crafted;
+    return { ...prev, [itemKey]: { crafted: nextCrafted, precisionDone: nextCrafted ? prev[itemKey].precisionDone : false } };
+  });
+  const togglePrecisionDone = (itemKey) => setItemStatus(prev => {
+    if (!prev[itemKey].crafted) return prev;
+    return { ...prev, [itemKey]: { ...prev[itemKey], precisionDone: !prev[itemKey].precisionDone } };
+  });
 
   const inp = { width: '120px', padding: '0.4rem', fontSize: '0.75rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
   const lbl = { fontSize: '0.7rem', color: '#94a3b8', marginBottom: '0.3rem', display: 'block' };
@@ -526,20 +545,27 @@ export default function UniqueEquipTab() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.2rem' }}>
         {(() => {
-          const overallPct = getBottleneckPct(COMBINED_MATERIALS, owned);
-          const overallCompletion = getMaterialsCompletion(COMBINED_MATERIALS, owned, firstRecords, weeklyDawnDroplet);
+          const activeMaterials = collectActiveCombinedMaterials(UNIQUE_EQUIPMENT_ITEMS, itemStatus);
+          const overallPct = getBottleneckPct(activeMaterials, owned);
+          const overallCompletion = getMaterialsCompletion(activeMaterials, owned, firstRecords, weeklyDawnDroplet);
+          const bothDone = UNIQUE_EQUIPMENT_ITEMS.every(item => getItemGoalPhase(itemStatus[item.key]) === 'done');
+          const { text: completionText, color: completionColor } = bothDone
+            ? { text: '✅ 두 장비 모두 제작 + 정밀도 100% 완료', color: '#4ade80' }
+            : (overallCompletion.status === 'done' ? { text: '✅ 남은 목표 재료 준비 완료', color: '#4ade80' }
+              : overallCompletion.status === 'ok' ? { text: `📅 예상 완료일: ${formatKSTDate(overallCompletion.dateUTC)}`, color: '#fbbf24' }
+              : { text: '📅 예상 완료일: 정보 부족 (재료별 추이 기록 필요)', color: '#64748b' });
           return (
             <div style={{ background: 'rgba(250,204,21,0.05)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(250,204,21,0.25)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                 <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#fde047' }}>🏆 유일장비 2종 전체 제작</h3>
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
               </div>
-              <div style={{ fontSize: '0.7rem', marginBottom: '1rem', fontWeight: 'bold', color: overallCompletion.status === 'done' ? '#4ade80' : overallCompletion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
-                {overallCompletion.status === 'done' && '✅ 재료 준비 완료'}
-                {overallCompletion.status === 'ok' && `📅 예상 완성일: ${formatKSTDate(overallCompletion.dateUTC)}`}
-                {overallCompletion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
+              <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+                {UNIQUE_EQUIPMENT_ITEMS.map(item => `${item.name}: ${PHASE_LABEL[getItemGoalPhase(itemStatus[item.key])]}`).join(' · ')}
+                {` (정밀도는 평균 ${PRECISION_AVG_ATTEMPTS}회 시도 가정)`}
               </div>
-              {COMBINED_MATERIALS.map(m => {
+              <div style={{ fontSize: '0.7rem', marginBottom: '1rem', fontWeight: 'bold', color: completionColor }}>{completionText}</div>
+              {activeMaterials.map(m => {
                 const ownedVal = getMaterialOwned(m, owned);
                 return (
                   <MaterialRow
@@ -551,25 +577,30 @@ export default function UniqueEquipTab() {
                   />
                 );
               })}
-              <PrecisionSection materials={COMBINED_MATERIALS_WITH_PRECISION} owned={owned} firstRecords={firstRecords} weeklyDawnDroplet={weeklyDawnDroplet} />
             </div>
           );
         })()}
         {UNIQUE_EQUIPMENT_ITEMS.map(item => {
-          const overallPct = getBottleneckPct(item.materials, owned);
-          const itemCompletion = getItemCompletion(item, owned, firstRecords, weeklyDawnDroplet);
+          const status = itemStatus[item.key];
+          const phase = getItemGoalPhase(status);
+          const activeMaterials = getActiveMaterials(item, status);
+          const overallPct = getBottleneckPct(activeMaterials, owned);
+          const completion = getMaterialsCompletion(activeMaterials, owned, firstRecords, weeklyDawnDroplet);
+          const { text: completionText, color: completionColor } = phaseCompletionLabel(phase, completion);
           return (
             <div key={item.key} style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '1.2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
                 <h3 style={{ margin: 0, fontSize: '0.85rem', color: '#e2e8f0' }}>{item.name}</h3>
                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: overallPct >= 100 ? '#4ade80' : '#fbbf24' }}>{overallPct.toFixed(1)}%</span>
               </div>
-              <div style={{ fontSize: '0.7rem', marginBottom: '1rem', fontWeight: 'bold', color: itemCompletion.status === 'done' ? '#4ade80' : itemCompletion.status === 'ok' ? '#fbbf24' : '#64748b' }}>
-                {itemCompletion.status === 'done' && '✅ 재료 준비 완료'}
-                {itemCompletion.status === 'ok' && `📅 예상 완성일: ${formatKSTDate(itemCompletion.dateUTC)}`}
-                {itemCompletion.status === 'unknown' && '📅 예상 완성일: 정보 부족 (재료별 추이 기록 필요)'}
-              </div>
-              {item.materials.map(m => {
+              <StatusToggles status={status} onToggleCrafted={() => toggleCrafted(item.key)} onTogglePrecision={() => togglePrecisionDone(item.key)} />
+              {phase === 'precision' && (
+                <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+                  정밀도 100% 도달까지 평균 {PRECISION_AVG_ATTEMPTS}회 시도가 필요하다고 가정하고, 시도당 소모 재료 기준으로 계산합니다.
+                </div>
+              )}
+              <div style={{ fontSize: '0.7rem', marginBottom: '1rem', fontWeight: 'bold', color: completionColor }}>{completionText}</div>
+              {activeMaterials.map(m => {
                 const ownedVal = getMaterialOwned(m, owned);
                 return (
                   <MaterialRow
@@ -581,7 +612,6 @@ export default function UniqueEquipTab() {
                   />
                 );
               })}
-              <PrecisionSection materials={PRECISION_MATERIALS_BY_ITEM[item.key]} owned={owned} firstRecords={firstRecords} weeklyDawnDroplet={weeklyDawnDroplet} />
             </div>
           );
         })}

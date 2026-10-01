@@ -66,7 +66,8 @@ export default function Home() {
       owned,
       weeklyDawnDroplet: localStorage.getItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN') || '',
       firstRecords: readJson('DNF_UNIQUE_EQUIP_FIRST_RECORD') || {},
-      dailyLog: readJson('DNF_UNIQUE_EQUIP_DAILY_LOG') || []
+      dailyLog: readJson('DNF_UNIQUE_EQUIP_DAILY_LOG') || [],
+      status: readJson('DNF_UNIQUE_EQUIP_STATUS') || {}
     };
   };
 
@@ -149,6 +150,7 @@ export default function Home() {
           if (ue.weeklyDawnDroplet !== undefined) localStorage.setItem('DNF_UNIQUE_EQUIP_WEEKLY_DAWN', ue.weeklyDawnDroplet);
           if (ue.firstRecords) localStorage.setItem('DNF_UNIQUE_EQUIP_FIRST_RECORD', JSON.stringify(ue.firstRecords));
           if (ue.dailyLog) localStorage.setItem('DNF_UNIQUE_EQUIP_DAILY_LOG', JSON.stringify(ue.dailyLog));
+          if (ue.status) localStorage.setItem('DNF_UNIQUE_EQUIP_STATUS', JSON.stringify(ue.status));
           modified = true;
         }
         if (modified) {
