@@ -573,7 +573,7 @@ export default function Home() {
       )}
 
       {activeTab === 'uniqueEquip' && <UniqueEquipTab />}
-      {activeTab === 'ampCalc' && <AmpCalculatorTab />}
+      {activeTab === 'ampCalc' && <AmpCalculatorTab apiKey={apiKey} />}
 
       {/* Settings modal */}
       {showSettings && (

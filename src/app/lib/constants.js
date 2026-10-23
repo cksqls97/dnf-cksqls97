@@ -152,9 +152,16 @@ export const AMP_GENERAL_STAGES = [
   { from: 11, to: 12, successProb: 0.3, material: 12, onFail: 'destroy' },
   { from: 12, to: 13, successProb: 0.2, material: 13, onFail: 'destroy' }
 ];
-// 일반 증폭은 단계별 골드가 아니라 0→10 합산 골드만 나무위키에 나와 있어, 재료 1개당 평균
-// 단가로 역산해 단계별 비용에 근사치로 적용한다(정확한 단계별 골드가 아님에 유의).
-export const AMP_GENERAL_TOTAL_GOLD = { weapon: 739200, nonWeapon: 258720 };
+// 일반 증폭 1회 시도당 골드 수수료(단계 무관 고정, 나무위키 "증폭 시 소모 골드량" 기준).
+export const AMP_GENERAL_GOLD_PER_ATTEMPT = { weapon: 739200, nonWeapon: 258720 };
+// 무색 큐브 조각 1000개 = 모순의 결정체 1개로 교환 가능.
+export const CUBE_FRAGMENTS_PER_CONTRADICTION = 1000;
+export const AMP_AUCTION_ITEMS = {
+  cube: '무색 큐브 조각',
+  contradiction: '모순의 결정체',
+  harmony: '조화의 결정체',
+  protection: '증폭 보호권'
+};
 
 export const AMP_SAFE_STAGES = [
   { from: 0, to: 1, successProb: 1, material: 36, weaponGold: 430100, nonWeaponGold: 189860, pityIncrement: 0 },
