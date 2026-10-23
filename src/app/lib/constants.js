@@ -133,3 +133,38 @@ export const DEFAULT_AUCTION_PRICES = {
   '레전더리 소울 결정': 0,
   '에픽 소울 결정': 0,
 };
+
+// 증폭(장비 증폭) 단계별 기본값 — 나무위키("100레벨 에픽 아이템" 기준) 수치를 그대로 옮긴 것으로,
+// 실제 서버/패치 수치와 다를 수 있다. 계산기 화면에서 직접 수정 가능하며, 이 값은 그 초기값일 뿐이다.
+// onFail: null(실패해도 단계 유지) | { dropTo }(해당 단계로 강등) | 'destroy'(장비 파괴, +11 이상)
+export const AMP_GENERAL_STAGES = [
+  { from: 0, to: 1, successProb: 1, material: 1, onFail: null },
+  { from: 1, to: 2, successProb: 1, material: 2, onFail: null },
+  { from: 2, to: 3, successProb: 1, material: 3, onFail: null },
+  { from: 3, to: 4, successProb: 1, material: 4, onFail: null },
+  { from: 4, to: 5, successProb: 0.8, material: 5, onFail: { dropTo: 3 } },
+  { from: 5, to: 6, successProb: 0.7, material: 6, onFail: { dropTo: 4 } },
+  { from: 6, to: 7, successProb: 0.6, material: 7, onFail: { dropTo: 5 } },
+  { from: 7, to: 8, successProb: 0.7, material: 8, onFail: { dropTo: 4 } },
+  { from: 8, to: 9, successProb: 0.6, material: 9, onFail: { dropTo: 5 } },
+  { from: 9, to: 10, successProb: 0.5, material: 10, onFail: { dropTo: 6 } },
+  { from: 10, to: 11, successProb: 0.4, material: 11, onFail: 'destroy' },
+  { from: 11, to: 12, successProb: 0.3, material: 12, onFail: 'destroy' },
+  { from: 12, to: 13, successProb: 0.2, material: 13, onFail: 'destroy' }
+];
+// 일반 증폭은 단계별 골드가 아니라 0→10 합산 골드만 나무위키에 나와 있어, 재료 1개당 평균
+// 단가로 역산해 단계별 비용에 근사치로 적용한다(정확한 단계별 골드가 아님에 유의).
+export const AMP_GENERAL_TOTAL_GOLD = { weapon: 739200, nonWeapon: 258720 };
+
+export const AMP_SAFE_STAGES = [
+  { from: 0, to: 1, successProb: 1, material: 36, weaponGold: 430100, nonWeaponGold: 189860, pityIncrement: 0 },
+  { from: 1, to: 2, successProb: 1, material: 41, weaponGold: 490600, nonWeaponGold: 250360, pityIncrement: 0 },
+  { from: 2, to: 3, successProb: 1, material: 46, weaponGold: 551100, nonWeaponGold: 310860, pityIncrement: 0 },
+  { from: 3, to: 4, successProb: 1, material: 51, weaponGold: 611600, nonWeaponGold: 371360, pityIncrement: 0 },
+  { from: 4, to: 5, successProb: 0.7, material: 55, weaponGold: 876652, nonWeaponGold: 490750, pityIncrement: 0.10 },
+  { from: 5, to: 6, successProb: 0.6, material: 67, weaponGold: 1072098, nonWeaponGold: 615450, pityIncrement: 0.10 },
+  { from: 6, to: 7, successProb: 0.5, material: 109, weaponGold: 1730400, nonWeaponGold: 1043132, pityIncrement: 0.10 },
+  { from: 7, to: 8, successProb: 0.5, material: 122, weaponGold: 1932679, nonWeaponGold: 1157283, pityIncrement: 0.05 },
+  { from: 8, to: 9, successProb: 0.4, material: 230, weaponGold: 3656400, nonWeaponGold: 2246200, pityIncrement: 0.05 },
+  { from: 9, to: 10, successProb: 0.3, material: 320, weaponGold: 5084870, nonWeaponGold: 2937440, pityIncrement: 0.05 }
+];

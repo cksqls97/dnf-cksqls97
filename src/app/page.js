@@ -7,6 +7,7 @@ import ImminentTab from './components/ImminentTab';
 import MercTab from './components/MercTab';
 import PilgrimageTab from './components/PilgrimageTab';
 import UniqueEquipTab from './components/UniqueEquipTab';
+import AmpCalculatorTab from './components/AmpCalculatorTab';
 import { ALL_MANUAL_KEYS, DEFAULT_CUSTOM_OPTIONS } from './lib/constants';
 
 export default function Home() {
@@ -519,6 +520,7 @@ export default function Home() {
         <button className={`tab-btn ${activeTab === 'merc' ? 'active' : ''}`} onClick={() => setActiveTab('merc')}>⚔️ 용병단 레벨</button>
         <button className={`tab-btn ${activeTab === 'pilgrimage' ? 'active' : ''}`} onClick={() => setActiveTab('pilgrimage')}>✨ 광휘의 순례</button>
         <button className={`tab-btn ${activeTab === 'uniqueEquip' ? 'active' : ''}`} onClick={() => setActiveTab('uniqueEquip')}>🔨 유일 장비 제작 현황</button>
+        <button className={`tab-btn ${activeTab === 'ampCalc' ? 'active' : ''}`} onClick={() => setActiveTab('ampCalc')}>⚡ 증폭 효율 계산기</button>
       </div>
 
       {activeTab === 'roster' && (
@@ -571,6 +573,7 @@ export default function Home() {
       )}
 
       {activeTab === 'uniqueEquip' && <UniqueEquipTab />}
+      {activeTab === 'ampCalc' && <AmpCalculatorTab />}
 
       {/* Settings modal */}
       {showSettings && (
