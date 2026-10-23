@@ -14,8 +14,7 @@ const DEFAULT_SETTINGS = {
   startStage: 0,
   targetStage: 12,
   prices: { cube: 0, contradiction: 0, harmony: 0 },
-  goldFee: { ...AMP_GENERAL_GOLD_PER_ATTEMPT },
-  restoreCost: 0
+  goldFee: { ...AMP_GENERAL_GOLD_PER_ATTEMPT }
 };
 
 // 모순의 결정체 1개를 가장 싸게 마련하는 방법. 가격 0은 "매물 없음/미입력"으로 보고 후보에서 뺀다.
@@ -63,10 +62,10 @@ function solveLinear(A, b) {
 }
 
 // 단계 k에서 가능한 행동들과 그 비용/전이를 만든다. 일반 증폭 실패 시:
-// onFail null → 같은 단계 유지, { dropTo } → 해당 단계로 강등, 'destroy' → 장비 파괴(증폭 보호권 등으로
-// +0 복구) → +0으로 돌아가며 복구 비용이 추가로 든다.
+// onFail null → 같은 단계 유지, { dropTo } → 해당 단계로 강등, 'destroy' → +0으로 돌아간다
+// (+0 복구 수단의 비용은 계산에 넣지 않는다).
 function buildActions(ctx) {
-  const { generalStages, safeStages, isWeapon, goldFee, contradictionPrice, harmonyPrice, restoreCost, targetStage } = ctx;
+  const { generalStages, safeStages, isWeapon, goldFee, contradictionPrice, harmonyPrice, targetStage } = ctx;
   const fee = isWeapon ? goldFee.weapon : goldFee.nonWeapon;
   const actions = [];
   for (let k = 0; k < targetStage; k++) {
@@ -81,7 +80,7 @@ function buildActions(ctx) {
         type: 'general', p, failTo,
         attemptCost: g.material * contradictionPrice + fee,
         costs: {
-          gold: g.material * contradictionPrice + fee + (destroy ? (1 - p) * restoreCost : 0),
+          gold: g.material * contradictionPrice + fee,
           contradiction: g.material,
           harmony: 0,
           fee,
@@ -232,8 +231,7 @@ export default function AmpCalculatorTab({ apiKey }) {
             cube: p[AMP_AUCTION_ITEMS.cube] ?? prev.prices.cube,
             contradiction: p[AMP_AUCTION_ITEMS.contradiction] ?? prev.prices.contradiction,
             harmony: p[AMP_AUCTION_ITEMS.harmony] ?? prev.prices.harmony
-          },
-          restoreCost: p[AMP_AUCTION_ITEMS.protection] > 0 ? p[AMP_AUCTION_ITEMS.protection] : prev.restoreCost
+          }
         }));
         const missing = names.filter(n => !p[n]);
         alert(`경매장 시세를 불러왔습니다.${missing.length ? `\n매물이 없어 반영되지 않은 항목: ${missing.join(', ')} (직접 입력해주세요)` : ''}`);
@@ -253,13 +251,12 @@ export default function AmpCalculatorTab({ apiKey }) {
     setSafeStages(AMP_SAFE_STAGES);
   };
 
-  const { isWeapon, startStage, targetStage, prices, goldFee, restoreCost } = settings;
+  const { isWeapon, startStage, targetStage, prices, goldFee } = settings;
   const source = getContradictionSource(prices);
   const ctx = {
     generalStages, safeStages, isWeapon, goldFee, targetStage,
     contradictionPrice: source.price,
-    harmonyPrice: Number(prices.harmony) || 0,
-    restoreCost: Number(restoreCost) || 0
+    harmonyPrice: Number(prices.harmony) || 0
   };
   const actions = buildActions(ctx);
   const optimal = optimizePolicy(actions);
@@ -275,8 +272,7 @@ export default function AmpCalculatorTab({ apiKey }) {
 
   const warnings = [];
   if (source.method === 'none') warnings.push('모순의 결정체 / 무색 큐브 조각 가격이 없어 일반 증폭 재료비가 0으로 계산됩니다.');
-  if (!(Number(prices.harmony) > 0)) warnings.push('조화의 결정체 가격이 0이라 안전 증폭 재료비가 0으로 계산됩니다(거래 불가 재화라면 직접 획득 가치로 입력하세요).');
-  if (targetStage > 10 && !(Number(restoreCost) > 0)) warnings.push('파괴 시 복구 비용이 0이라 +10 이후 실패(장비 파괴) 손실이 과소평가됩니다.');
+  if (!(Number(prices.harmony) > 0)) warnings.push('무결점 조화의 결정체 가격이 0이라 안전 증폭 재료비가 0으로 계산됩니다.');
 
   const inp = { width: '110px', padding: '0.35rem', fontSize: '0.72rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '4px' };
   const lbl = { fontSize: '0.68rem', color: '#94a3b8', marginBottom: '0.3rem', display: 'block' };
@@ -311,8 +307,7 @@ export default function AmpCalculatorTab({ apiKey }) {
         <div style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap' }}>
           <div><label style={lbl}>{AMP_AUCTION_ITEMS.cube}</label><input type="number" min="0" style={inp} value={prices.cube} onChange={e => updatePrice('cube', Number(e.target.value))} /></div>
           <div><label style={lbl}>{AMP_AUCTION_ITEMS.contradiction}</label><input type="number" min="0" style={inp} value={prices.contradiction} onChange={e => updatePrice('contradiction', Number(e.target.value))} /></div>
-          <div><label style={lbl}>{AMP_AUCTION_ITEMS.harmony}</label><input type="number" min="0" style={inp} value={prices.harmony} onChange={e => updatePrice('harmony', Number(e.target.value))} /></div>
-          <div><label style={lbl}>파괴 시 복구 비용 (증폭 보호권 등)</label><input type="number" min="0" style={inp} value={restoreCost} onChange={e => update('restoreCost', Number(e.target.value))} /></div>
+          <div><label style={lbl}>{AMP_AUCTION_ITEMS.harmony} (조화의 결정체 1개 가치)</label><input type="number" min="0" style={inp} value={prices.harmony} onChange={e => updatePrice('harmony', Number(e.target.value))} /></div>
         </div>
 
         <div style={{ marginTop: '1rem', padding: '0.8rem 1rem', borderRadius: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', fontSize: '0.7rem', color: '#cbd5e1', lineHeight: 1.8 }}>

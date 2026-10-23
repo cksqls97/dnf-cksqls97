@@ -156,11 +156,12 @@ export const AMP_GENERAL_STAGES = [
 export const AMP_GENERAL_GOLD_PER_ATTEMPT = { weapon: 739200, nonWeapon: 258720 };
 // 무색 큐브 조각 1000개 = 모순의 결정체 1개로 교환 가능.
 export const CUBE_FRAGMENTS_PER_CONTRADICTION = 1000;
+// 조화의 결정체 자체는 교환 불가라, 교환 가능한 무결점 조화의 결정체 시세를 1:1로 가치 기준 삼는다
+// (광휘의 순례 탭에서 귀속 조화의 결정체를 평가하는 방식과 동일).
 export const AMP_AUCTION_ITEMS = {
   cube: '무색 큐브 조각',
   contradiction: '모순의 결정체',
-  harmony: '조화의 결정체',
-  protection: '증폭 보호권'
+  harmony: '무결점 조화의 결정체'
 };
 
 export const AMP_SAFE_STAGES = [
